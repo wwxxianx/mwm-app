@@ -1,0 +1,1 @@
+export const textUnderline = "relative before:absolute before:contents-[' '] before:w-[170px] before:border-b-[1px] before:border-black before:bottom-0 before:left-[50%] before:translate-x-[-50%]";

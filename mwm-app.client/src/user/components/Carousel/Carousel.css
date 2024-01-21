@@ -1,0 +1,39 @@
+body {
+}
+
+.carousel {
+    perspective: 500px;
+    transform-style: preserve-3d;
+}
+
+.card-container {
+    transform: rotateY(calc(var(--offset) * 50deg))    
+        scaleY(calc(1 + var(--abs-offset) * -0.4))
+        translateZ(calc(var(--abs-offset) * -30rem))
+        translateX(calc(var(--direction) * -50px));
+    filter: blur(calc(var(--abs-offset) * 5px));
+    transition: all 0.3s ease-out;
+}
+
+@media (min-width: 768px) {
+    .card-container {
+        transform: rotateY(calc(var(--offset) * 50deg))
+            scaleY(calc(1 + var(--abs-offset) * -0.4))
+            translateZ(calc(var(--abs-offset) * -30rem))
+            translateX(calc(var(--direction) * -120px));
+    }
+}
+
+@media (min-width: 1024px) {
+    .card-container {
+        transform: rotateY(calc(var(--offset) * 50deg))
+            scaleY(calc(1 + var(--abs-offset) * -0.4))
+            translateZ(calc(var(--abs-offset) * -30rem))
+            translateX(calc(var(--direction) * -80px));
+    }
+}
+
+.card {
+    background-color: hsl(280deg, 40%, calc(100% - var(--abs-offset) * 50%));
+    transition: all 0.3s ease-out;
+}
