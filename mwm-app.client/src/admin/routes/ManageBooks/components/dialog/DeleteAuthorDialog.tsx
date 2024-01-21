@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useDeleteAuthorMutation } from "@/apiService/apiService";
+import { useRevalidate } from "@/hooks/useRevalide";
+import { useToast } from "@/components/ui/use-toast";
 
 type DeleteAuthorDialogProps = {
     author: Author | Author[];
@@ -18,7 +21,10 @@ type DeleteAuthorDialogProps = {
 
 export default function DeleteAuthorDialog(props: DeleteAuthorDialogProps) {
     const { author } = props;
+    const { toast } = useToast();
+    const revalidate = useRevalidate();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [deleteAuthor, { isLoading }] = useDeleteAuthorMutation();
 
     function onOpenDialog() {
         setIsDialogOpen(true);
@@ -29,7 +35,22 @@ export default function DeleteAuthorDialog(props: DeleteAuthorDialogProps) {
     }
 
     function onDelete() {
-        onCloseDialog();
+        if (Array.isArray(author)) {
+            // Chunk delete
+        } else {
+            deleteAuthor(author.id)
+                .unwrap()
+                .then((_) => {
+                    revalidate();
+                    onCloseDialog();
+                })
+                .catch((err) => {
+                    toast({
+                        variant: "destructive",
+                        title: "Failed to delete author, please try again later.",
+                    });
+                });
+        }
     }
 
     return (
@@ -65,13 +86,17 @@ export default function DeleteAuthorDialog(props: DeleteAuthorDialogProps) {
                     </DialogTitle>
                     <DialogDescription>
                         {!Array.isArray(author)
-                            ? `By doing so, all ${author?.fullName} books will no longer
-                            have author.`
-                            : "By doing so, all the books written by these authors will no longer have author."}
+                            ? `By doing so, all ${author?.fullName} books will also be deleted.`
+                            : "By doing so, all the books written by these authors will also be deleted."}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="defaultAlert" onClick={onDelete}>
+                    <Button
+                        variant="defaultAlert"
+                        onClick={onDelete}
+                        isLoading={isLoading}
+                        disabled={isLoading}
+                    >
                         Yes
                     </Button>
                 </DialogFooter>

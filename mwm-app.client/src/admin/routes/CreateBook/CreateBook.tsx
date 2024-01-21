@@ -3,17 +3,22 @@ import FileDropzone from "@/components/ui/fileDropzone";
 import { Form, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAppDispatch } from "@/lib/hooks";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { useCreateBookMutation } from "../../../apiService/apiService";
 import { getFileDownloadUrl } from "../../../utils/getFileDownloadUrl";
 import AuthorDropdownMenu from "../../components/AuthorDropdownMenu";
 import CategoryDropdownMenu from "../../components/CategoryDropdownMenu";
 import { BookPayload, BookValidator } from "./types";
+import { triggerShouldRevalidateManageBooks } from "@/admin/redux/routing/routingSlice";
 
 export default function CreateBook() {
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const [createBook, { isLoading }] = useCreateBookMutation();
     const [isUploadingFile, setIsUploadingFile] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState<any>(null);
@@ -58,13 +63,32 @@ export default function CreateBook() {
 
     async function onSubmit(data: BookPayload) {
         setIsUploadingFile(true);
-        const imageUrl = await getFileDownloadUrl("book-cover", data.title, selectedImageFile.file);
-        const previewUrl = selectedPreviewFile ? await getFileDownloadUrl("book-preview", data.title, selectedPreviewFile.file) : undefined;
-        const book = { ...data, authorId: data.author, categoryId: data.category, imageUrl: imageUrl, previewUrl: previewUrl };
-        console.log(book);
+        const imageUrl = await getFileDownloadUrl(
+            "book-cover",
+            data.title,
+            selectedImageFile.file
+        );
+        const previewUrl = selectedPreviewFile
+            ? await getFileDownloadUrl(
+                  "book-preview",
+                  data.title,
+                  selectedPreviewFile.file
+              )
+            : undefined;
+        const book = {
+            ...data,
+            authorId: data.author,
+            categoryId: data.category,
+            imageUrl: imageUrl,
+            previewUrl: previewUrl,
+        };
         setIsUploadingFile(false);
-        const res = await createBook(book).unwrap();
-        console.log(res);
+        createBook(book)
+            .unwrap()
+            .then((_) => {
+                dispatch(triggerShouldRevalidateManageBooks(true));
+                navigate(-1);
+            });
     }
 
     function onGenerateSlug() {
@@ -111,19 +135,12 @@ export default function CreateBook() {
                                         form.formState.errors.author
                                     )}
                                     errorMessage={
-                                        form.formState.errors
-                                            .author &&
-                                        form.formState.errors.author
-                                            .message
+                                        form.formState.errors.author &&
+                                        form.formState.errors.author.message
                                     }
                                     onValueChange={(value) => {
-                                        form.setValue(
-                                            "author",
-                                            value
-                                        );
-                                        form.clearErrors(
-                                            "author"
-                                        );
+                                        form.setValue("author", value);
+                                        form.clearErrors("author");
                                     }}
                                 />
                             </FormItem>
@@ -187,19 +204,12 @@ export default function CreateBook() {
                                         form.formState.errors.category
                                     )}
                                     errorMessage={
-                                        form.formState.errors
-                                            .category &&
-                                        form.formState.errors.category
-                                            .message
+                                        form.formState.errors.category &&
+                                        form.formState.errors.category.message
                                     }
                                     onValueChange={(value) => {
-                                        form.setValue(
-                                            "category",
-                                            value
-                                        );
-                                        form.clearErrors(
-                                            "category"
-                                        );
+                                        form.setValue("category", value);
+                                        form.clearErrors("category");
                                     }}
                                 />
                             </FormItem>

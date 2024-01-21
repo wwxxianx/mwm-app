@@ -44,10 +44,12 @@ export default function DeleteCategoryDialog(props: DeleteCategoryDialogProps) {
                     revalidate();
                     onCloseDialog();
                 })
-                .catch((err) => toast({
-                    variant: "destructive",
-                    title: `Failed to delete, please try again later.`,
-                }));
+                .catch((err) =>
+                    toast({
+                        variant: "destructive",
+                        title: `Failed to delete, please try again later.`,
+                    })
+                );
         }
     }
 
@@ -85,13 +87,17 @@ export default function DeleteCategoryDialog(props: DeleteCategoryDialogProps) {
                     </DialogTitle>
                     <DialogDescription>
                         {Array.isArray(category)
-                            ? "By doing so, all the books related to these categories will no longer have category."
-                            : `By doing so, all ${category?.category} books will no longer
-                            have category.`}
+                            ? "By doing so, all the books with these categories will also be deleted."
+                            : `By doing so, all ${category?.category} books will also be deleted.`}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="defaultAlert" onClick={onDelete} isLoading={isLoading} disabled={isLoading}>
+                    <Button
+                        variant="defaultAlert"
+                        onClick={onDelete}
+                        isLoading={isLoading}
+                        disabled={isLoading}
+                    >
                         Yes
                     </Button>
                 </DialogFooter>

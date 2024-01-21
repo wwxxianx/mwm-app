@@ -6,7 +6,9 @@ export const AuthorSchema = z.object({
         .string()
         .min(1, { message: "Category is required" })
         .max(100, { message: "Author name can't exceed 100 characters" }),
-    imageUrl: z.string().min(1, { message: "Author profile image is required" }),
+    imageUrl: z
+        .string()
+        .min(1, { message: "Author profile image is required" }),
 });
 
 export const UserSchema = z.object({
@@ -60,7 +62,7 @@ export const BookSchema = z.object({
         .min(1, { message: "Slug is required" })
         .max(50, { message: "Slug can't exceed 50 characters" }),
     imageUrl: z.string().min(1, { message: "Cover image is required" }),
-    previewUrl: z.string().optional(),
+    previewUrl: z.string().optional().nullable(),
     category: CategorySchema,
     author: AuthorSchema,
     price: z.number().nonnegative({ message: "Invalid price" }),

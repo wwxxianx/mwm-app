@@ -1,10 +1,12 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { RootState } from "../lib/reduxStore";
-import { AdminResponse, BookAPIPayload, UserResponse } from "./types";
 import { UserAuthPayload } from "@/user/routes/login/types";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+    AuthorPayload,
+    CategoryPayload,
+} from "../admin/routes/ManageBooks/types";
+import { RootState } from "../lib/reduxStore";
 import { Author, Book, Category } from "../types/dataType";
-import { BookPayload } from "../admin/routes/CreateBook/types";
-import { AuthorPayload, CategoryPayload } from "../admin/routes/ManageBooks/types";
+import { AdminResponse, BookAPIPayload, UserResponse } from "./types";
 
 export const api = createApi({
     reducerPath: "api",
@@ -41,7 +43,7 @@ export const api = createApi({
             query: (book) => ({
                 url: "Books",
                 method: "POST",
-                body: book
+                body: book,
             }),
         }),
         createBookCategory: builder.mutation<Category, CategoryPayload>({
@@ -55,20 +57,20 @@ export const api = createApi({
             query: () => "Books",
         }),
         getCategories: builder.query<Category[], void>({
-            query: () => "BookCategories"
+            query: () => "BookCategories",
         }),
         deleteBook: builder.mutation<any, string>({
             query: (id) => ({
                 url: `BookCategories/${id}`,
                 method: "DELETE",
-            })
+            }),
         }),
         updateCategory: builder.mutation<any, Category>({
             query: (category) => ({
                 url: `BookCategories/${category.id}`,
                 method: "PUT",
                 body: category,
-            })
+            }),
         }),
 
         // Author
@@ -80,16 +82,21 @@ export const api = createApi({
             }),
         }),
         getAuthors: builder.query<Author[], void>({
-            query: () => "Authors"
+            query: () => "Authors",
         }),
         updateAuthor: builder.mutation<any, Author>({
             query: (author) => ({
                 url: `Authors/${author.id}`,
                 method: "PUT",
                 body: author,
-            })
+            }),
         }),
-
+        deleteAuthor: builder.mutation<any, string>({
+            query: (id) => ({
+                url: `Authors/${id}`,
+                method: "DELETE",
+            }),
+        }),
 
         // Admin
         adminLogin: builder.mutation<AdminResponse, UserAuthPayload>({
@@ -130,4 +137,5 @@ export const {
     useCreateAuthorMutation,
     useGetAuthorsQuery,
     useUpdateAuthorMutation,
+    useDeleteAuthorMutation,
 } = api;

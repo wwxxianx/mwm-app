@@ -17,7 +17,7 @@ export default function ManageAuthors() {
     const authors = useLoaderData() as Author[];
 
     useEffect(() => {
-        console.log(authors)
+        console.log(authors);
     }, [authors]);
 
     return (
