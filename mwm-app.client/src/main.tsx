@@ -151,7 +151,7 @@ const router = createBrowserRouter([
                     {
                         path: "top-three-books",
                         element: <TopThreeBooks />,
-                        loader: topBooksLoader,
+                        // loader: topBooksLoader,
                     },
                     {
                         path: "editor-choice",
@@ -165,17 +165,17 @@ const router = createBrowserRouter([
                             {
                                 path: "books",
                                 element: <ManageBooks />,
-                                loader: booksLoader,
+                                // loader: booksLoader,
                             },
                             {
                                 path: "authors",
                                 element: <ManageAuthors />,
-                                loader: authorsLoader,
+                                // loader: authorsLoader,
                             },
                             {
                                 path: "categories",
                                 element: <ManageCategories />,
-                                loader: categoriesLoader,
+                                // loader: categoriesLoader,
                             },
                         ],
                     },

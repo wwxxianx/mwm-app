@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mwm_app.Server.Data;
 
@@ -11,9 +12,11 @@ using mwm_app.Server.Data;
 namespace mwm_app.Server.Migrations
 {
     [DbContext(typeof(MainDBContext))]
-    partial class MainDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240122131554_ChangeUserIdToString")]
+    partial class ChangeUserIdToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,7 +141,52 @@ namespace mwm_app.Server.Migrations
                     b.ToTable("BookCategory", "AdminSchema");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.Customer", b =>
+            modelBuilder.Entity("mwm_app.Server.Models.Favourite", b =>
+                {
+                    b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BookID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BookID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Favourite", "AdminSchema");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.TopBook", b =>
+                {
+                    b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BookID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Ranking")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BookID");
+
+                    b.ToTable("TopBook", "AdminSchema");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.User", b =>
                 {
                     b.Property<string>("ID")
                         .ValueGeneratedOnAdd()
@@ -164,53 +212,7 @@ namespace mwm_app.Server.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Customer", "AdminSchema");
-                });
-
-            modelBuilder.Entity("mwm_app.Server.Models.Favourite", b =>
-                {
-                    b.Property<string>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BookID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("BookID");
-
-                    b.HasIndex("CustomerID");
-
-                    b.ToTable("Favourite", "AdminSchema");
-                });
-
-            modelBuilder.Entity("mwm_app.Server.Models.TopBook", b =>
-                {
-                    b.Property<string>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BookID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Ranking")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("BookID");
-
-                    b.ToTable("TopBook", "AdminSchema");
+                    b.ToTable("User", "AdminSchema");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.Book", b =>
@@ -240,15 +242,13 @@ namespace mwm_app.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("mwm_app.Server.Models.Customer", "Customer")
+                    b.HasOne("mwm_app.Server.Models.User", "User")
                         .WithMany("FavouriteBooks")
-                        .HasForeignKey("CustomerID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserID");
 
                     b.Navigation("Book");
 
-                    b.Navigation("Customer");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.TopBook", b =>
@@ -272,7 +272,7 @@ namespace mwm_app.Server.Migrations
                     b.Navigation("Books");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.Customer", b =>
+            modelBuilder.Entity("mwm_app.Server.Models.User", b =>
                 {
                     b.Navigation("FavouriteBooks");
                 });

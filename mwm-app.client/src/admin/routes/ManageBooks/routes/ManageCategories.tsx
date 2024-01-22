@@ -1,8 +1,6 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { useLoaderData } from "react-router-dom";
-import { api } from "../../../../apiService/apiService";
+import { api, useGetCategoriesQuery } from "../../../../apiService/apiService";
 import { store } from "../../../../lib/reduxStore";
-import { Category } from "../../../../types/dataType";
 import { categoryDataTableColumns } from "../components/CategoryDataTableColumns";
 import { DataTable } from "../components/DataTable";
 
@@ -13,12 +11,12 @@ async function loader() {
 }
 
 export default function ManageCategories() {
-    const categories = useLoaderData() as Category[];
+    const { data: categories } = useGetCategoriesQuery();
 
     return (
         <TabsContent value="category">
             <DataTable
-                data={categories}
+                data={categories ?? []}
                 columns={categoryDataTableColumns}
                 type="category"
             />
@@ -27,3 +25,4 @@ export default function ManageCategories() {
 }
 
 export { loader as categoriesLoader };
+

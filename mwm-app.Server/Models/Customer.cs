@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace mwm_app.Server.Models
 {
-    public class User
+    public class Customer
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
+        public string ID { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
 

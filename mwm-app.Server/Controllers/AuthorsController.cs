@@ -46,7 +46,7 @@ namespace mwm_app.Server.Controllers
         // PUT: api/Authors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAuthor(string id, AuthorDTO authorDTO)
+        public async Task<ActionResult<ICollection<Author>>> PutAuthor(string id, AuthorDTO authorDTO)
         {
             if (id != authorDTO.ID)
             {
@@ -73,13 +73,15 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return NoContent();
+            var authors = await _context.Authors.ToListAsync();
+
+            return authors;
         }
 
         // POST: api/Authors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Author>> PostAuthor(AuthorDTO authorDTO)
+        public async Task<ActionResult<ICollection<Author>>> PostAuthor(AuthorDTO authorDTO)
         {
             var author = new Author
             {
@@ -88,13 +90,14 @@ namespace mwm_app.Server.Controllers
             };
             _context.Authors.Add(author);
             await _context.SaveChangesAsync();
+            var authors = await _context.Authors.ToListAsync();
 
-            return CreatedAtAction("GetAuthor", new { id = author.ID }, author);
+            return CreatedAtAction("GetAuthor", new { id = author.ID }, authors);
         }
 
         // DELETE: api/Authors/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAuthor(string id)
+        public async Task<ActionResult<ICollection<Author>>> DeleteAuthor(string id)
         {
             var author = await _context.Authors.FindAsync(id);
             if (author == null)
@@ -104,8 +107,9 @@ namespace mwm_app.Server.Controllers
 
             _context.Authors.Remove(author);
             await _context.SaveChangesAsync();
+            var authors = await _context.Authors.ToListAsync();
 
-            return NoContent();
+            return authors;
         }
 
         private bool AuthorExists(string id)

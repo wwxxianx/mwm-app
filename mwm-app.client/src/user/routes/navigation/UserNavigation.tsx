@@ -16,7 +16,10 @@ import HomepageCart from "./components/HomepageCart";
 import MobileNavigation from "./components/MobileNavigation";
 import UserDropdownMenu from "./components/UserDropdownMenu";
 import { Button } from "@/components/ui/button";
-import { useLoginMutation, useRegisterMutation } from "../../../apiService/apiService";
+import {
+    useLoginMutation,
+    useRegisterMutation,
+} from "../../../apiService/apiService";
 import { useAppDispatch, useAppSelector } from "../../../lib/hooks";
 import { useEffect } from "react";
 import { initUser } from "../../redux/userSlice";
@@ -35,26 +38,30 @@ const topCategories = [
 
 export default function UserNavigation() {
     const dispatch = useAppDispatch();
-    const isLoggedIn = useAppSelector(state => state.user.isLoggedIn);
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const user = useAppSelector((state) => state.user.user);
+    const token = useAppSelector((state) => state.user.token);
     const [register] = useRegisterMutation();
     const [login] = useLoginMutation();
+
     async function testFn(e) {
-        const user = {
-            email: "user1@gmail.com",
-            password: "testing123",
-        };
+        // const user = {
+        //     email: "user3@gmail.com",
+        //     password: "testing123",
+        // };
 
-        const response = await login(user).unwrap();
-        console.log(response);
+        // const response = await login(user).unwrap();
+        // console.log(response);
 
-        const testing = await fetch("api/Users/testing", {
-            headers: {
-                Authorization: `Bearer ${response.token}`
-            }
-        });
-        console.log(testing);
+        // const testing = await fetch("api/Users/testing", {
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // });
+        // console.log(testing);
         //const response = await register(user).unwrap();
         //console.log('resgiter res:', response);
+        
     }
 
     useEffect(() => {
@@ -65,6 +72,7 @@ export default function UserNavigation() {
     return (
         <div className="h-screen bg-turquoise-50 font-playfair flex flex-col">
             <div className="container relative flex items-center justify-center pt-6">
+                <button onClick={testFn}>CLICK</button>
                 <Link to={"/home"} className="md:hidden">
                     <img
                         src={LogoImageUrl}
@@ -75,9 +83,6 @@ export default function UserNavigation() {
                 </Link>
                 <NavigationMenu className="hidden md:flex justify-center md:justify-start min-w-full items-center px-4">
                     <NavigationMenuList>
-                        <Button onClick={testFn}>
-                            Click
-                        </Button>
                         <NavigationMenuItem className="mr-4">
                             <NavLink to={"/"}>
                                 <img
@@ -250,7 +255,7 @@ export default function UserNavigation() {
                 </NavigationMenu>
                 <MobileNavigation />
             </div>
-            
+
             <main>
                 <Outlet />
             </main>

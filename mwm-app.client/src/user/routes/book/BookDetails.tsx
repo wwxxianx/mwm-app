@@ -7,25 +7,47 @@ import { EyeIcon, HeartIcon, ShoppingBagIcon } from "@heroicons/react/24/solid";
 import { LibraryBig } from "lucide-react";
 import { useLoaderData } from "react-router-dom";
 import BookPreview from "./components/BookPreview";
+import { store } from "@/lib/reduxStore";
+import { api, useGetUserFavouritesQuery } from "@/apiService/apiService";
+import { useEffect } from "react";
+import { useAppSelector } from "@/lib/hooks";
 
-async function loader() {
+async function loader({ params }) {
+    const promise = store.dispatch(
+        api.endpoints.getBookById.initiate(params.bookId)
+    );
+    const res = await promise;
+    return res.data;
     return books[1];
 }
 
 export default function BookDetails() {
+    const user = useAppSelector((state) => state.user.user);
+    const favourites = useGetUserFavouritesQuery(user?.id);
     const bookData = useLoaderData() as Book;
+
+    useEffect(() => {
+        console.log(favourites);
+    }, []);
 
     return (
         <div>
             <div className="md:border-y-[1px] border-client-primary-button md:my-4 md:grid grid-cols-2">
                 <div className="md:border-r-[1px] border-client-primary-button pb-12">
-                    <div className="flex justify-center">
+                    <div className="flex flex-col gap-2 items-center max-w-[240px] mx-auto mt-10">
+                        <Button
+                            size="sm"
+                            variant="outlineClient"
+                            className="aspect-square p-0 group m-0 w-fit ml-auto"
+                        >
+                            <HeartIcon className="w-5 text-client-primary-button group-hover:text-white" />
+                        </Button>
                         <BookCover
                             imageUrl={bookData.imageUrl}
-                            className="max-w-[146px] mt-12 shadow-lg"
+                            className="max-w-[240px] shadow-lg"
                         />
                     </div>
-                    <div className="relative flex flex-col items-center gap-2 mt-6 max-w-[240px] mx-auto">
+                    <div className="flex flex-col items-center gap-2 mt-6 max-w-[240px] mx-auto">
                         <Button
                             variant="outlineClient"
                             className="gap-2 text-sm group w-full max-w-[240px]"
@@ -34,13 +56,6 @@ export default function BookDetails() {
                             <span>Add to Cart</span>
                         </Button>
                         <BookPreview />
-                        <Button
-                            size="sm"
-                            variant="outlineClient"
-                            className="absolute top-0 right-0 translate-y-[-250px] aspect-square p-0 gap-2 text-sm group"
-                        >
-                            <HeartIcon className="w-5 text-client-primary-button group-hover:text-white" />
-                        </Button>
                     </div>
                 </div>
 

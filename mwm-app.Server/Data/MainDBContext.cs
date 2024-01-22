@@ -9,7 +9,7 @@ namespace mwm_app.Server.Data
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<Customer> Customers { get; set; }
         public DbSet<Book> Books { get; set; }
         public DbSet<Favourite> Favourites { get; set; }
         public DbSet<Admin> Admins { get; set; }
@@ -21,7 +21,7 @@ namespace mwm_app.Server.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("AdminSchema");
-            modelBuilder.Entity<User>().ToTable("User");
+            modelBuilder.Entity<Customer>().ToTable("Customer");
             modelBuilder.Entity<Book>().ToTable("Book");
             modelBuilder.Entity<Favourite>().ToTable("Favourite");
             modelBuilder.Entity<Admin>().ToTable("Admin");

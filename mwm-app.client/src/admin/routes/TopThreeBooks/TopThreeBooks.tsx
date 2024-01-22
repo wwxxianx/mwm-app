@@ -1,15 +1,16 @@
 import BookDropdownMenu from "@/admin/components/BookDropdownMenu";
-import { api, useUpdateTopBooksMutation } from "@/apiService/apiService";
+import {
+    api,
+    useGetTopBooksQuery,
+    useUpdateTopBooksMutation,
+} from "@/apiService/apiService";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem } from "@/components/ui/form";
-import { useRevalidate } from "@/hooks/useRevalide";
 import { store } from "@/lib/reduxStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useLoaderData } from "react-router-dom";
 import {
-    TopBook,
     TopBookRequest,
     TopThreeBooksPayload,
     TopThreeBooksValidator,
@@ -23,8 +24,7 @@ async function loader() {
 
 export default function TopThreeBooks() {
     const [updateTopBooks, { isLoading }] = useUpdateTopBooksMutation();
-    const revalidate = useRevalidate();
-    const topBooks = useLoaderData() as TopBook[];
+    const { data: topBooks } = useGetTopBooksQuery();
     const form = useForm<TopThreeBooksPayload>({
         resolver: zodResolver(TopThreeBooksValidator),
         defaultValues: {
@@ -38,15 +38,15 @@ export default function TopThreeBooks() {
         if (topBooks) {
             form.setValue(
                 "first",
-                topBooks.find((b) => b.ranking === 1)!.book!.id!
+                topBooks.find((b) => b.ranking === 1)?.book?.id
             );
             form.setValue(
                 "second",
-                topBooks.find((b) => b.ranking === 2)!.book!.id!
+                topBooks.find((b) => b.ranking === 2)?.book?.id
             );
             form.setValue(
                 "third",
-                topBooks.find((b) => b.ranking === 3)!.book!.id!
+                topBooks.find((b) => b.ranking === 3)?.book?.id
             );
         }
     }, []);
@@ -69,7 +69,7 @@ export default function TopThreeBooks() {
         updateTopBooks(topBooks)
             .unwrap()
             .then((res) => {
-                revalidate();
+                // revalidate();
             })
             .catch((err) => {
                 console.log(err);

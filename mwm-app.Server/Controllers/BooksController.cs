@@ -36,16 +36,19 @@ namespace mwm_app.Server.Controllers
 
         // GET: api/Books/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetBook(string id)
+        public async Task<ActionResult<BookResponseDTO>> GetBook(string id)
         {
-            var book = await _context.Books.FindAsync(id);
+            var book = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .FirstOrDefaultAsync(b => b.ID == id);
 
             if (book == null)
             {
                 return NotFound();
             }
 
-            return book;
+            return BookResponseDTO.CreateFromBook(book);
         }
 
         // PUT: api/Books/5
@@ -128,8 +131,14 @@ namespace mwm_app.Server.Controllers
                     throw;
                 }
             }
+            
+            var books = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Select(b => BookResponseDTO.CreateFromBook(b))
+                .ToListAsync();
 
-            return CreatedAtAction("GetBook", new { id = book.ID }, book);
+            return CreatedAtAction("GetBook", new { id = book.ID }, books);
         }
 
         // DELETE: api/Books/5

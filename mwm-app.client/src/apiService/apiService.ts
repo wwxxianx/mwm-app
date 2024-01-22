@@ -1,3 +1,4 @@
+import { TopBook, TopBookRequest } from "@/admin/routes/TopThreeBooks/types";
 import { UserAuthPayload } from "@/user/routes/login/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
@@ -6,9 +7,13 @@ import {
 } from "../admin/routes/ManageBooks/types";
 import { RootState } from "../lib/reduxStore";
 import { Author, Book, Category } from "../types/dataType";
-import { AdminResponse, BookAPIPayload, UserResponse } from "./types";
-import { build } from "vite";
-import { TopBook, TopBookRequest } from "@/admin/routes/TopThreeBooks/types";
+import {
+    AdminResponse,
+    BookAPIPayload,
+    UserFavouriteRequest,
+    UserFavouriteResponse,
+    UserResponse,
+} from "./types";
 
 export const api = createApi({
     reducerPath: "api",
@@ -40,6 +45,24 @@ export const api = createApi({
             }),
         }),
 
+        // User Favourite
+        createUserFavourite: builder.mutation<
+            UserFavouriteResponse,
+            UserFavouriteRequest
+        >({
+            query: (favourite) => ({
+                url: "Favourites",
+                method: "POST",
+                body: favourite,
+            }),
+        }),
+        getUserFavourites: builder.query<UserFavouriteRequest, string | undefined>({
+            query: (userId) => ({
+                url: `Favourites/${userId}`,
+                method: "GET",
+            }),
+        }),
+
         // Book
         createBook: builder.mutation<Book, BookAPIPayload>({
             query: (book) => ({
@@ -47,25 +70,81 @@ export const api = createApi({
                 method: "POST",
                 body: book,
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedBooks } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getBooks",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedBooks);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced books error: ", err);
+                }
+            },
         }),
+        getBooks: builder.query<Book[], void>({
+            query: () => "Books",
+        }),
+        getBookById: builder.query<Book, string>({
+            query: (bookId) => ({
+                url: `Books/${bookId}`,
+                method: "GET",
+            }),
+        }),
+
+        // Book Category
         createBookCategory: builder.mutation<Category, CategoryPayload>({
             query: (bookCategory) => ({
                 url: "BookCategories",
                 method: "POST",
                 body: bookCategory,
             }),
-        }),
-        getBooks: builder.query<Book[], void>({
-            query: () => "Books",
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedCategories } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getCategories",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedCategories);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced categories error: ", err);
+                }
+            },
         }),
         getCategories: builder.query<Category[], void>({
             query: () => "BookCategories",
         }),
-        deleteBook: builder.mutation<any, string>({
+        deleteCategory: builder.mutation<any, string>({
             query: (id) => ({
                 url: `BookCategories/${id}`,
                 method: "DELETE",
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedCategories } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getCategories",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedCategories);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced categories error: ", err);
+                }
+            },
         }),
         updateCategory: builder.mutation<any, Category>({
             query: (category) => ({
@@ -73,13 +152,47 @@ export const api = createApi({
                 method: "PUT",
                 body: category,
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedCategories } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getCategories",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedCategories);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced categories error: ", err);
+                }
+            },
         }),
+
+        // Top Books
         updateTopBooks: builder.mutation<any, TopBookRequest[]>({
             query: (topBooks) => ({
                 url: "TopBooks",
                 method: "POST",
                 body: topBooks,
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedTopBooks } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getTopBooks",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedTopBooks);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced top books error: ", err);
+                }
+            },
         }),
         getTopBooks: builder.query<TopBook[], void>({
             query: () => "TopBooks",
@@ -92,6 +205,23 @@ export const api = createApi({
                 method: "POST",
                 body: author,
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedAuthors } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getAuthors",
+                            void 0,
+                            (draft) => {
+                                console.log("draft:", draft);
+                                Object.assign(draft, updatedAuthors);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced authors error: ", err);
+                }
+            },
         }),
         getAuthors: builder.query<Author[], void>({
             query: () => "Authors",
@@ -102,12 +232,44 @@ export const api = createApi({
                 method: "PUT",
                 body: author,
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedAuthors } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getAuthors",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedAuthors);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced authors error: ", err);
+                }
+            },
         }),
         deleteAuthor: builder.mutation<any, string>({
             query: (id) => ({
                 url: `Authors/${id}`,
                 method: "DELETE",
             }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedAuthors } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData(
+                            "getAuthors",
+                            void 0,
+                            (draft) => {
+                                Object.assign(draft, updatedAuthors);
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("update cahced authors error: ", err);
+                }
+            },
         }),
 
         // Admin
@@ -132,6 +294,8 @@ export const {
     // User
     useLoginMutation,
     useRegisterMutation,
+    useGetUserFavouritesQuery,
+    useCreateUserFavouriteMutation,
 
     // Admin
     useAdminLoginMutation,
@@ -142,10 +306,11 @@ export const {
     useCreateBookCategoryMutation,
     useGetCategoriesQuery,
     useGetBooksQuery,
-    useDeleteBookMutation,
+    useDeleteCategoryMutation,
     useUpdateCategoryMutation,
     useUpdateTopBooksMutation,
     useGetTopBooksQuery,
+    useGetBookByIdQuery,
 
     // Author
     useCreateAuthorMutation,

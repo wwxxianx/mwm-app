@@ -86,7 +86,7 @@ export default function CreateBook() {
         createBook(book)
             .unwrap()
             .then((_) => {
-                dispatch(triggerShouldRevalidateManageBooks(true));
+                // dispatch(triggerShouldRevalidateManageBooks(true));
                 navigate(-1);
             });
     }

@@ -46,7 +46,7 @@ namespace mwm_app.Server.Controllers
         // PUT: api/BookCategories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBookCategory(string id, BookCategoryDTO bookCategoryDTO)
+        public async Task<ActionResult<ICollection<BookCategory>>> PutBookCategory(string id, BookCategoryDTO bookCategoryDTO)
         {
             if (id != bookCategoryDTO.ID)
             {
@@ -72,13 +72,13 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return NoContent();
+            return await _context.BookCategories.ToListAsync();
         }
 
         // POST: api/BookCategories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BookCategory>> PostBookCategory(BookCategoryDTO bookCategoryDTO)
+        public async Task<ActionResult<ICollection<BookCategory>>> PostBookCategory(BookCategoryDTO bookCategoryDTO)
         {
             var bookCategory = new BookCategory
             {
@@ -102,12 +102,13 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return CreatedAtAction("GetBookCategory", new { id = bookCategory.ID }, bookCategory);
+            var bookCategories = await _context.BookCategories.ToListAsync();
+            return CreatedAtAction("GetBookCategory", new { id = bookCategory.ID }, bookCategories);
         }
 
         // DELETE: api/BookCategories/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBookCategory(string id)
+        public async Task<ActionResult<ICollection<BookCategory>>> DeleteBookCategory(string id)
         {
             var bookCategory = await _context.BookCategories.FindAsync(id);
             if (bookCategory == null)
@@ -117,8 +118,7 @@ namespace mwm_app.Server.Controllers
 
             _context.BookCategories.Remove(bookCategory);
             await _context.SaveChangesAsync();
-            return StatusCode(200);
-            return Ok();
+            return await _context.BookCategories.ToListAsync();
         }
 
         private bool BookCategoryExists(string id)

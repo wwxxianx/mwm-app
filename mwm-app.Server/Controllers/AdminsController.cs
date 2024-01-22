@@ -73,19 +73,19 @@ namespace mwm_app.Server.Controllers
 
         // POST: api/Admins/register
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser(AuthPayload payload)
-        {
-            // Perform user registration logic, such as validation and saving to the database
-            var newUser = new User();
-            newUser.Email = payload.Email;
-            newUser.Password = payload.Password;
-            newUser.FullName = payload.Email.Split("@").First();
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
+        // public async Task<ActionResult<Customer>> RegisterUser(AuthPayload payload)
+        // {
+        //     // Perform user registration logic, such as validation and saving to the database
+        //     var newUser = new Customer();
+        //     newUser.Email = payload.Email;
+        //     newUser.Password = payload.Password;
+        //     newUser.FullName = payload.Email.Split("@").First();
+        //     _context.Users.Add(newUser);
+        //     await _context.SaveChangesAsync();
 
-            // You can customize the response as needed
-            return CreatedAtAction("GetUser", new { id = newUser.ID }, newUser);
-        }
+        //     // You can customize the response as needed
+        //     return CreatedAtAction("GetUser", new { id = newUser.ID }, newUser);
+        // }
 
         // GET: api/Admins
         [HttpGet]

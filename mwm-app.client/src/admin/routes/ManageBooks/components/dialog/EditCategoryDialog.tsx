@@ -16,7 +16,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUpdateCategoryMutation } from "../../../../../apiService/apiService";
 import { useToast } from "../../../../../components/ui/use-toast";
-import { useRevalidate } from "../../../../../hooks/useRevalide";
 import { CategoryPayload, CategoryValidator } from "../../types";
 
 type EditCategoryDialogProps = {
@@ -49,7 +48,6 @@ export default function EditCategoryDialog(props: EditCategoryDialogProps) {
     const { category } = props;
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { toast } = useToast();
-    const revalidate = useRevalidate();
     const [updateCategory, { isLoading }] = useUpdateCategoryMutation();
     const form = useForm({
         resolver: zodResolver(CategoryValidator),
@@ -82,13 +80,14 @@ export default function EditCategoryDialog(props: EditCategoryDialogProps) {
         updateCategory(categoryToUpdate)
             .unwrap()
             .then((_) => {
-                revalidate();
                 onCloseDialog();
             })
-            .catch((err) => toast({
-                variant: "destructive",
-                title: `Failed to update, please try again later.`,
-            }));
+            .catch((err) =>
+                toast({
+                    variant: "destructive",
+                    title: `Failed to update, please try again later.`,
+                })
+            );
     }
 
     return (
@@ -103,9 +102,7 @@ export default function EditCategoryDialog(props: EditCategoryDialogProps) {
                 onCloseDialog={onCloseDialog}
             >
                 <DialogHeader>
-                    <DialogTitle>
-                        Edit Category
-                    </DialogTitle>
+                    <DialogTitle>Edit Category</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form
@@ -154,7 +151,11 @@ export default function EditCategoryDialog(props: EditCategoryDialogProps) {
                                 </FormItem>
                             )}
                         />
-                        <Button className="w-fit ml-auto" isLoading={isLoading} disabled={isLoading} >
+                        <Button
+                            className="w-fit ml-auto"
+                            isLoading={isLoading}
+                            disabled={isLoading}
+                        >
                             Save Changes
                         </Button>
                     </form>

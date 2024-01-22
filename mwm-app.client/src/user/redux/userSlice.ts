@@ -39,8 +39,8 @@ export const userSlice = createSlice({
                 // TODO: Reassign token
                 return;
             }
-            state.token = token;
-        }
+            state.token = JSON.parse(token);
+        },
     },
     extraReducers: (builder) => {
         builder.addMatcher(
@@ -60,7 +60,7 @@ export const userSlice = createSlice({
                 state.isLoggedIn = true;
                 storeUserProfile(payload.user, payload.token);
             }
-        )
+        );
     },
 });
 

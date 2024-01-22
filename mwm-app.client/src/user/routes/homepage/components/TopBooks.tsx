@@ -1,9 +1,12 @@
-import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
 import { textUnderline } from "@/utils/classUtilities";
 import Medal3Url from "@/assets/medal-3.png";
+import { useGetTopBooksQuery } from "@/apiService/apiService";
+import { Link } from "react-router-dom";
 
 export default function TopBooks() {
+    const { data: topBooks, isLoading } = useGetTopBooksQuery();
+
     return (
         <div className="bg-white pb-10 pt-4 mt-10 md:pt-12 md:pb-16 md:mt-20 lg:pt-16 lg:pb-24 lg:mt-24">
             <h4
@@ -16,12 +19,13 @@ export default function TopBooks() {
                 Top Books
             </h4>
             <div className="flex justify-center gap-4 md:gap-8 flex-wrap">
-                {books.slice(0, 3).map((book, index) => {
+                {topBooks?.slice(0, 3).map((value, index) => {
                     return (
-                        <div
+                        <Link
+                            to={`book/${value.book.id}`}
                             className={cn(
                                 { "w-full md:w-auto": index === 0 },
-                                "h-auto flex justify-center"
+                                "h-auto flex justify-center hover:scale-110 transition-all"
                             )}
                         >
                             <div
@@ -41,17 +45,17 @@ export default function TopBooks() {
                                 />
 
                                 <img
-                                    src={book.imageUrl}
+                                    src={value.book.imageUrl}
                                     className="max-w-[120px] md:max-w-[150px] lg:max-w-[200px]"
                                 />
                                 <p className="font-medium text-xs md:text-sm text-[#D2504E]">
                                     Fiction
                                 </p>
                                 <h2 className="font-medium text-sm md:text-base line-clamp-2">
-                                    {book.title}
+                                    {value.book.title}
                                 </h2>
                                 <h4 className="text-black/60 text-sm">
-                                    by {book.author.fullName}
+                                    by {value.book.author.fullName}
                                 </h4>
                                 <p
                                     className="text-black/60 text-xs md:text-sm mt-auto"
@@ -60,7 +64,7 @@ export default function TopBooks() {
                                     2,092 like this
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                     );
                 })}
             </div>

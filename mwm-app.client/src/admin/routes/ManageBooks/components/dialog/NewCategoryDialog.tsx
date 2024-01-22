@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateBookCategoryMutation } from "../../../../../apiService/apiService";
-import { useRevalidate } from "../../../../../hooks/useRevalide";
 import { CategoryPayload, CategoryValidator } from "../../types";
 
 // export async function action({ request, params }) {
@@ -41,7 +40,6 @@ import { CategoryPayload, CategoryValidator } from "../../types";
 
 export default function NewCategoryDialog(props) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const revalidate = useRevalidate();
     const [createBookCategory] = useCreateBookCategoryMutation();
     const form = useForm({
         resolver: zodResolver(CategoryValidator),
@@ -67,7 +65,6 @@ export default function NewCategoryDialog(props) {
         //};
         //// submit(newAdmin, { method: "put" });
         //authors.push(newAuthor);
-        revalidate();
         onCloseDialog();
     }
 
@@ -87,9 +84,7 @@ export default function NewCategoryDialog(props) {
                 onCloseDialog={onCloseDialog}
             >
                 <DialogHeader>
-                    <DialogTitle>
-                        New Category
-                    </DialogTitle>
+                    <DialogTitle>New Category</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form
@@ -138,9 +133,7 @@ export default function NewCategoryDialog(props) {
                                 </FormItem>
                             )}
                         />
-                        <Button className="w-fit ml-auto">
-                            Create
-                        </Button>
+                        <Button className="w-fit ml-auto">Create</Button>
                     </form>
                 </Form>
             </DialogContent>

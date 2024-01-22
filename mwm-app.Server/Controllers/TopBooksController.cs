@@ -111,7 +111,7 @@ namespace mwm_app.Server.Controllers
         // POST: api/TopBooks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<IActionResult> PostTopBook(ICollection<TopBookDTO> topBooksDTO)
+        public async Task<ActionResult<IEnumerable<TopBookResponseDTO>>> PostTopBook(ICollection<TopBookDTO> topBooksDTO)
         {
             // Remove all current data first
             var currentTopBooks = await _context.TopBooks.ToListAsync();
@@ -140,8 +140,41 @@ namespace mwm_app.Server.Controllers
             {
                 
             }
-
-            return Ok();
+            
+            return await _context.TopBooks
+                .Include(b => b.Book)
+                    .ThenInclude(b => b.Author)
+                .Select(b => new TopBookResponseDTO {
+                    ID = b.ID,
+                    Book = new BookResponseDTO
+                    {
+                        ID = b.Book.ID,
+                        Title = b.Book.Title,
+                        Slug = b.Book.Slug,
+                        ImageUrl = b.Book.ImageUrl,
+                        PreviewUrl = b.Book.PreviewUrl,
+                        Category = new BookCategoryDTO
+                        {
+                            ID = b.Book.Category.ID,
+                            Category = b.Book.Category.Category,
+                            IsTrending = b.Book.Category.IsTrending,
+                        },
+                        Author = new AuthorDTO
+                        {
+                            ID = b.Book.Author.ID,
+                            FullName = b.Book.Author.FullName,
+                            ImageUrl = b.Book.Author.ImageUrl,
+                        },
+                        Price = b.Book.Price,
+                        Description = b.Book.Description,
+                        SKU = b.Book.SKU,
+                        PublishedAt = b.Book.PublishedAt,
+                        CreatedAt = b.Book.CreatedAt,
+                        UpdatedAt = b.Book.UpdatedAt,
+                    },
+                    Ranking = b.Ranking
+                })
+                .ToListAsync();
         }
 
         // DELETE: api/TopBooks/5

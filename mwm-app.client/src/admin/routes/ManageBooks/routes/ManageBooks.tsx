@@ -1,14 +1,8 @@
-import { DataTable } from "../components/DataTable";
-import { bookDataTableColumns } from "../components/BookDataTableColumns";
 import { TabsContent } from "@/components/ui/tabs";
+import { api, useGetBooksQuery } from "../../../../apiService/apiService";
 import { store } from "../../../../lib/reduxStore";
-import { api } from "../../../../apiService/apiService";
-import { useLoaderData } from "react-router-dom";
-import { Book } from "../../../../types/dataType";
-import { useEffect } from "react";
-import { useRevalidate } from "@/hooks/useRevalide";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { triggerShouldRevalidateManageBooks } from "@/admin/redux/routing/routingSlice";
+import { bookDataTableColumns } from "../components/BookDataTableColumns";
+import { DataTable } from "../components/DataTable";
 
 async function loader() {
     const promise = store.dispatch(api.endpoints.getBooks.initiate());
@@ -17,24 +11,12 @@ async function loader() {
 }
 
 export default function ManageBooks() {
-    const books = useLoaderData() as Book[];
-    const dispatch = useAppDispatch();
-    const revalidate = useRevalidate();
-    const shouldRevalidate = useAppSelector(
-        (state) => state.routing.shouldRevalidateManageBooks
-    );
-
-    useEffect(() => {
-        if (shouldRevalidate) {
-            revalidate();
-            dispatch(triggerShouldRevalidateManageBooks(false));
-        }
-    }, [revalidate, shouldRevalidate]);
+    const { data: books } = useGetBooksQuery();
 
     return (
         <TabsContent value="book">
             <DataTable
-                data={books}
+                data={books ?? []}
                 columns={bookDataTableColumns}
                 type="book"
             />
@@ -43,3 +25,4 @@ export default function ManageBooks() {
 }
 
 export { loader as booksLoader };
+

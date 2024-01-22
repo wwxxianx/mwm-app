@@ -1,4 +1,3 @@
-import { Category } from "@/types/dataType";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -9,11 +8,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Category } from "@/types/dataType";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useDeleteBookMutation } from "../../../../../apiService/apiService";
+import { useDeleteCategoryMutation } from "../../../../../apiService/apiService";
 import { useToast } from "../../../../../components/ui/use-toast";
-import { useRevalidate } from "../../../../../hooks/useRevalide";
 
 type DeleteCategoryDialogProps = {
     category: Category | Category[];
@@ -22,8 +21,7 @@ type DeleteCategoryDialogProps = {
 export default function DeleteCategoryDialog(props: DeleteCategoryDialogProps) {
     const { category } = props;
     const { toast } = useToast();
-    const revalidate = useRevalidate();
-    const [deleteBook, { isLoading }] = useDeleteBookMutation();
+    const [deleteCategory, { isLoading }] = useDeleteCategoryMutation();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     function onOpenDialog() {
@@ -38,10 +36,9 @@ export default function DeleteCategoryDialog(props: DeleteCategoryDialogProps) {
         if (Array.isArray(category)) {
             // Chunk delete
         } else {
-            deleteBook(category.id)
+            deleteCategory(category.id)
                 .unwrap()
                 .then((_) => {
-                    revalidate();
                     onCloseDialog();
                 })
                 .catch((err) =>

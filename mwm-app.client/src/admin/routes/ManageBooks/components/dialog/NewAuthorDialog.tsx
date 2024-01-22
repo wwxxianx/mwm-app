@@ -14,8 +14,13 @@ import { PencilIcon, PlusSmallIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useCreateAuthorMutation, useUpdateAuthorMutation } from "../../../../../apiService/apiService";
-import FileDropzone, { FileState } from "../../../../../components/ui/fileDropzone";
+import {
+    useCreateAuthorMutation,
+    useUpdateAuthorMutation,
+} from "../../../../../apiService/apiService";
+import FileDropzone, {
+    FileState,
+} from "../../../../../components/ui/fileDropzone";
 import { useToast } from "../../../../../components/ui/use-toast";
 import { useRevalidate } from "../../../../../hooks/useRevalide";
 import { getFileDownloadUrl } from "../../../../../utils/getFileDownloadUrl";
@@ -53,8 +58,10 @@ export default function NewAuthorDialog(props: NewAuthorDialogProps) {
     const revalidate = useRevalidate();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUploadingFile, setIsUploadingFile] = useState(false);
-    const [createAuthor, { isLoading: isCreatingAuthor }] = useCreateAuthorMutation();
-    const [updateAuthor, { isLoading: isUpdatingAuthor }] = useUpdateAuthorMutation();
+    const [createAuthor, { isLoading: isCreatingAuthor }] =
+        useCreateAuthorMutation();
+    const [updateAuthor, { isLoading: isUpdatingAuthor }] =
+        useUpdateAuthorMutation();
     const [selectedImageFile, setSelectedImageFile] = useState<FileState>();
     const form = useForm({
         resolver: zodResolver(AuthorValidator),
@@ -97,11 +104,15 @@ export default function NewAuthorDialog(props: NewAuthorDialogProps) {
             if (selectedImageFile?.file) {
                 // Profile image changed
                 setIsUploadingFile(true);
-                const newProfileUrl = await getFileDownloadUrl("author-profile", data.fullName, selectedImageFile.file);
+                const newProfileUrl = await getFileDownloadUrl(
+                    "author-profile",
+                    data.fullName,
+                    selectedImageFile.file
+                );
                 if (!newProfileUrl) {
                     return toast({
                         variant: "destructive",
-                        title: "Upload author profile image failed, please try again later."
+                        title: "Upload author profile image failed, please try again later.",
                     });
                 }
                 profileImageUrl = newProfileUrl;
@@ -110,36 +121,40 @@ export default function NewAuthorDialog(props: NewAuthorDialogProps) {
             updateAuthor({ ...data, imageUrl: profileImageUrl, id: author.id })
                 .unwrap()
                 .then((_) => {
-                    revalidate();
+                    //revalidate();
                     onCloseDialog();
                 })
                 .catch((err) => {
                     toast({
                         variant: "destructive",
-                        title: "Update author failed, please try again later."
+                        title: "Update author failed, please try again later.",
                     });
                 });
         } else {
             // Create new author
             setIsUploadingFile(true);
-            const authorProfileUrl = await getFileDownloadUrl("author-profile", data.fullName, selectedImageFile!.file!);
+            const authorProfileUrl = await getFileDownloadUrl(
+                "author-profile",
+                data.fullName,
+                selectedImageFile!.file!
+            );
             if (!authorProfileUrl) {
                 return toast({
                     variant: "destructive",
-                    title: "Upload author profile image failed, please try again later."
+                    title: "Upload author profile image failed, please try again later.",
                 });
             }
             createAuthor({ ...data, imageUrl: authorProfileUrl })
                 .unwrap()
                 .then((_) => {
                     setIsUploadingFile(false);
-                    revalidate();
+                    //revalidate();
                     onCloseDialog();
                 })
                 .catch((err) => {
                     toast({
                         variant: "destructive",
-                        title: "Upload author failed, please try again later."
+                        title: "Upload author failed, please try again later.",
                     });
                 });
         }
@@ -208,13 +223,23 @@ export default function NewAuthorDialog(props: NewAuthorDialogProps) {
                             previewFileUrl={author?.imageUrl}
                             selectedFile={selectedImageFile}
                             error={Boolean(form.formState.errors.imageUrl)}
-                            errorMessage={form.formState.errors.imageUrl?.message}
+                            errorMessage={
+                                form.formState.errors.imageUrl?.message
+                            }
                             onDrop={onImageFileChange}
                         />
                         <Button
                             className="w-fit ml-auto"
-                            isLoading={isCreatingAuthor || isUpdatingAuthor || isUploadingFile}
-                            disabled={isCreatingAuthor || isUpdatingAuthor || isUploadingFile}
+                            isLoading={
+                                isCreatingAuthor ||
+                                isUpdatingAuthor ||
+                                isUploadingFile
+                            }
+                            disabled={
+                                isCreatingAuthor ||
+                                isUpdatingAuthor ||
+                                isUploadingFile
+                            }
                         >
                             {author ? "Save Changes" : "Create"}
                         </Button>
