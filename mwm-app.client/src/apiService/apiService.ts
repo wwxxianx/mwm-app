@@ -46,17 +46,14 @@ export const api = createApi({
         }),
 
         // User Favourite
-        createUserFavourite: builder.mutation<
-            UserFavouriteResponse,
-            UserFavouriteRequest
-        >({
+        createUserFavourite: builder.mutation<UserFavouriteResponse,UserFavouriteRequest>({
             query: (favourite) => ({
                 url: "Favourites",
                 method: "POST",
                 body: favourite,
             }),
         }),
-        getUserFavourites: builder.query<UserFavouriteRequest, string | undefined>({
+        getUserFavourites: builder.query<UserFavouriteResponse, string | undefined>({
             query: (userId) => ({
                 url: `Favourites/${userId}`,
                 method: "GET",

@@ -17,7 +17,7 @@ export type BookAPIPayload = BookPayload & {
 };
 
 export type UserFavouriteResponse = {
-    book: Book[];
+    books: Book[];
     createdAt: string;
 };
 

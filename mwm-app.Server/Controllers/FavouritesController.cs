@@ -117,11 +117,12 @@ namespace mwm_app.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<ICollection<Favourite>>> PostFavourite(FavouriteDTO favouriteDTO)
         {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.ID == favouriteDTO.BookID);
+            Console.WriteLine("Start updating");
+            var book = await _context.Books.FirstAsync(b => b.ID == favouriteDTO.BookID);
             if (book == null) {
                 return BadRequest();
             }
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ID == favouriteDTO.UserID);
+            var user = await _context.Users.FirstAsync(u => u.ID == favouriteDTO.UserID);
             if (user == null) {
                 return BadRequest();
             }
@@ -131,17 +132,20 @@ namespace mwm_app.Server.Controllers
                 User = user,
                 CreatedAt = DateTime.Now,
             };
+            Console.WriteLine(favourite);
             _context.Favourites.Add(favourite);
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException err)
             {
+                Console.WriteLine(err.Message);
+                Console.WriteLine("Something went wrong here");
                 if (BookExists(book.ID))
                 {
-                    return Conflict();
+                    // return Conflict();
                 }
                 else
                 {

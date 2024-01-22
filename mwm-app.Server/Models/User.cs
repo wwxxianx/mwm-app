@@ -17,6 +17,6 @@ namespace mwm_app.Server.Models
 
         public DateTime CreatedAt { get; set; }
 
-        public ICollection<Favourite> FavouriteBooks { get; set; }
+        public ICollection<Favourite>? FavouriteBooks { get; set; }
     }
 }

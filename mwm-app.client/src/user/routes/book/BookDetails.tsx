@@ -8,9 +8,14 @@ import { LibraryBig } from "lucide-react";
 import { useLoaderData } from "react-router-dom";
 import BookPreview from "./components/BookPreview";
 import { store } from "@/lib/reduxStore";
-import { api, useGetUserFavouritesQuery } from "@/apiService/apiService";
+import {
+    api,
+    useCreateUserFavouriteMutation,
+    useGetUserFavouritesQuery,
+} from "@/apiService/apiService";
 import { useEffect } from "react";
 import { useAppSelector } from "@/lib/hooks";
+import { cn } from "@/lib/utils";
 
 async function loader({ params }) {
     const promise = store.dispatch(
@@ -23,12 +28,20 @@ async function loader({ params }) {
 
 export default function BookDetails() {
     const user = useAppSelector((state) => state.user.user);
-    const favourites = useGetUserFavouritesQuery(user?.id);
+    const { data: favourites } = useGetUserFavouritesQuery(user?.id);
+    const [addToFavourite, { isLoading }] = useCreateUserFavouriteMutation();
     const bookData = useLoaderData() as Book;
+    let isCurrentBookInFavourite = favourites?.books?.filter(
+        (b) => b.id === bookData.id
+    );
 
-    useEffect(() => {
-        console.log(favourites);
-    }, []);
+    async function onTriggerFavourite() {
+        if (isCurrentBookInFavourite) {
+        } else {
+            const data = { bookId: bookData.id, userId: user?.id };
+            await addToFavourite(data).unwrap();
+        }
+    }
 
     return (
         <div>
@@ -38,9 +51,18 @@ export default function BookDetails() {
                         <Button
                             size="sm"
                             variant="outlineClient"
-                            className="aspect-square p-0 group m-0 w-fit ml-auto"
+                            className={cn(
+                                "aspect-square p-0 group m-0 w-fit ml-auto",
+                                { "bg-black/85": isCurrentBookInFavourite }
+                            )}
+                            onClick={onTriggerFavourite}
                         >
-                            <HeartIcon className="w-5 text-client-primary-button group-hover:text-white" />
+                            <HeartIcon
+                                className={cn(
+                                    "w-5 text-client-primary-button group-hover:text-white",
+                                    { "text-white": isCurrentBookInFavourite }
+                                )}
+                            />
                         </Button>
                         <BookCover
                             imageUrl={bookData.imageUrl}
