@@ -36,11 +36,11 @@ namespace mwm_app.Server.Controllers
 
         // GET: api/Favourites/5
         [HttpGet("{userId}")]
-        public async Task<ActionResult<ICollection<FavouriteResponseDTO>>> GetFavourites(string userId)
+        public async Task<ActionResult<ICollection<FavouriteResponseDTO>>> GetFavourites(int userId)
         {
             var favourites = await _context.Favourites
                 .Include(f => f.Book)
-                .Where(f => f.Customer.ID == userId)
+                .Where(f => f.User.ID == userId)
                 .Select(f => new FavouriteResponseDTO{
                     Book = new BookResponseDTO
                     {
@@ -121,14 +121,14 @@ namespace mwm_app.Server.Controllers
             if (book == null) {
                 return BadRequest();
             }
-            var user = await _context.Customers.FirstOrDefaultAsync(u => u.ID == favouriteDTO.UserID);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ID == favouriteDTO.UserID);
             if (user == null) {
                 return BadRequest();
             }
             var favourite = new Favourite
             {
                 Book = book,
-                Customer = user,
+                User = user,
                 CreatedAt = DateTime.Now,
             };
             _context.Favourites.Add(favourite);
@@ -151,7 +151,7 @@ namespace mwm_app.Server.Controllers
             
             var favourites = await _context.Favourites
                 .Include(f => f.Book)
-                .Where(f => f.Customer.ID == favouriteDTO.UserID)
+                .Where(f => f.User.ID == favouriteDTO.UserID)
                 .ToListAsync();
 
             return CreatedAtAction("GetBook", new { id = book.ID }, favourites);

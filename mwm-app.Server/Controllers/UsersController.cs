@@ -22,7 +22,7 @@ namespace mwm_app.Server.Controllers
     {
         public class LoginResponse
         {
-            public Customer User { get; set; }
+            public User User { get; set; }
 
             public string Token { get; set; }
         }
@@ -40,7 +40,7 @@ namespace mwm_app.Server.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login(AuthPayload payload)
         {
-            var user = _context.Customers.Where(u => u.Email == payload.Email && u.Password == payload.Password).First();
+            var user = _context.Users.Where(u => u.Email == payload.Email && u.Password == payload.Password).First();
             if (user == null)
             {
                 return BadRequest();
@@ -59,7 +59,7 @@ namespace mwm_app.Server.Controllers
             return currentUser.Claims.FirstOrDefault(c => c.Type == "ID").Value;
         }
 
-        private string GenerateJWT(Customer user)
+        private string GenerateJWT(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -85,11 +85,11 @@ namespace mwm_app.Server.Controllers
         public async Task<ActionResult<LoginResponse>> RegisterUser(AuthPayload payload)
         {
             // Perform user registration logic, such as validation and saving to the database
-            var newUser = new Customer();
+            var newUser = new User();
             newUser.Email = payload.Email;
             newUser.Password = payload.Password;
             newUser.FullName = payload.Email.Split("@").First();
-            _context.Customers.Add(newUser);
+            _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
             var jwtToken = GenerateJWT(newUser);
@@ -100,16 +100,16 @@ namespace mwm_app.Server.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Customers.ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Customer>> GetUser(int id)
+        public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.Customers.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
@@ -122,7 +122,7 @@ namespace mwm_app.Server.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(string id, Customer user)
+        public async Task<IActionResult> PutUser(int id, User user)
         {
             if (id != user.ID)
             {
@@ -153,9 +153,9 @@ namespace mwm_app.Server.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Customer>> PostUser(Customer user)
+        public async Task<ActionResult<User>> PostUser(User user)
         {
-            _context.Customers.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetUser", new { id = user.ID }, user);
@@ -165,21 +165,21 @@ namespace mwm_app.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Customers.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Customers.Remove(user);
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool UserExists(string id)
+        private bool UserExists(int id)
         {
-            return _context.Customers.Any(e => e.ID == id);
+            return _context.Users.Any(e => e.ID == id);
         }
     }
 }

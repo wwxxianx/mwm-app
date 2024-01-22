@@ -11,7 +11,7 @@ namespace mwm_app.Server.Models
 
         public DateTime CreatedAt { get; set; }
 
-        public Customer Customer { get; set; }
+        public User User { get; set; }
 
         public Book Book { get; set; }
     }

@@ -138,35 +138,6 @@ namespace mwm_app.Server.Migrations
                     b.ToTable("BookCategory", "AdminSchema");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.Customer", b =>
-                {
-                    b.Property<string>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Customer", "AdminSchema");
-                });
-
             modelBuilder.Entity("mwm_app.Server.Models.Favourite", b =>
                 {
                     b.Property<string>("ID")
@@ -180,15 +151,14 @@ namespace mwm_app.Server.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CustomerID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
 
                     b.HasIndex("BookID");
 
-                    b.HasIndex("CustomerID");
+                    b.HasIndex("UserID");
 
                     b.ToTable("Favourite", "AdminSchema");
                 });
@@ -211,6 +181,37 @@ namespace mwm_app.Server.Migrations
                     b.HasIndex("BookID");
 
                     b.ToTable("TopBook", "AdminSchema");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.User", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("User", "AdminSchema");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.Book", b =>
@@ -240,15 +241,15 @@ namespace mwm_app.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("mwm_app.Server.Models.Customer", "Customer")
+                    b.HasOne("mwm_app.Server.Models.User", "User")
                         .WithMany("FavouriteBooks")
-                        .HasForeignKey("CustomerID")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Book");
 
-                    b.Navigation("Customer");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.TopBook", b =>
@@ -272,7 +273,7 @@ namespace mwm_app.Server.Migrations
                     b.Navigation("Books");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.Customer", b =>
+            modelBuilder.Entity("mwm_app.Server.Models.User", b =>
                 {
                     b.Navigation("FavouriteBooks");
                 });
