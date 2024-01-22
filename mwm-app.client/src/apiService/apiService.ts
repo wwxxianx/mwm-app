@@ -7,6 +7,8 @@ import {
 import { RootState } from "../lib/reduxStore";
 import { Author, Book, Category } from "../types/dataType";
 import { AdminResponse, BookAPIPayload, UserResponse } from "./types";
+import { build } from "vite";
+import { TopBook, TopBookRequest } from "@/admin/routes/TopThreeBooks/types";
 
 export const api = createApi({
     reducerPath: "api",
@@ -72,6 +74,16 @@ export const api = createApi({
                 body: category,
             }),
         }),
+        updateTopBooks: builder.mutation<any, TopBookRequest[]>({
+            query: (topBooks) => ({
+                url: "TopBooks",
+                method: "POST",
+                body: topBooks,
+            }),
+        }),
+        getTopBooks: builder.query<TopBook[], void>({
+            query: () => "TopBooks",
+        }),
 
         // Author
         createAuthor: builder.mutation<Author, AuthorPayload>({
@@ -132,6 +144,8 @@ export const {
     useGetBooksQuery,
     useDeleteBookMutation,
     useUpdateCategoryMutation,
+    useUpdateTopBooksMutation,
+    useGetTopBooksQuery,
 
     // Author
     useCreateAuthorMutation,

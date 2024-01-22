@@ -30,29 +30,7 @@ namespace mwm_app.Server.Controllers
             return await _context.Books
                 .Include(b => b.Category)
                 .Include(b => b.Author)
-                .Select(b => new BookResponseDTO {
-                    ID = b.ID,
-                    Author = new AuthorDTO {
-                        ID = b.Author.ID,
-                        FullName = b.Author.FullName,
-                        ImageUrl = b.Author.ImageUrl,
-                    },
-                    Category = new BookCategoryDTO {
-                        ID = b.Category.ID,
-                        Category = b.Category.Category,
-                        IsTrending = b.Category.IsTrending,
-                    },
-                    Description = b.Description,
-                    ImageUrl = b.ImageUrl,
-                    PreviewUrl = b.PreviewUrl,
-                    Price = b.Price,
-                    SKU = b.SKU,
-                    Slug = b.Slug,
-                    Title = b.Title,
-                    PublishedAt = b.PublishedAt,
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt,
-                })
+                .Select(b => BookResponseDTO.CreateFromBook(b))
                 .ToListAsync();
         }
 

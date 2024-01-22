@@ -13,9 +13,15 @@ import ManageAdmins, {
 } from "./admin/routes/ManageAdmins/ManageAdmins";
 import { updateAdminAction } from "./admin/routes/ManageAdmins/components/UpdateAdminDialog";
 import ManageBooksNavRoot from "./admin/routes/ManageBooks/ManageBooksNavRoot";
-import ManageAuthors, { authorsLoader } from "./admin/routes/ManageBooks/routes/ManageAuthors";
-import ManageBooks, { booksLoader } from "./admin/routes/ManageBooks/routes/ManageBooks";
-import ManageCategories, { categoriesLoader } from "./admin/routes/ManageBooks/routes/ManageCategories";
+import ManageAuthors, {
+    authorsLoader,
+} from "./admin/routes/ManageBooks/routes/ManageAuthors";
+import ManageBooks, {
+    booksLoader,
+} from "./admin/routes/ManageBooks/routes/ManageBooks";
+import ManageCategories, {
+    categoriesLoader,
+} from "./admin/routes/ManageBooks/routes/ManageCategories";
 import ManageOrders from "./admin/routes/ManageOrders/ManageOrders";
 import ManageUsers, {
     usersLoader,
@@ -41,6 +47,10 @@ import ChangePasswordPage from "./user/routes/account/routes/changePassword/Chan
 import AddressPage from "./user/routes/account/routes/address/Address";
 import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
 import { initializeApp } from "firebase/app";
+import TopThreeBooks, {
+    topBooksLoader,
+} from "./admin/routes/TopThreeBooks/TopThreeBooks";
+import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
 
 const router = createBrowserRouter([
     {
@@ -139,6 +149,16 @@ const router = createBrowserRouter([
                         loader: usersLoader,
                     },
                     {
+                        path: "top-three-books",
+                        element: <TopThreeBooks />,
+                        loader: topBooksLoader,
+                    },
+                    {
+                        path: "editor-choice",
+                        element: <EditorChoice />,
+                        loader: usersLoader,
+                    },
+                    {
                         path: "manage-books",
                         element: <ManageBooksNavRoot />,
                         children: [
@@ -200,7 +220,7 @@ const firebaseConfig = {
     projectId: "linkedin-clone-225b2",
     storageBucket: "linkedin-clone-225b2.appspot.com",
     messagingSenderId: "72975579786",
-    appId: "1:72975579786:web:2c2f211b91280bb29fcb73"
+    appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
 };
 
 const app = initializeApp(firebaseConfig);

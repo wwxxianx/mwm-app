@@ -15,6 +15,7 @@ namespace mwm_app.Server.Data
         public DbSet<Admin> Admins { get; set; }
         public DbSet<BookCategory> BookCategories { get; set; }
         public DbSet<Author> Authors { get; set; }
+        public DbSet<TopBook> TopBooks { get; set; }
 
         // Change default table name
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +27,7 @@ namespace mwm_app.Server.Data
             modelBuilder.Entity<Admin>().ToTable("Admin");
             modelBuilder.Entity<BookCategory>().ToTable("BookCategory");
             modelBuilder.Entity<Author>().ToTable("Author");
+            modelBuilder.Entity<TopBook>().ToTable("TopBook");
         }
     }
 }

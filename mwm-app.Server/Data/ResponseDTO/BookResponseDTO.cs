@@ -1,5 +1,6 @@
 
 using mwm_app.Server.Data.DTO;
+using mwm_app.Server.Models;
 
 namespace mwm_app.Server.Data.ResponseDTO
 {
@@ -30,5 +31,35 @@ namespace mwm_app.Server.Data.ResponseDTO
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
+
+        public static BookResponseDTO CreateFromBook(Book book)
+        {
+            return new BookResponseDTO
+            {
+                ID = book.ID,
+                Title = book.Title,
+                Slug = book.Slug,
+                ImageUrl = book.ImageUrl,
+                PreviewUrl = book.PreviewUrl,
+                Category = new BookCategoryDTO
+                {
+                    ID = book.Category.ID,
+                    Category = book.Category.Category,
+                    IsTrending = book.Category.IsTrending,
+                },
+                Author = new AuthorDTO
+                {
+                    ID = book.Author.ID,
+                    FullName = book.Author.FullName,
+                    ImageUrl = book.Author.ImageUrl,
+                },
+                Price = book.Price,
+                Description = book.Description,
+                SKU = book.SKU,
+                PublishedAt = book.PublishedAt,
+                CreatedAt = book.CreatedAt,
+                UpdatedAt = book.UpdatedAt,
+            };
+        }
     }
 }

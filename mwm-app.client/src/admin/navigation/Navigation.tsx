@@ -26,7 +26,7 @@ export default function AdminNavBar() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const navItems = [
+    const manageNavItems = [
         {
             route: "manage-users",
             label: "Users",
@@ -48,6 +48,16 @@ export default function AdminNavBar() {
             icon: UserRoundCog,
         },
     ];
+    const specialContentNavItems = [
+        {
+            route: "top-three-books",
+            label: "Top Three Books",
+        },
+        {
+            route: "editor-choice",
+            label: "Editor Choice",
+        },
+    ]
 
     function handleLogout() {
         dispatch(adminLogout());
@@ -119,7 +129,7 @@ export default function AdminNavBar() {
                         <p className="text-sm text-slate-500 font-medium ml-3 mt-2 mb-2">
                             Manage
                         </p>
-                        {navItems.map((navItem) => {
+                        {manageNavItems.map((navItem) => {
                             const pathname = location.pathname;
                             const isActive =
                                 navItem.route === "manage-books"
@@ -129,6 +139,31 @@ export default function AdminNavBar() {
                                     ? pathname.includes(navItem.route) ||
                                       pathname.includes("edit-order")
                                     : pathname.includes(navItem.route);
+                            return (
+                                <li>
+                                    <NavBarButton
+                                        Icon={navItem.icon}
+                                        label={navItem.label}
+                                        active={isActive}
+                                        onClick={() => {
+                                            handleRouteChanged(navItem.route);
+                                        }}
+                                    />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+
+                {/* Special Content section */}
+                <nav className="w-full mt-8">
+                    <ul className="space-y-2">
+                        <p className="text-sm text-slate-500 font-medium ml-3 mt-2 mb-2">
+                            Special Content
+                        </p>
+                        {specialContentNavItems.map((navItem) => {
+                            const pathname = location.pathname;
+                            const isActive = pathname.includes(navItem.route);
                             return (
                                 <li>
                                     <NavBarButton
