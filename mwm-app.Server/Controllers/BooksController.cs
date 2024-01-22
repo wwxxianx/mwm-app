@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using mwm_app.Server.Data;
 using mwm_app.Server.Data.DTO;
+using mwm_app.Server.Data.ResponseDTO;
 using mwm_app.Server.Models;
 
 namespace mwm_app.Server.Controllers
@@ -24,10 +25,35 @@ namespace mwm_app.Server.Controllers
 
         // GET: api/Books
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetBooks()
         {
-            return await _context.Books.Include(b => b.Category).Include(b => b.Author).ToListAsync();
-            return await _context.Books.ToListAsync();
+            return await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Select(b => new BookResponseDTO {
+                    ID = b.ID,
+                    Author = new AuthorDTO {
+                        ID = b.Author.ID,
+                        FullName = b.Author.FullName,
+                        ImageUrl = b.Author.ImageUrl,
+                    },
+                    Category = new BookCategoryDTO {
+                        ID = b.Category.ID,
+                        Category = b.Category.Category,
+                        IsTrending = b.Category.IsTrending,
+                    },
+                    Description = b.Description,
+                    ImageUrl = b.ImageUrl,
+                    PreviewUrl = b.PreviewUrl,
+                    Price = b.Price,
+                    SKU = b.SKU,
+                    Slug = b.Slug,
+                    Title = b.Title,
+                    PublishedAt = b.PublishedAt,
+                    CreatedAt = b.CreatedAt,
+                    UpdatedAt = b.UpdatedAt,
+                })
+                .ToListAsync();
         }
 
         // GET: api/Books/5
