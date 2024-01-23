@@ -46,15 +46,14 @@ namespace mwm_app.Server.Controllers
                 return BadRequest();
             }
 
-            var jwtToken = GenerateJWT(user);
-
-            return Ok(new { user = user, token = jwtToken });
+            return Ok(new { user = user, token = user.UserToken });
         }
 
         [HttpGet("testing")]
-        [Authorize]
         public async Task<ActionResult<string>> Testing()
         {
+            var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
+            return token;
             var currentUser = HttpContext.User;
             return currentUser.Claims.FirstOrDefault(c => c.Type == "ID").Value;
         }
@@ -85,17 +84,18 @@ namespace mwm_app.Server.Controllers
         public async Task<ActionResult<LoginResponse>> RegisterUser(AuthPayload payload)
         {
             // Perform user registration logic, such as validation and saving to the database
-            var newUser = new User();
-            newUser.Email = payload.Email;
-            newUser.Password = payload.Password;
-            newUser.FullName = payload.Email.Split("@").First();
+
+            var newUser = new User() {
+                Email = payload.Email,
+                Password = payload.Password,
+                FullName = payload.Email.Split("@").First(),
+                UserToken = System.Guid.NewGuid().ToString(),
+            };
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            var jwtToken = GenerateJWT(newUser);
-
             // You can customize the response as needed
-            return CreatedAtAction("GetUser", new { id = newUser.ID }, new { user = newUser, token = jwtToken});
+            return CreatedAtAction("GetUser", new { id = newUser.ID }, new { user = newUser, token = newUser.UserToken});
         }
 
         // GET: api/Users

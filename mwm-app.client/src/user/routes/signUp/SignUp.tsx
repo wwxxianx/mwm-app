@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { UserRegisterPayload, UserRegisterValidator } from "./types";
 import { Link, useNavigate } from "react-router-dom";
-import { useRegisterMutation } from "../../../apiService/apiService";
+import { useRegisterMutation } from "@/apiService/userAuthApi";
 
 export default function SignUp() {
     const navigate = useNavigate();

@@ -1,3 +1,4 @@
+import { initializeApp } from "firebase/app";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
@@ -7,50 +8,42 @@ import AdminRoot from "./admin/routes/AdminRoot";
 import CreateBook from "./admin/routes/CreateBook/CreateBook";
 import EditBook, { bookLoader } from "./admin/routes/EditBook/EditBook";
 import EditOrder, { orderLoader } from "./admin/routes/EditOrder/EditOrder";
+import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
 import AdminLogin from "./admin/routes/Login/Login";
 import ManageAdmins, {
     adminsLoader,
 } from "./admin/routes/ManageAdmins/ManageAdmins";
 import { updateAdminAction } from "./admin/routes/ManageAdmins/components/UpdateAdminDialog";
 import ManageBooksNavRoot from "./admin/routes/ManageBooks/ManageBooksNavRoot";
-import ManageAuthors, {
-    authorsLoader,
-} from "./admin/routes/ManageBooks/routes/ManageAuthors";
-import ManageBooks, {
-    booksLoader,
-} from "./admin/routes/ManageBooks/routes/ManageBooks";
-import ManageCategories, {
-    categoriesLoader,
-} from "./admin/routes/ManageBooks/routes/ManageCategories";
+import ManageAuthors from "./admin/routes/ManageBooks/routes/ManageAuthors";
+import ManageBooks from "./admin/routes/ManageBooks/routes/ManageBooks";
+import ManageCategories from "./admin/routes/ManageBooks/routes/ManageCategories";
 import ManageOrders from "./admin/routes/ManageOrders/ManageOrders";
 import ManageUsers, {
     usersLoader,
 } from "./admin/routes/ManageUsers/ManageUsers";
+import TopThreeBooks from "./admin/routes/TopThreeBooks/TopThreeBooks";
 import "./index.css";
 import { store } from "./lib/reduxStore";
+import AboutUs from "./user/routes/aboutUs/AboutUs";
+import UserAccountNav from "./user/routes/account/UserAccountNav";
+import AddressPage from "./user/routes/account/routes/address/Address";
+import ChangePasswordPage from "./user/routes/account/routes/changePassword/ChangePassword";
+import UserFavourites from "./user/routes/account/routes/favourites/UserFavourites";
+import UserProfile from "./user/routes/account/routes/profile/UserProfile";
+import UserPurchases from "./user/routes/account/routes/purchases/UserPurchases";
+import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
 import Authors from "./user/routes/authors/Authors";
 import BookDetails, { clientBookLoader } from "./user/routes/book/BookDetails";
 import Books from "./user/routes/books/Books";
+import Cart from "./user/routes/cart/Cart";
 import Homepage from "./user/routes/homepage/Homepage";
 import Login from "./user/routes/login/Login";
 import UserNavigation from "./user/routes/navigation/UserNavigation";
-import SignUp from "./user/routes/signUp/SignUp";
-import Cart from "./user/routes/cart/Cart";
-import AboutUs from "./user/routes/aboutUs/AboutUs";
-import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
 import PrivacyPolicy from "./user/routes/privacyPolicy/PrivacyPolicy";
-import UserProfile from "./user/routes/account/routes/profile/UserProfile";
-import UserAccountNav from "./user/routes/account/UserAccountNav";
-import UserFavourites from "./user/routes/account/routes/favourites/UserFavourites";
-import UserPurchases from "./user/routes/account/routes/purchases/UserPurchases";
-import ChangePasswordPage from "./user/routes/account/routes/changePassword/ChangePassword";
-import AddressPage from "./user/routes/account/routes/address/Address";
-import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
-import { initializeApp } from "firebase/app";
-import TopThreeBooks, {
-    topBooksLoader,
-} from "./admin/routes/TopThreeBooks/TopThreeBooks";
-import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
+import SignUp from "./user/routes/signUp/SignUp";
+import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
+import { Toaster } from "./components/ui/toaster";
 
 const router = createBrowserRouter([
     {
@@ -228,6 +221,7 @@ const app = initializeApp(firebaseConfig);
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <Provider store={store}>
+            <Toaster />
             <RouterProvider router={router} />
         </Provider>
     </React.StrictMode>

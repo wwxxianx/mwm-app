@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { UserAuthPayload, UserAuthValidator } from "./types";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../../../apiService/apiService";
+import { useLoginMutation } from "@/apiService/userAuthApi";
 
 export default function Login() {
     const navigate = useNavigate();

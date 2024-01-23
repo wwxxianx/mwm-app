@@ -1,3 +1,9 @@
+import { ShoppingCartItem } from "@/apiService/types";
+import {
+    useDeleteUserCartItemMutation,
+    useGetUserCartItemsQuery,
+    useUpdateUserCartItemMutation,
+} from "@/apiService/userShoppingCartApi";
 import BookCover from "@/components/ui/BookCover";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,7 +14,7 @@ import {
     SheetFooter,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { cartItems } from "@/lib/fakeData";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import {
     ArrowTopRightOnSquareIcon,
@@ -28,6 +34,42 @@ type HomepageCartProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export default function HomepageCart(props: HomepageCartProps) {
+    const { toast } = useToast();
+    const { data: cartItems } = useGetUserCartItemsQuery();
+    const [updateCartItem, { isLoading: isUpdatingCartItem }] =
+        useUpdateUserCartItemMutation();
+    const [deleteCartItem, { isLoading: isDeletingCartItem }] =
+        useDeleteUserCartItemMutation();
+
+    async function onUpdateCartItem(
+        shoppingCartItem: ShoppingCartItem,
+        cartAction: "increment" | "decrement"
+    ) {
+        if (cartAction === "decrement" && shoppingCartItem.quantity === 1) {
+            return toast({
+                variant: "destructive",
+                title: "Cart item quantity can't less than 1",
+            });
+        }
+        await updateCartItem({
+            shoppingCartID: shoppingCartItem.id,
+            cartAction,
+        }).unwrap();
+    }
+
+    async function onDeleteCartItem(shoppingCartItem: ShoppingCartItem) {
+        try {
+            await deleteCartItem({
+                shoppingCartID: shoppingCartItem.id,
+            }).unwrap();
+        } catch (err) {
+            toast({
+                variant: "destructive",
+                title: "Failed to remove cart item, please try again later.",
+            });
+        }
+    }
+
     return (
         <Sheet>
             <SheetTrigger asChild>
@@ -59,27 +101,33 @@ export default function HomepageCart(props: HomepageCartProps) {
                         </SheetClose>
                     </div>
 
-                    {cartItems.slice(0, 3).map((cartItem) => {
+                    {cartItems?.map((cartItem) => {
                         return (
                             <div className="flex gap-2 mt-8">
                                 {/* Actions */}
                                 <div className="flex flex-col gap-1 justify-start items-start mt-2">
                                     <Checkbox className="mx-3 hover:bg-black/10 w-5 h-5 border-[1.5px]" />
-                                    <Button size="sm" variant="ghostClient">
+                                    <Button
+                                        size="sm"
+                                        variant="ghostClient"
+                                        onClick={() =>
+                                            onDeleteCartItem(cartItem)
+                                        }
+                                    >
                                         <TrashIcon className="w-5" />
                                     </Button>
                                 </div>
                                 <div className="flex gap-4">
                                     <BookCover
-                                        imageUrl={cartItem.item.imageUrl}
-                                        className="max-w-[80px]"
+                                        imageUrl={cartItem.book.imageUrl}
+                                        className="min-w-[80px] max-w-[80px]"
                                     />
                                     <div>
                                         <h4 className="line-clamp-2">
-                                            {cartItem.item.title}
+                                            {cartItem.book.title}
                                         </h4>
                                         <p className="line-clamp-1 text-sm text-black/60">
-                                            {cartItem.item.author.fullName}
+                                            {cartItem.book.author.fullName}
                                         </p>
                                         {/* Quantity */}
                                         <div className="flex items-center gap-1 my-1">
@@ -87,6 +135,17 @@ export default function HomepageCart(props: HomepageCartProps) {
                                                 size="sm"
                                                 variant="ghostClient"
                                                 className="px-2 py-2"
+                                                onClick={() =>
+                                                    onUpdateCartItem(
+                                                        cartItem,
+                                                        "decrement"
+                                                    )
+                                                }
+                                                isLoading={isUpdatingCartItem}
+                                                disabled={
+                                                    isUpdatingCartItem ||
+                                                    cartItem.quantity <= 1
+                                                }
                                             >
                                                 <MinusIcon className="w-4" />
                                             </Button>
@@ -97,6 +156,14 @@ export default function HomepageCart(props: HomepageCartProps) {
                                                 size="sm"
                                                 variant="ghostClient"
                                                 className="px-2 py-2"
+                                                onClick={() =>
+                                                    onUpdateCartItem(
+                                                        cartItem,
+                                                        "increment"
+                                                    )
+                                                }
+                                                isLoading={isUpdatingCartItem}
+                                                disabled={isUpdatingCartItem}
                                             >
                                                 <PlusIcon className="w-4" />
                                             </Button>
@@ -128,7 +195,7 @@ export default function HomepageCart(props: HomepageCartProps) {
                     </SheetClose>
                     <SheetClose asChild>
                         <Link
-                            to={"/login"}
+                            to={"/cart"}
                             className={cn(
                                 buttonVariants({
                                     variant: "outlineClient",

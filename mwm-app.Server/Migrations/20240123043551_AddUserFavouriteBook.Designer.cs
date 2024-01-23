@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mwm_app.Server.Data;
 
@@ -11,9 +12,11 @@ using mwm_app.Server.Data;
 namespace mwm_app.Server.Migrations
 {
     [DbContext(typeof(MainDBContext))]
-    partial class MainDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240123043551_AddUserFavouriteBook")]
+    partial class AddUserFavouriteBook
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,7 +141,7 @@ namespace mwm_app.Server.Migrations
                     b.ToTable("BookCategory", "AdminSchema");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.ShoppingCart", b =>
+            modelBuilder.Entity("mwm_app.Server.Models.Favourite", b =>
                 {
                     b.Property<string>("ID")
                         .ValueGeneratedOnAdd()
@@ -151,9 +154,6 @@ namespace mwm_app.Server.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
@@ -163,7 +163,7 @@ namespace mwm_app.Server.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("ShoppingCart", "AdminSchema");
+                    b.ToTable("Favourite", "AdminSchema");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.TopBook", b =>
@@ -210,10 +210,6 @@ namespace mwm_app.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserToken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
@@ -265,7 +261,7 @@ namespace mwm_app.Server.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("mwm_app.Server.Models.ShoppingCart", b =>
+            modelBuilder.Entity("mwm_app.Server.Models.Favourite", b =>
                 {
                     b.HasOne("mwm_app.Server.Models.Book", "Book")
                         .WithMany()
@@ -274,7 +270,7 @@ namespace mwm_app.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("mwm_app.Server.Models.User", "User")
-                        .WithMany("CartItems")
+                        .WithMany("FavouriteBooks")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -304,7 +300,7 @@ namespace mwm_app.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("mwm_app.Server.Models.User", "User")
-                        .WithMany("FavouriteBooks")
+                        .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -326,8 +322,6 @@ namespace mwm_app.Server.Migrations
 
             modelBuilder.Entity("mwm_app.Server.Models.User", b =>
                 {
-                    b.Navigation("CartItems");
-
                     b.Navigation("FavouriteBooks");
                 });
 #pragma warning restore 612, 618

@@ -1,4 +1,5 @@
 import { api } from "@/apiService/apiService";
+import { userAuthApi } from "@/apiService/userAuthApi";
 import { User } from "@/types/dataType";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -27,24 +28,29 @@ export const userSlice = createSlice({
         },
         initUser: (state) => {
             // Check user from localStorage and let user stay singed in
+            console.log("init user");
             const user = localStorage.getItem("userProfile");
             const token = localStorage.getItem("userToken");
+            console.log(user, token);
             if (!user) {
                 return;
             }
             const parsedUser = JSON.parse(user);
+            console.log(parsedUser);
             state.user = parsedUser;
             state.isLoggedIn = true;
             if (!token) {
                 // TODO: Reassign token
+                console.log("no token");
                 return;
             }
             state.token = JSON.parse(token);
+            console.log(state.token);
         },
     },
     extraReducers: (builder) => {
         builder.addMatcher(
-            api.endpoints.login.matchFulfilled,
+            userAuthApi.endpoints.login.matchFulfilled,
             (state, { payload }) => {
                 state.user = payload.user;
                 state.token = payload.token;
@@ -53,7 +59,7 @@ export const userSlice = createSlice({
             }
         );
         builder.addMatcher(
-            api.endpoints.register.matchFulfilled,
+            userAuthApi.endpoints.register.matchFulfilled,
             (state, { payload }) => {
                 state.token = payload.token;
                 state.user = payload.user;

@@ -1,3 +1,7 @@
+import {
+    useLoginMutation,
+    useRegisterMutation,
+} from "@/apiService/userAuthApi";
 import WhiteLogoImageUrl from "@/assets/logo-white.png";
 import LogoImageUrl from "@/assets/logo.png";
 import BookCover from "@/components/ui/BookCover";
@@ -11,18 +15,13 @@ import {
 } from "@/components/ui/navigation-menu";
 import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../lib/hooks";
+import { initUser } from "../../redux/userSlice";
 import HomepageCart from "./components/HomepageCart";
 import MobileNavigation from "./components/MobileNavigation";
 import UserDropdownMenu from "./components/UserDropdownMenu";
-import { Button } from "@/components/ui/button";
-import {
-    useLoginMutation,
-    useRegisterMutation,
-} from "../../../apiService/apiService";
-import { useAppDispatch, useAppSelector } from "../../../lib/hooks";
-import { useEffect } from "react";
-import { initUser } from "../../redux/userSlice";
 
 const topCategories = [
     {
@@ -49,19 +48,16 @@ export default function UserNavigation() {
         //     email: "user3@gmail.com",
         //     password: "testing123",
         // };
-
         // const response = await login(user).unwrap();
         // console.log(response);
-
-        // const testing = await fetch("api/Users/testing", {
-        //     headers: {
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        // });
-        // console.log(testing);
+        const testing = await fetch("api/Users/testing", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(testing);
         //const response = await register(user).unwrap();
         //console.log('resgiter res:', response);
-        
     }
 
     useEffect(() => {

@@ -5,15 +5,8 @@ import {
     AuthorPayload,
     CategoryPayload,
 } from "../admin/routes/ManageBooks/types";
-import { RootState } from "../lib/reduxStore";
 import { Author, Book, Category } from "../types/dataType";
-import {
-    AdminResponse,
-    BookAPIPayload,
-    UserFavouriteRequest,
-    UserFavouriteResponse,
-    UserResponse,
-} from "./types";
+import { AdminResponse, BookAPIPayload } from "./types";
 
 export const api = createApi({
     reducerPath: "api",
@@ -21,45 +14,15 @@ export const api = createApi({
         baseUrl: "https://localhost:5173/api/",
         prepareHeaders: (headers, { getState }) => {
             //By default, if we have a token in the store, let's use that for authenticated requests
-            const token = (getState() as RootState).user.token;
+            const token = localStorage.getItem("userToken");
             if (token) {
-                headers.set("authorization", `Bearer ${token}`);
+                const parsedToken = JSON.parse(token);
+                headers.set("authorization", `Bearer ${parsedToken}`);
             }
             return headers;
         },
     }),
     endpoints: (builder) => ({
-        // User
-        login: builder.mutation<UserResponse, UserAuthPayload>({
-            query: (credentials) => ({
-                url: "Users/login",
-                method: "POST",
-                body: credentials,
-            }),
-        }),
-        register: builder.mutation<UserResponse, UserAuthPayload>({
-            query: (credentials) => ({
-                url: "Users/register",
-                method: "POST",
-                body: credentials,
-            }),
-        }),
-
-        // User Favourite
-        createUserFavourite: builder.mutation<UserFavouriteResponse,UserFavouriteRequest>({
-            query: (favourite) => ({
-                url: "Favourites",
-                method: "POST",
-                body: favourite,
-            }),
-        }),
-        getUserFavourites: builder.query<UserFavouriteResponse, string | undefined>({
-            query: (userId) => ({
-                url: `Favourites/${userId}`,
-                method: "GET",
-            }),
-        }),
-
         // Book
         createBook: builder.mutation<Book, BookAPIPayload>({
             query: (book) => ({
@@ -288,12 +251,6 @@ export const api = createApi({
 });
 
 export const {
-    // User
-    useLoginMutation,
-    useRegisterMutation,
-    useGetUserFavouritesQuery,
-    useCreateUserFavouriteMutation,
-
     // Admin
     useAdminLoginMutation,
     useAdminRegisterMutation,

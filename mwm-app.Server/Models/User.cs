@@ -8,6 +8,9 @@ namespace mwm_app.Server.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
+
+        public string UserToken { get; set; }
+        
         public string FullName { get; set; }
         public string Email { get; set; }
 
@@ -17,6 +20,8 @@ namespace mwm_app.Server.Models
 
         public DateTime CreatedAt { get; set; }
 
-        public ICollection<Favourite>? FavouriteBooks { get; set; }
+        public ICollection<UserFavouriteBook> FavouriteBooks { get; set; }
+
+        public ICollection<ShoppingCart> CartItems { get; set; }
     }
 }

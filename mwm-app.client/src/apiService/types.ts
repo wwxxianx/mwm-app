@@ -16,12 +16,19 @@ export type BookAPIPayload = BookPayload & {
     categoryId: string;
 };
 
-export type UserFavouriteResponse = {
-    books: Book[];
+export type UserFavouriteBook = {
+    id: string;
     createdAt: string;
+    book: Book;
 };
 
 export type UserFavouriteRequest = {
-    userId: string;
-    bookId: string;
+    bookID: string;
 };
+
+export type ShoppingCartItem = {
+    id: string;
+    book: Book;
+    quantity: number;
+    createdAt: string;
+}

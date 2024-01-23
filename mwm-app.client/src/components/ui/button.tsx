@@ -51,6 +51,7 @@ export interface ButtonProps
     error?: boolean;
     errorMessage?: string;
     isLoading?: boolean;
+    loadingIconColor?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -64,6 +65,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             errorMessage,
             children,
             isLoading,
+            loadingIconColor,
             ...props
         },
         ref
@@ -83,12 +85,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 >
                     {isLoading ? (
                         <svg
-                            className={cn("animate-spin h-5 w-5 text-white", {
-                                "text-black":
-                                    variant === "outlineClient" ||
-                                    variant === "clientDefault" ||
-                                    variant === "ghostClient",
-                            })}
+                            className={cn(
+                                "animate-spin h-5 w-5 text-white",
+                                {
+                                    "text-black":
+                                        variant === "outlineClient" ||
+                                        variant === "clientDefault" ||
+                                        variant === "ghostClient",
+                                },
+                                loadingIconColor
+                            )}
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -99,7 +105,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                                 cy="12"
                                 r="10"
                                 stroke="currentColor"
-                                stroke-width="4"
+                                strokeWidth="4"
                             ></circle>
                             <path
                                 className="opacity-75"

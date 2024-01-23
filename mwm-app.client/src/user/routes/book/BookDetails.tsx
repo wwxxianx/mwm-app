@@ -1,21 +1,26 @@
-import { Book } from "@/types/dataType";
 import BookCover from "@/components/ui/BookCover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { books } from "@/lib/fakeData";
-import { EyeIcon, HeartIcon, ShoppingBagIcon } from "@heroicons/react/24/solid";
+import { useAppSelector } from "@/lib/hooks";
+import { store } from "@/lib/reduxStore";
+import { cn } from "@/lib/utils";
+import { Book } from "@/types/dataType";
+import { HeartIcon, ShoppingBagIcon } from "@heroicons/react/24/solid";
 import { LibraryBig } from "lucide-react";
 import { useLoaderData } from "react-router-dom";
 import BookPreview from "./components/BookPreview";
-import { store } from "@/lib/reduxStore";
+import { api } from "@/apiService/apiService";
 import {
-    api,
     useCreateUserFavouriteMutation,
+    useDeleteUserFavouriteMutation,
     useGetUserFavouritesQuery,
-} from "@/apiService/apiService";
-import { useEffect } from "react";
-import { useAppSelector } from "@/lib/hooks";
-import { cn } from "@/lib/utils";
+} from "@/apiService/userFavouriteBookApi";
+import {
+    useCreateUserCartItemMutation,
+    useGetUserCartItemsQuery,
+} from "@/apiService/userShoppingCartApi";
+import { useToast } from "@/components/ui/use-toast";
 
 async function loader({ params }) {
     const promise = store.dispatch(
@@ -27,19 +32,39 @@ async function loader({ params }) {
 }
 
 export default function BookDetails() {
+    const { toast } = useToast();
     const user = useAppSelector((state) => state.user.user);
-    const { data: favourites } = useGetUserFavouritesQuery(user?.id);
-    const [addToFavourite, { isLoading }] = useCreateUserFavouriteMutation();
+    const { data: favourites } = useGetUserFavouritesQuery();
+    const [addToFavourite, { isLoading: isCreating }] =
+        useCreateUserFavouriteMutation();
+    const [deleteFavourite, { isLoading: isDeleting }] =
+        useDeleteUserFavouriteMutation();
+    const [addToCart, { isLoading: isAddingToCart }] =
+        useCreateUserCartItemMutation();
     const bookData = useLoaderData() as Book;
-    let isCurrentBookInFavourite = favourites?.books?.filter(
-        (b) => b.id === bookData.id
-    );
+
+    let isCurrentBookInFavourite = favourites?.filter(
+        (f) => f.book.id === bookData.id
+    ).length;
 
     async function onTriggerFavourite() {
+        const data = { bookID: bookData.id };
         if (isCurrentBookInFavourite) {
+            await deleteFavourite(data).unwrap();
         } else {
-            const data = { bookId: bookData.id, userId: user?.id };
             await addToFavourite(data).unwrap();
+        }
+    }
+
+    async function onAddToCart() {
+        try {
+            await addToCart({ bookID: bookData.id }).unwrap();
+        } catch (err) {
+            toast({
+                variant: "default",
+                title: err?.data?.message ?? "Something went wrong",
+                description: "You can update your cart item.",
+            });
         }
     }
 
@@ -56,6 +81,8 @@ export default function BookDetails() {
                                 { "bg-black/85": isCurrentBookInFavourite }
                             )}
                             onClick={onTriggerFavourite}
+                            isLoading={isCreating || isDeleting}
+                            disabled={isCreating || isDeleting}
                         >
                             <HeartIcon
                                 className={cn(
@@ -72,7 +99,12 @@ export default function BookDetails() {
                     <div className="flex flex-col items-center gap-2 mt-6 max-w-[240px] mx-auto">
                         <Button
                             variant="outlineClient"
-                            className="gap-2 text-sm group w-full max-w-[240px]"
+                            className={cn(
+                                "gap-2 text-sm group w-full max-w-[240px]"
+                            )}
+                            onClick={onAddToCart}
+                            isLoading={isAddingToCart}
+                            disabled={isAddingToCart}
                         >
                             <ShoppingBagIcon className="w-5 text-client-primary-button group-hover:text-white" />
                             <span>Add to Cart</span>
