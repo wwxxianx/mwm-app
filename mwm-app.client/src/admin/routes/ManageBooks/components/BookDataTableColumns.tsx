@@ -88,9 +88,8 @@ export const bookDataTableColumns: ColumnDef<Book>[] = [
             );
         },
         filterFn: (row, id, value) => {
-            return value.includes(row.getValue(id));
+            return value.includes(row.getValue("author").fullName);
         },
-        enableColumnFilter: true,
     },
     {
         accessorKey: "category",
@@ -105,7 +104,7 @@ export const bookDataTableColumns: ColumnDef<Book>[] = [
             );
         },
         filterFn: (row, id, value) => {
-            return value.includes(row.getValue(id));
+            return value.includes(row.getValue("category").category);
         },
     },
     {

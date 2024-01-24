@@ -28,15 +28,12 @@ export const userSlice = createSlice({
         },
         initUser: (state) => {
             // Check user from localStorage and let user stay singed in
-            console.log("init user");
             const user = localStorage.getItem("userProfile");
             const token = localStorage.getItem("userToken");
-            console.log(user, token);
             if (!user) {
                 return;
             }
             const parsedUser = JSON.parse(user);
-            console.log(parsedUser);
             state.user = parsedUser;
             state.isLoggedIn = true;
             if (!token) {
@@ -45,7 +42,6 @@ export const userSlice = createSlice({
                 return;
             }
             state.token = JSON.parse(token);
-            console.log(state.token);
         },
     },
     extraReducers: (builder) => {

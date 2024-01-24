@@ -8,35 +8,50 @@ import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { authors } from "@/lib/fakeData";
+import {
+    useGetAuthorsQuery,
+    useGetCategoriesQuery,
+} from "@/apiService/apiService";
+import { useMemo } from "react";
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
 };
 
 type CategoryOption = {
+    id: string;
     label: string;
     value: string;
     icon?: React.ComponentType<{ className?: string }>;
 };
 
-const categories: CategoryOption[] = [
-    {
-        label: "Fiction",
-        value: "Fiction",
-    },
-    {
-        label: "Non-fiction",
-        value: "Non-fiction",
-    },
-    {
-        label: "Education",
-        value: "Education",
-    },
-    {
-        label: "Design",
-        value: "Design",
-    },
-];
+// const categories: CategoryOption[] = [
+//     {
+//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
+//         label: "Fiction",
+//         value: "Fiction",
+//     },
+//     {
+//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
+//         label: "Non-fiction",
+//         value: "Non-fiction",
+//     },
+//     {
+//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
+//         label: "Education",
+//         value: "Education",
+//     },
+//     {
+//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
+//         label: "Design",
+//         value: "Design",
+//     },
+//     {
+//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
+//         label: "Technology",
+//         value: "Technology",
+//     },
+// ];
 
 function authorOptions() {
     return authors.map((author) => ({
@@ -48,8 +63,30 @@ function authorOptions() {
 export function BookDataTableToolbar<TData>({
     table,
 }: DataTableToolbarProps<TData>) {
+    const { data: categories } = useGetCategoriesQuery();
+    const { data: authors } = useGetAuthorsQuery();
     const isFiltered = table.getState().columnFilters.length > 0;
     const navigate = useNavigate();
+
+    const transformedCategories = useMemo(() => {
+        return categories?.map((category) => {
+            return {
+                id: category.id,
+                title: category.category,
+                value: category.category,
+            };
+        });
+    }, [categories]);
+
+    const transformedAuthors = useMemo(() => {
+        return authors?.map((author) => {
+            return {
+                id: author.id,
+                title: author.fullName,
+                value: author.fullName,
+            };
+        });
+    }, [authors]);
 
     function onNavigateCreateBook() {
         navigate("/admin/dashboard/create-book");
@@ -77,14 +114,14 @@ export function BookDataTableToolbar<TData>({
                     <DataTableFacetedFilter
                         column={table.getColumn("category")}
                         title="Category"
-                        options={categories}
+                        options={transformedCategories ?? []}
                     />
                 )}
                 {table.getColumn("author") && (
                     <DataTableFacetedFilter
                         column={table.getColumn("author")}
                         title="Author"
-                        options={authorOptions()}
+                        options={transformedAuthors ?? []}
                     />
                 )}
                 {isFiltered && (

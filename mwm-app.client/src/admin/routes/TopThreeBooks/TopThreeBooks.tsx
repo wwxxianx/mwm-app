@@ -49,7 +49,7 @@ export default function TopThreeBooks() {
                 topBooks.find((b) => b.ranking === 3)?.book?.id
             );
         }
-    }, []);
+    }, [topBooks]);
 
     function onSubmit(data: TopThreeBooksPayload) {
         const topBooks: TopBookRequest[] = [

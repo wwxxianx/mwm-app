@@ -120,27 +120,34 @@ namespace mwm_app.Server.Controllers
         // POST: api/Favourites
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ICollection<UserFavouriteBookResponseDTO>>> PostFavourite(UserFavouriteBookDTO favouriteDTO)
+        public async Task<ActionResult<UserFavouriteBookResponseDTO>> PostFavourite(UserFavouriteBookDTO favouriteDTO)
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
                 return Unauthorized();
             }
 
-            var book = await _context.Books.FirstAsync(b => b.ID == favouriteDTO.BookID);
+            var book = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .FirstAsync(b => b.ID == favouriteDTO.BookID);
+
             if (book == null) {
                 return BadRequest();
             }
-            var user = await _context.Users.FirstAsync(u => u.UserToken == token);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserToken == token);
             if (user == null) {
                 return BadRequest();
             }
+
             var favourite = new UserFavouriteBook
             {
                 Book = book,
                 User = user,
                 CreatedAt = DateTime.Now,
             };
+
             _context.UserFavouriteBooks.Add(favourite);
 
             try
@@ -149,59 +156,21 @@ namespace mwm_app.Server.Controllers
             }
             catch (DbUpdateException err)
             {
-                Console.WriteLine(err.Message);
-                Console.WriteLine("Something went wrong here");
-                if (BookExists(book.ID))
-                {
-                    // return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-            
-            var favourites = await _context.UserFavouriteBooks
-                .Include(f => f.Book)
-                .Where(f => f.User.UserToken == token)
-                .Select(f => new UserFavouriteBookResponseDTO{
-                    Book = new BookResponseDTO
-                    {
-                        ID = f.Book.ID,
-                        Title = f.Book.Title,
-                        Slug = f.Book.Slug,
-                        ImageUrl = f.Book.ImageUrl,
-                        PreviewUrl = f.Book.PreviewUrl,
-                        Category = new BookCategoryDTO
-                        {
-                            ID = f.Book.Category.ID,
-                            Category = f.Book.Category.Category,
-                            IsTrending = f.Book.Category.IsTrending,
-                        },
-                        Author = new AuthorDTO
-                        {
-                            ID = f.Book.Author.ID,
-                            FullName = f.Book.Author.FullName,
-                            ImageUrl = f.Book.Author.ImageUrl,
-                        },
-                        Price = f.Book.Price,
-                        Description = f.Book.Description,
-                        SKU = f.Book.SKU,
-                        PublishedAt = f.Book.PublishedAt,
-                        CreatedAt = f.Book.CreatedAt,
-                        UpdatedAt = f.Book.UpdatedAt,
-                    },
-                    CreatedAt = f.CreatedAt,
-                    ID = f.ID,
-                })
-                .ToListAsync();
 
-            return favourites;
+            var newFavourite = new UserFavouriteBookResponseDTO
+                {
+                    Book = BookResponseDTO.CreateFromBook(book),
+                    CreatedAt = favourite.CreatedAt,
+                    ID = favourite.ID,
+                };
+            return newFavourite;
         }
 
         // DELETE: api/Books/5
         [HttpDelete]
-        public async Task<ActionResult<ICollection<UserFavouriteBookResponseDTO>>> DeleteBook(UserFavouriteBookDTO favouriteDTO)
+        public async Task<IActionResult> DeleteBook(UserFavouriteBookDTO favouriteDTO)
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
@@ -209,42 +178,13 @@ namespace mwm_app.Server.Controllers
             }
             var favourites = await _context.UserFavouriteBooks.Where(f => f.Book.ID == favouriteDTO.BookID && f.User.UserToken == token).ToListAsync();
             _context.UserFavouriteBooks.RemoveRange(favourites);
-            await _context.SaveChangesAsync();
 
-            return await _context.UserFavouriteBooks
-                .Include(f => f.Book)
-                .Where(f => f.User.UserToken == token)
-                .Select(f => new UserFavouriteBookResponseDTO{
-                    Book = new BookResponseDTO
-                    {
-                        ID = f.Book.ID,
-                        Title = f.Book.Title,
-                        Slug = f.Book.Slug,
-                        ImageUrl = f.Book.ImageUrl,
-                        PreviewUrl = f.Book.PreviewUrl,
-                        Category = new BookCategoryDTO
-                        {
-                            ID = f.Book.Category.ID,
-                            Category = f.Book.Category.Category,
-                            IsTrending = f.Book.Category.IsTrending,
-                        },
-                        Author = new AuthorDTO
-                        {
-                            ID = f.Book.Author.ID,
-                            FullName = f.Book.Author.FullName,
-                            ImageUrl = f.Book.Author.ImageUrl,
-                        },
-                        Price = f.Book.Price,
-                        Description = f.Book.Description,
-                        SKU = f.Book.SKU,
-                        PublishedAt = f.Book.PublishedAt,
-                        CreatedAt = f.Book.CreatedAt,
-                        UpdatedAt = f.Book.UpdatedAt,
-                    },
-                    CreatedAt = f.CreatedAt,
-                    ID = f.ID,
-                })
-                .ToListAsync();
+            try {
+                await _context.SaveChangesAsync();
+            } catch (DbUpdateException) {
+                return BadRequest();
+            }
+            return StatusCode(204);
         }
 
         private bool BookExists(string id)

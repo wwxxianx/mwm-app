@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using mwm_app.Server.Data;
 using mwm_app.Server.Data.DTO;
 using mwm_app.Server.Data.ResponseDTO;
 using mwm_app.Server.Models;
+using mwm_app.Server.Utils;
 
 namespace mwm_app.Server.Controllers
 {
@@ -23,15 +25,57 @@ namespace mwm_app.Server.Controllers
             _context = context;
         }
 
+
+        public class BookRequest {
+            public int? PageNumber { get; set; }
+
+            public ICollection<string>? CategoryID { get; set; }
+
+            public string? AuthorID { get; set; }
+
+            public string? SearchQuery { get; set; }
+        }
+
         // GET: api/Books
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetBooks()
+        public async Task<ActionResult> GetBooks([FromQuery] BookRequest bookRequest)
         {
-            return await _context.Books
+            var books = _context.Books
                 .Include(b => b.Category)
                 .Include(b => b.Author)
-                .Select(b => BookResponseDTO.CreateFromBook(b))
-                .ToListAsync();
+                .OrderByDescending(b => b.CreatedAt)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(bookRequest.SearchQuery))
+            {
+                // Split the search query into individual words
+                var searchWords = bookRequest.SearchQuery.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                // Filter books that contain any of the search words in the title
+                books = books.Where(b => searchWords.Any(word => b.Title.Contains(word)));
+                return Ok(await books.Select(b => BookResponseDTO.CreateFromBook(b)).ToListAsync());
+            }
+
+            if (bookRequest.PageNumber == null) {
+                // Admin side
+                // Fetch all the books to the admin table
+                return Ok(await books.Select(b => BookResponseDTO.CreateFromBook(b)).ToListAsync());
+            }
+
+
+            if (bookRequest.CategoryID != null) {
+                books = books.Where(b => bookRequest.CategoryID.Contains(b.Category.ID));
+            }
+
+
+            int pageSize = 10;
+            var paginatedBooks =  await PaginatedList<Book>.CreateAsync(books.AsNoTracking(), bookRequest.PageNumber ?? 1, pageSize);
+            return Ok(new PaginatedListResponse<BookResponseDTO>
+            {
+                Data = paginatedBooks.Select(b => BookResponseDTO.CreateFromBook(b)).ToList(),
+                HasNextPage = paginatedBooks.HasNextPage,
+                HasPreviousPage = paginatedBooks.HasPreviousPage,
+                TotalPages = paginatedBooks.TotalPages,
+            });
         }
 
         // GET: api/Books/5
@@ -132,13 +176,9 @@ namespace mwm_app.Server.Controllers
                 }
             }
             
-            var books = await _context.Books
-                .Include(b => b.Category)
-                .Include(b => b.Author)
-                .Select(b => BookResponseDTO.CreateFromBook(b))
-                .ToListAsync();
+            var newBook = BookResponseDTO.CreateFromBook(book);
 
-            return CreatedAtAction("GetBook", new { id = book.ID }, books);
+            return CreatedAtAction("GetBook", new { id = book.ID }, newBook);
         }
 
         // DELETE: api/Books/5

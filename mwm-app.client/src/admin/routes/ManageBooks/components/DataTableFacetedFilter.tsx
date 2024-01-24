@@ -27,6 +27,7 @@ type DataTableFacetedFilterProps<TData, TValue> = {
     column?: Column<TData, TValue>;
     title?: string;
     options: {
+        id?: string;
         label: string;
         value: string;
         icon?: React.ComponentType<{ className?: string }>;
@@ -51,6 +52,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                 >
                     <PlusCircleIcon className="mr-2 h-4 w-4" />
                     {title}
+                    {/* Display selected filter */}
                     {selectedValues?.size > 0 && (
                         <>
                             <Separator
@@ -82,7 +84,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                                                 key={option.value}
                                                 className="rounded-sm px-1 font-normal"
                                             >
-                                                {option.label}
+                                                {option.value}
                                             </Badge>
                                         ))
                                 )}
@@ -103,7 +105,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                                 );
                                 return (
                                     <CommandItem
-                                        key={option.value}
+                                        key={option.id}
                                         onSelect={() => {
                                             if (isSelected) {
                                                 selectedValues.delete(
@@ -138,9 +140,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                                         {option.icon && (
                                             <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         )}
-                                        <StatusChip
-                                            status={option.value}
-                                        />
+                                        <StatusChip status={option.value} />
                                         {facets?.get(option.value) && (
                                             <span className="ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs">
                                                 {facets.get(option.value)}

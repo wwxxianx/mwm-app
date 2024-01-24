@@ -3,13 +3,16 @@ import { cn } from "@/lib/utils";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 type SearchDialogProps = {
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     searchFieldPlaceholder: string;
     children: React.ReactNode;
     className?: string;
 };
 
 export default function SearchDialog(props: SearchDialogProps) {
-    const { children, searchFieldPlaceholder, className } = props;
+    const { children, searchFieldPlaceholder, value, onChange, className } =
+        props;
 
     return (
         <Dialog>
@@ -21,7 +24,9 @@ export default function SearchDialog(props: SearchDialogProps) {
                     )}
                 >
                     <MagnifyingGlassIcon className="w-4 md:w-5" />
-                    <p className="text-sm md:text-base">{searchFieldPlaceholder}</p>
+                    <p className="text-sm md:text-base">
+                        {searchFieldPlaceholder}
+                    </p>
                 </div>
             </DialogTrigger>
             <DialogContent className="max-w-[320px] md:max-w-[600px] px-0 pt-0 rounded-lg top-[30%] md:top-[50%]">
@@ -31,6 +36,7 @@ export default function SearchDialog(props: SearchDialogProps) {
                     <input
                         placeholder={searchFieldPlaceholder}
                         className="bg-transparent text-xs w-full font-inter focus:outline-none"
+                        onChange={onChange}
                     />
                 </div>
                 <div className="mt-0 px-3 max-h-[250px] md:max-h-[400px] lg:max-h-[550px] overflow-y-scroll">

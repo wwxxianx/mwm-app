@@ -1,5 +1,6 @@
 import { Admin, Book, User } from "@/types/dataType";
 import { BookPayload } from "../admin/routes/CreateBook/types";
+import internal from "stream";
 
 export type UserResponse = {
     user: User;
@@ -31,4 +32,17 @@ export type ShoppingCartItem = {
     book: Book;
     quantity: number;
     createdAt: string;
+};
+
+export type PaginatedResponse<T> = {
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    totalPages: number;
+    data: T[];
+};
+
+export type BookRequest = {
+    pageNumber?: number;
+    categoryIDs?: string[];
+    searchQuery?: string;
 }

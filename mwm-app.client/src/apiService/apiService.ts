@@ -6,7 +6,12 @@ import {
     CategoryPayload,
 } from "../admin/routes/ManageBooks/types";
 import { Author, Book, Category } from "../types/dataType";
-import { AdminResponse, BookAPIPayload } from "./types";
+import {
+    AdminResponse,
+    BookAPIPayload,
+    BookRequest,
+    PaginatedResponse,
+} from "./types";
 
 export const api = createApi({
     reducerPath: "api",
@@ -32,23 +37,43 @@ export const api = createApi({
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedBooks } = await queryFulfilled;
+                    const { data: newBook } = await queryFulfilled;
                     dispatch(
-                        api.util.updateQueryData(
-                            "getBooks",
-                            void 0,
-                            (draft) => {
-                                Object.assign(draft, updatedBooks);
-                            }
-                        )
+                        api.util.updateQueryData("getBooks", {}, (draft) => {
+                            return [newBook, ...draft];
+                        })
                     );
                 } catch (err) {
                     console.log("update cahced books error: ", err);
                 }
             },
         }),
-        getBooks: builder.query<Book[], void>({
-            query: () => "Books",
+        getBooks: builder.query<PaginatedResponse<Book> | Book[], BookRequest>({
+            query: (requestFilter) => {
+                const { pageNumber, categoryIDs, searchQuery } = requestFilter;
+                let baseUri = "Books";
+                if (pageNumber) {
+                    baseUri += `?pageNumber=${pageNumber}`;
+                }
+                if (categoryIDs?.length) {
+                    const encodedCategoryIds = categoryIDs
+                        .map((id) => encodeURIComponent(id))
+                        .join("&categoryID=");
+                    if (pageNumber) {
+                        baseUri += `&categoryID=${encodedCategoryIds}`;
+                    } else {
+                        baseUri += `?categoryID=${encodedCategoryIds}`;
+                    }
+                }
+                if (searchQuery) {
+                    baseUri += `?searchQuery=${searchQuery}`;
+                }
+                console.log(baseUri);
+                return {
+                    url: baseUri,
+                    method: "GET",
+                };
+            },
         }),
         getBookById: builder.query<Book, string>({
             query: (bookId) => ({
@@ -167,14 +192,13 @@ export const api = createApi({
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedAuthors } = await queryFulfilled;
+                    const { data: newAuthor } = await queryFulfilled;
                     dispatch(
                         api.util.updateQueryData(
                             "getAuthors",
                             void 0,
                             (draft) => {
-                                console.log("draft:", draft);
-                                Object.assign(draft, updatedAuthors);
+                                return [newAuthor, ...draft];
                             }
                         )
                     );
@@ -194,13 +218,18 @@ export const api = createApi({
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedAuthors } = await queryFulfilled;
+                    const { data: updatedAuthor } = await queryFulfilled;
                     dispatch(
                         api.util.updateQueryData(
                             "getAuthors",
                             void 0,
                             (draft) => {
-                                Object.assign(draft, updatedAuthors);
+                                return draft?.map((author) => {
+                                    if (author.id === updatedAuthor.id) {
+                                        return updatedAuthor;
+                                    }
+                                    return author;
+                                });
                             }
                         )
                     );
@@ -215,19 +244,22 @@ export const api = createApi({
                 method: "DELETE",
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
-                try {
-                    const { data: updatedAuthors } = await queryFulfilled;
+                const res = await queryFulfilled;
+                if (res.meta?.response?.status === 204) {
+                    // Delete success
                     dispatch(
                         api.util.updateQueryData(
                             "getAuthors",
-                            void 0,
+                            undefined,
                             (draft) => {
-                                Object.assign(draft, updatedAuthors);
+                                return draft?.filter(
+                                    (author) =>
+                                        author.id !==
+                                        requestBody
+                                );
                             }
                         )
                     );
-                } catch (err) {
-                    console.log("update cahced authors error: ", err);
                 }
             },
         }),

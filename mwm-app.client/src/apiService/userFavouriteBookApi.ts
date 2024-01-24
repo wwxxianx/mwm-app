@@ -15,13 +15,13 @@ export const userFavouriteBookApi = api.injectEndpoints({
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedFavourites } = await queryFulfilled;
+                    const { data: newFavourite } = await queryFulfilled;
                     dispatch(
                         userFavouriteBookApi.util.updateQueryData(
                             "getUserFavourites",
                             undefined,
                             (draft) => {
-                                Object.assign(draft, updatedFavourites);
+                                return [newFavourite, ...draft];
                             }
                         )
                     );

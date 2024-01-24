@@ -1,7 +1,3 @@
-import {
-    useLoginMutation,
-    useRegisterMutation,
-} from "@/apiService/userAuthApi";
 import WhiteLogoImageUrl from "@/assets/logo-white.png";
 import LogoImageUrl from "@/assets/logo.png";
 import BookCover from "@/components/ui/BookCover";
@@ -38,27 +34,7 @@ const topCategories = [
 export default function UserNavigation() {
     const dispatch = useAppDispatch();
     const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
-    const user = useAppSelector((state) => state.user.user);
     const token = useAppSelector((state) => state.user.token);
-    const [register] = useRegisterMutation();
-    const [login] = useLoginMutation();
-
-    async function testFn(e) {
-        // const user = {
-        //     email: "user3@gmail.com",
-        //     password: "testing123",
-        // };
-        // const response = await login(user).unwrap();
-        // console.log(response);
-        const testing = await fetch("api/Users/testing", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        console.log(testing);
-        //const response = await register(user).unwrap();
-        //console.log('resgiter res:', response);
-    }
 
     useEffect(() => {
         // Check user from localStorage and stay user signed in
@@ -68,7 +44,6 @@ export default function UserNavigation() {
     return (
         <div className="h-screen bg-turquoise-50 font-playfair flex flex-col">
             <div className="container relative flex items-center justify-center pt-6">
-                <button onClick={testFn}>CLICK</button>
                 <Link to={"/home"} className="md:hidden">
                     <img
                         src={LogoImageUrl}

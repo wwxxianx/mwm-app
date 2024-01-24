@@ -46,7 +46,7 @@ namespace mwm_app.Server.Controllers
         // PUT: api/Authors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<ICollection<Author>>> PutAuthor(string id, AuthorDTO authorDTO)
+        public async Task<ActionResult<Author>> PutAuthor(string id, AuthorDTO authorDTO)
         {
             if (id != authorDTO.ID)
             {
@@ -73,15 +73,13 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            var authors = await _context.Authors.ToListAsync();
-
-            return authors;
+            return authorToUpdate;
         }
 
         // POST: api/Authors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ICollection<Author>>> PostAuthor(AuthorDTO authorDTO)
+        public async Task<ActionResult<Author>> PostAuthor(AuthorDTO authorDTO)
         {
             var author = new Author
             {
@@ -90,14 +88,13 @@ namespace mwm_app.Server.Controllers
             };
             _context.Authors.Add(author);
             await _context.SaveChangesAsync();
-            var authors = await _context.Authors.ToListAsync();
 
-            return CreatedAtAction("GetAuthor", new { id = author.ID }, authors);
+            return CreatedAtAction("GetAuthor", new { id = author.ID }, author);
         }
 
         // DELETE: api/Authors/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ICollection<Author>>> DeleteAuthor(string id)
+        public async Task<IActionResult> DeleteAuthor(string id)
         {
             var author = await _context.Authors.FindAsync(id);
             if (author == null)
@@ -106,10 +103,13 @@ namespace mwm_app.Server.Controllers
             }
 
             _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
-            var authors = await _context.Authors.ToListAsync();
+            try {
+                await _context.SaveChangesAsync();
+            } catch (DbUpdateException) {
+                return BadRequest();
+            }
 
-            return authors;
+            return StatusCode(204);
         }
 
         private bool AuthorExists(string id)
