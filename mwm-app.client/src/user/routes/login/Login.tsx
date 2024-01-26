@@ -50,6 +50,7 @@ export default function Login() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <Input
+                            required
                             label="Email"
                             {...form.register("email")}
                             error={Boolean(form.formState.errors.email)}
@@ -60,6 +61,7 @@ export default function Login() {
                             className="w-full"
                         />
                         <Input
+                            required
                             type="password"
                             label="Password"
                             {...form.register("password")}

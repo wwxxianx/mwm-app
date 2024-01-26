@@ -1,7 +1,14 @@
+import { api } from "@/apiService/apiService";
+import {
+    useCreateUserFavouriteMutation,
+    useDeleteUserFavouriteMutation,
+    useGetUserFavouritesQuery,
+} from "@/apiService/userFavouriteBookApi";
+import { useCreateUserCartItemMutation } from "@/apiService/userShoppingCartApi";
 import BookCover from "@/components/ui/BookCover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { books } from "@/lib/fakeData";
+import { useToast } from "@/components/ui/use-toast";
 import { useAppSelector } from "@/lib/hooks";
 import { store } from "@/lib/reduxStore";
 import { cn } from "@/lib/utils";
@@ -10,17 +17,6 @@ import { HeartIcon, ShoppingBagIcon } from "@heroicons/react/24/solid";
 import { LibraryBig } from "lucide-react";
 import { useLoaderData } from "react-router-dom";
 import BookPreview from "./components/BookPreview";
-import { api } from "@/apiService/apiService";
-import {
-    useCreateUserFavouriteMutation,
-    useDeleteUserFavouriteMutation,
-    useGetUserFavouritesQuery,
-} from "@/apiService/userFavouriteBookApi";
-import {
-    useCreateUserCartItemMutation,
-    useGetUserCartItemsQuery,
-} from "@/apiService/userShoppingCartApi";
-import { useToast } from "@/components/ui/use-toast";
 
 async function loader({ params }) {
     const promise = store.dispatch(
@@ -28,7 +24,6 @@ async function loader({ params }) {
     );
     const res = await promise;
     return res.data;
-    return books[1];
 }
 
 export default function BookDetails() {
@@ -50,15 +45,49 @@ export default function BookDetails() {
     async function onTriggerFavourite() {
         const data = { bookID: bookData.id };
         if (isCurrentBookInFavourite) {
-            await deleteFavourite(data).unwrap();
+            deleteFavourite(data)
+                .unwrap()
+                .then((_) => {})
+                .catch((_) => {
+                    toast({
+                        variant: "destructive",
+                        title: "Something went wrong",
+                        description: "Please try again later.",
+                    });
+                });
         } else {
-            await addToFavourite(data).unwrap();
+            addToFavourite(data)
+                .unwrap()
+                .then((_) => {})
+                .catch((_) => {
+                    toast({
+                        variant: "destructive",
+                        title: "Something went wrong",
+                        description: "Please try again later.",
+                    });
+                });
         }
     }
 
     async function onAddToCart() {
         try {
-            await addToCart({ bookID: bookData.id }).unwrap();
+            addToCart({ bookID: bookData.id })
+                .unwrap()
+                .then((_) => {
+                    toast({
+                        variant: "default",
+                        title: "Book added to your cart!",
+                        description: "You can view book in your cart now.",
+                    });
+                })
+                .catch((err) => {
+                    if (err.status === 409) {
+                        toast({
+                            variant: "destructive",
+                            title: "Item already in your cart",
+                        });
+                    }
+                });
         } catch (err) {
             toast({
                 variant: "default",
@@ -146,3 +175,4 @@ export default function BookDetails() {
 }
 
 export { loader as clientBookLoader };
+

@@ -5,18 +5,21 @@ import {
 } from "@/apiService/userFavouriteBookApi";
 import { useCreateUserCartItemMutation } from "@/apiService/userShoppingCartApi";
 import BookCover from "@/components/ui/BookCover";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Book } from "@/types/dataType";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
+import { Link } from "react-router-dom";
 
 type BookDrawerProps = {
     book: Book;
 };
 
 export default function BookDrawer(props: BookDrawerProps) {
+    const { toast } = useToast();
     const { book } = props;
     const { data: favourites } = useGetUserFavouritesQuery();
     const [addToFavourite, { isLoading: isCreating }] =
@@ -44,11 +47,27 @@ export default function BookDrawer(props: BookDrawerProps) {
 
     async function onAddToCart(bookID: string) {
         try {
-            await addToCart({ bookID: bookID }).unwrap();
+            addToCart({ bookID: bookID })
+                .unwrap()
+                .then((_) => {
+                    toast({
+                        variant: "default",
+                        title: "Book added to your cart!",
+                        description: "You can view book in your cart now.",
+                    });
+                })
+                .catch((err) => {
+                    if (err.status === 409) {
+                        toast({
+                            variant: "destructive",
+                            title: "Item already in your cart",
+                        });
+                    }
+                });
         } catch (err) {
             toast({
                 variant: "default",
-                title: err?.data?.message ?? "Something went wrong",
+                title: "Something went wrong",
                 description: "You can update your cart item.",
             });
         }
@@ -120,13 +139,19 @@ export default function BookDrawer(props: BookDrawerProps) {
                                 >
                                     Add to cart
                                 </Button>
-                                <Button
-                                    variant="outlineClient"
-                                    className="rounded-none flex-1 gap-2 items-center text-lg h-fit py-3"
+                                <Link
+                                    to={`/book/${book.id}`}
+                                    className={cn(
+                                        buttonVariants({
+                                            variant: "outlineClient",
+                                        }),
+                                        "rounded-none flex-1 gap-2 items-center text-lg h-fit py-3"
+                                    )}
+                                    target="_top"
                                 >
                                     <span>See in details</span>
                                     <ArrowTopRightOnSquareIcon className="w-5" />
-                                </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>

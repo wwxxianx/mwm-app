@@ -49,6 +49,7 @@ export default function SignUp() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <Input
+                            required
                             label="Email"
                             {...form.register("email")}
                             error={Boolean(form.formState.errors.email)}
@@ -58,6 +59,7 @@ export default function SignUp() {
                             }
                         />
                         <Input
+                            required
                             type="password"
                             label="Password"
                             {...form.register("password")}
@@ -68,6 +70,7 @@ export default function SignUp() {
                             }
                         />
                         <Input
+                            required
                             type="password"
                             label="Confirm Password"
                             {...form.register("confirmPassword")}

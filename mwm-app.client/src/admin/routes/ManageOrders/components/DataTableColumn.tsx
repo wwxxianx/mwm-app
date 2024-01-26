@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "../../ManageBooks/components/DataTableCol
 import { DataTableRowActions } from "./DataTableRowActions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StatusChip from "./StatusChip";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 type OrderStatusHeader = {
     value: OrderStatus;
@@ -171,15 +171,11 @@ export const orderTableColumns: ColumnDef<Order>[] = [
             <DataTableColumnHeader column={column} title="Created At" />
         ),
         cell: ({ row }) => {
-            const formattedDate = format(
-                row.getValue("createdAt"),
-                "MM/dd/yyyy"
-            );
-            return (
-                <p>
-                    <time dateTime={formattedDate}>{formattedDate}</time>
-                </p>
-            );
+            const dateString = row.getValue("createdAt");
+            const date = parseISO(dateString);
+
+            const formattedDate = format(date, "yyyy-MM-dd");
+            return <p>{formattedDate}</p>;
         },
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id));
@@ -192,15 +188,11 @@ export const orderTableColumns: ColumnDef<Order>[] = [
             <DataTableColumnHeader column={column} title="Updated At" />
         ),
         cell: ({ row }) => {
-            const formattedDate = format(
-                row.getValue("updatedAt"),
-                "MM/dd/yyyy"
-            );
-            return (
-                <p>
-                    <time dateTime={formattedDate}>{formattedDate}</time>
-                </p>
-            );
+            const dateString = row.getValue("updatedAt");
+            const date = parseISO(dateString);
+
+            const formattedDate = format(date, "yyyy-MM-dd");
+            return <p>{formattedDate}</p>;
         },
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id));

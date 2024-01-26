@@ -12,11 +12,11 @@ export const AuthorSchema = z.object({
 });
 
 export const UserSchema = z.object({
-    id: z.string(),
+    id: z.number(),
     fullName: z.string(),
-    phoneNumber: z.string(),
+    phoneNumber: z.string().nullable(),
     email: z.string(),
-    profileImageUrl: z.string().optional(),
+    profileImageUrl: z.string().optional().nullable(),
 });
 
 // export const CartItemSchema = z.object({
@@ -77,7 +77,7 @@ export const BookSchema = z.object({
     updatedAt: z.string().optional().nullable(),
 });
 
-const OrderStatusEnum = z.enum([
+export const OrderStatusEnum = z.enum([
     "Pending",
     "Processing",
     "Delivery",
@@ -87,7 +87,11 @@ const OrderStatusEnum = z.enum([
 ]);
 
 export const OrderItemSchema = z.object({
-    book: BookSchema,
+    book: z.object({
+        ...BookSchema.shape,
+        category: CategorySchema.nullable(),
+        author: AuthorSchema.nullable(),
+    }),
     quantity: z.number().nonnegative({ message: "Invalid quantity" }),
 });
 
@@ -103,8 +107,8 @@ export const OrderSchema = z.object({
     postcode: z.string(),
     streetAddress: z.string(),
     addressUnit: z.string(),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
     items: z.array(OrderItemSchema).optional(),
 });
 

@@ -1,8 +1,10 @@
-import { orders } from "@/lib/fakeData";
-import { orderTableColumns } from "./components/DataTableColumn";
+import { useGetAllUsersOrdersQuery } from "@/apiService/userOrderApi";
 import { DataTable } from "../ManageBooks/components/DataTable";
+import { orderTableColumns } from "./components/DataTableColumn";
 
 export default function TaskPage() {
+    const { data: allUsesOrders } = useGetAllUsersOrdersQuery();
+
     return (
         <div className="hidden h-full flex-1 flex-col space-y-8 md:flex">
             <div className="flex items-center justify-between space-y-2">
@@ -12,7 +14,11 @@ export default function TaskPage() {
                     </h2>
                 </div>
             </div>
-            <DataTable data={orders} columns={orderTableColumns} type="order" />
+            <DataTable
+                data={allUsesOrders ?? []}
+                columns={orderTableColumns}
+                type="order"
+            />
         </div>
     );
 }

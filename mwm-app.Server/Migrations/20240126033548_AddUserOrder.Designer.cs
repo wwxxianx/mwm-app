@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mwm_app.Server.Data;
 
@@ -11,9 +12,11 @@ using mwm_app.Server.Data;
 namespace mwm_app.Server.Migrations
 {
     [DbContext(typeof(MainDBContext))]
-    partial class MainDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240126033548_AddUserOrder")]
+    partial class AddUserOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,7 +155,6 @@ namespace mwm_app.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserOrderID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ID");
@@ -306,9 +308,8 @@ namespace mwm_app.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("StreetAddress")
                         .IsRequired()
@@ -354,15 +355,11 @@ namespace mwm_app.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("mwm_app.Server.Models.UserOrder", "UserOrder")
+                    b.HasOne("mwm_app.Server.Models.UserOrder", null)
                         .WithMany("Items")
-                        .HasForeignKey("UserOrderID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserOrderID");
 
                     b.Navigation("Book");
-
-                    b.Navigation("UserOrder");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.ShoppingCart", b =>

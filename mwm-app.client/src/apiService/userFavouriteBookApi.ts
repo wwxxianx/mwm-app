@@ -26,7 +26,7 @@ export const userFavouriteBookApi = api.injectEndpoints({
                         )
                     );
                 } catch (err) {
-                    console.log("Update cached user favourites failed", err);
+                    console.log(err);
                 }
             },
         }),

@@ -179,9 +179,9 @@ export default function UserNavigation() {
                                 </NavLink>
                             </NavigationMenuTrigger>
                             <NavigationMenuContent className="p-0 bg-turquoise-50">
-                                <div className="grid grid-cols-3 bg-turquoise-50 px-6 gap-0 w-[750px] max-h-[650px] ml-5 pb-6 mt-0">
+                                <div className="grid grid-cols-3 bg-turquoise-50 gap-0 w-[750px] max-h-[650px] ml-5 pb-6 pt-4">
                                     <div className="col-span-3">
-                                        <p className="text-group-label uppercase font-inter font-medium pl-0">
+                                        <p className="text-group-label uppercase font-inter font-medium pl-0 mb-2">
                                             Trending Authors
                                         </p>
                                         <div className="grid grid-cols-3 gap-4">
@@ -233,7 +233,7 @@ export default function UserNavigation() {
                 <MobileNavigation />
             </div>
 
-            <main className="pt-16">
+            <main className="pt-16 bg-turquoise-50">
                 <Outlet />
             </main>
 

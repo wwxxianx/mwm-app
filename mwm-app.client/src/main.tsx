@@ -98,10 +98,6 @@ const router = createBrowserRouter([
                 element: PrivateRoute(Cart),
             },
             {
-                path: "checkout",
-                element: <Checkout />,
-            },
-            {
                 path: "user",
                 element: PrivateRoute(UserAccountNav),
                 children: [
@@ -149,6 +145,10 @@ const router = createBrowserRouter([
                 element: <PrivacyPolicy />,
             },
         ],
+    },
+    {
+        path: "checkout",
+        element: <Checkout />,
     },
     {
         path: "login",
@@ -207,7 +207,7 @@ const router = createBrowserRouter([
                         element: <ManageOrders />,
                     },
                     {
-                        path: "edit-order/:orderId",
+                        path: "edit-order/:orderID",
                         element: <EditOrder />,
                         loader: orderLoader,
                     },

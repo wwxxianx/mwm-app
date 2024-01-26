@@ -5,7 +5,10 @@ import { Form } from "@/components/ui/form";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import { Input } from "@/user/components/Input";
-import { updateSelectedCartItemsFromLocalStorage } from "@/user/redux/shoppingCartSlice";
+import {
+    clearSelectedCartItems,
+    updateSelectedCartItemsFromLocalStorage,
+} from "@/user/redux/shoppingCartSlice";
 import { textUnderline } from "@/utils/classUtilities";
 import {
     HomeModernIcon,
@@ -100,7 +103,11 @@ export default function Checkout() {
     function handleSubmitOrder() {
         let orderPayload: CreateOrderPayload;
         orderPayload = {
-            items: selectedCheckoutItems,
+            items: selectedCheckoutItems.map((cartItem) => ({
+                cartID: cartItem.id,
+                bookID: cartItem.book.id,
+                quantity: cartItem.quantity,
+            })),
             price: selectedCheckoutItems.reduce(
                 (accumulator, currentItem) =>
                     accumulator + currentItem.book.price,
@@ -114,9 +121,11 @@ export default function Checkout() {
             streetAddress: addressForm.getValues("streetAddress"),
             addressUnit: addressForm.getValues("addressUnit"),
         };
+        // console.log(JSON.stringify(orderPayload, null, 2));
         createOrder(orderPayload)
             .unwrap()
             .then((_) => {
+                dispatch(clearSelectedCartItems());
                 navigate("/user/purchases", { replace: true });
             });
     }
@@ -298,7 +307,7 @@ export default function Checkout() {
             ) : currentStep === 2 ? (
                 <Form {...paymentForm}>
                     <form
-                        onSubmit={addressForm.handleSubmit(onPaymentFormSubmit)}
+                        onSubmit={paymentForm.handleSubmit(onPaymentFormSubmit)}
                         className="grid grid-cols-2 gap-8 w-full"
                     >
                         <p className="col-span-2 translate-y-8 font-medium text-lg">
@@ -308,44 +317,44 @@ export default function Checkout() {
                         <Input
                             label="Card holder :"
                             required
-                            {...addressForm.register("holder")}
-                            error={Boolean(addressForm.formState.errors.holder)}
+                            {...paymentForm.register("holder")}
+                            error={Boolean(paymentForm.formState.errors.holder)}
                             errorMessage={
-                                addressForm.formState.errors?.holder?.message
+                                paymentForm.formState.errors?.holder?.message
                             }
                         />
 
                         <Input
                             label="Expiry date :"
                             required
-                            {...addressForm.register("expiryDate")}
+                            {...paymentForm.register("expiryDate")}
                             error={Boolean(
-                                addressForm.formState.errors.expiryDate
+                                paymentForm.formState.errors.expiryDate
                             )}
                             errorMessage={
-                                addressForm.formState.errors?.expiryDate
+                                paymentForm.formState.errors?.expiryDate
                                     ?.message
                             }
                         />
                         <Input
                             label="Debit card number :"
                             required
-                            {...addressForm.register("cardNumber")}
+                            {...paymentForm.register("cardNumber")}
                             error={Boolean(
-                                addressForm.formState.errors.cardNumber
+                                paymentForm.formState.errors.cardNumber
                             )}
                             errorMessage={
-                                addressForm.formState.errors?.cardNumber
+                                paymentForm.formState.errors?.cardNumber
                                     ?.message
                             }
                         />
                         <Input
                             label="CVC :"
                             required
-                            {...addressForm.register("cvc")}
-                            error={Boolean(addressForm.formState.errors.cvc)}
+                            {...paymentForm.register("cvc")}
+                            error={Boolean(paymentForm.formState.errors.cvc)}
                             errorMessage={
-                                addressForm.formState.errors?.cvc?.message
+                                paymentForm.formState.errors?.cvc?.message
                             }
                         />
 

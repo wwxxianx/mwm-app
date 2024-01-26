@@ -83,7 +83,7 @@ export default function EditBook() {
             // Cover image changed
             setIsUploadingImageFile(true);
             const newImageUrl = await getFileDownloadUrl(
-                "author-profile",
+                "book-cover",
                 data.title,
                 selectedImageFile.file
             );

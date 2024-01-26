@@ -319,7 +319,7 @@ export default function UserAccountNav() {
                     </li>
                 </ul>
             </nav>
-            <div className="lg:flex-1">
+            <div className="lg:flex-1 bg-turquoise-50">
                 <Outlet />
             </div>
         </div>

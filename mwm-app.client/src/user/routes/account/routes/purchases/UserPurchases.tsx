@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/types/dataType";
+import { Order, OrderStatus } from "@/types/dataType";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { books } from "@/lib/fakeData";
@@ -16,8 +16,10 @@ import CancelPurchaseDialog from "./components/CancelPurchaseDialog";
 import EditPurchaseDialog from "./components/EditPurchaseDialog";
 import RateDialog from "./components/RateDialog";
 import RefundDialog from "./components/RefundDialog";
+import { useGetUserOrdersQuery } from "@/apiService/userOrderApi";
 
 export default function UserPurchases() {
+    const { data: userOrders } = useGetUserOrdersQuery();
     const [tabValue, setTabValue] = useState("");
     const location = useLocation();
 
@@ -41,7 +43,7 @@ export default function UserPurchases() {
     }, []);
 
     return (
-        <div className="pb-20 px-4">
+        <div className="pb-20 px-4 bg-turquoise-50">
             <Tabs
                 defaultValue={tabValue}
                 value={tabValue}
@@ -68,30 +70,71 @@ export default function UserPurchases() {
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value="toShip">
-                    <ToShipTab />
+                    <UserOrderTable
+                        orderStatus="Pending"
+                        orders={userOrders?.filter(
+                            (order) => order.status === "Pending"
+                        )}
+                    />
                 </TabsContent>
                 <TabsContent value="toReceive">
-                    <ToReceiveTab />
+                    <UserOrderTable
+                        orderStatus="Processing"
+                        orders={userOrders?.filter(
+                            (order) => order.status === "Processing"
+                        )}
+                    />
                 </TabsContent>
                 <TabsContent value="completed">
-                    <CompletedTab />
+                    <UserOrderTable
+                        orderStatus="Completed"
+                        orders={userOrders?.filter(
+                            (order) => order.status === "Completed"
+                        )}
+                    />
                 </TabsContent>
                 <TabsContent value="refund">
-                    <RefundTab />
+                    <UserOrderTable
+                        orderStatus="Refund"
+                        orders={userOrders?.filter(
+                            (order) => order.status === "Refund"
+                        )}
+                    />
                 </TabsContent>
                 <TabsContent value="cancelled">
-                    <CancelledTab />
+                    <UserOrderTable
+                        orderStatus="Cancelled"
+                        orders={userOrders?.filter(
+                            (order) => order.status === "Cancelled"
+                        )}
+                    />
                 </TabsContent>
             </Tabs>
         </div>
     );
 }
 
-function UserOrderTable(props: { orderStatus: OrderStatus }) {
-    const { orderStatus } = props;
+function UserOrderTable(props: { orderStatus: OrderStatus; orders?: Order[] }) {
+    const { orderStatus, orders } = props;
+
+    return (
+        <div className="space-y-6 bg-turquoise-50">
+            {orders?.length > 0 ? (
+                orders?.map((order) => {
+                    return <OrderItem order={order} />;
+                })
+            ) : (
+                <p>You don't have any order that's in {orderStatus} state</p>
+            )}
+        </div>
+    );
+}
+
+function OrderItem(props: { order: Order }) {
+    const { order } = props;
 
     function RenderedHeaderStatus() {
-        switch (orderStatus) {
+        switch (order.status) {
             case "Pending":
             case "Processing":
                 return (
@@ -132,7 +175,7 @@ function UserOrderTable(props: { orderStatus: OrderStatus }) {
     }
 
     function RenderedActions() {
-        switch (orderStatus) {
+        switch (order.status) {
             case "Pending":
             case "Processing":
                 return (
@@ -170,7 +213,7 @@ function UserOrderTable(props: { orderStatus: OrderStatus }) {
                 <Link to={"/user/purchases/1"}>
                     <div className="text-black/60 flex items-center gap-1">
                         <ScrollText strokeWidth={1.5} className="w-4" />
-                        <p>TP092812982 (Order id)</p>
+                        <p>{order.id} (Order id)</p>
                     </div>
                 </Link>
                 <div className="flex items-center gap-1">
@@ -180,21 +223,21 @@ function UserOrderTable(props: { orderStatus: OrderStatus }) {
 
             {/* Books */}
             <div className="px-4 pb-4 border-b-[1px] border-black">
-                {books.slice(0, 2).map((book) => {
+                {order.items?.map((item) => {
                     return (
                         <div className="flex gap-2 mt-4">
                             <img
-                                src={book.imageUrl}
+                                src={item.book.imageUrl}
                                 alt="Book's cover image"
                                 className="max-w-[50px] shadow-md"
                             />
                             <div className="flex flex-col">
                                 <h3 className="text-sm font-medium">
-                                    {book.title}
+                                    {item.book.title}
                                 </h3>
-                                <p className="text-sm text-black/60 ">
-                                    by {book.author.fullName}
-                                </p>
+                                {/* <p className="text-sm text-black/60 ">
+                                    by {item.book.author.fullName}
+                                </p> */}
                                 <p className="font-medium mt-auto">
                                     <span className="font-inter text-xs">
                                         x
@@ -220,20 +263,4 @@ function UserOrderTable(props: { orderStatus: OrderStatus }) {
             </div>
         </div>
     );
-}
-
-function ToShipTab() {
-    return <UserOrderTable orderStatus="Pending" />;
-}
-function ToReceiveTab() {
-    return <UserOrderTable orderStatus="Delivery" />;
-}
-function CompletedTab() {
-    return <UserOrderTable orderStatus="Completed" />;
-}
-function RefundTab() {
-    return <UserOrderTable orderStatus="Refund" />;
-}
-function CancelledTab() {
-    return <UserOrderTable orderStatus="Cancelled" />;
 }

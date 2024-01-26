@@ -1,117 +1,89 @@
-import { Button } from "@/components/ui/button";
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-import FileDropzone from "@/components/ui/fileDropzone";
-import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { authors, books, categories, orders } from "@/lib/fakeData";
-import { ArrowPathIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormField, FormItem } from "@/components/ui/form";
-import { BookPayload, BookValidator } from "../CreateBook/types";
-import {
-    LoaderFunctionArgs,
-    useLoaderData,
-    useNavigate,
-} from "react-router-dom";
-import { ChevronLeftIcon, Copy } from "lucide-react";
-import { Order } from "../../../types/dataType";
+    useUpdateUserOrderMutation,
+    userOrderApi,
+} from "@/apiService/userOrderApi";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EnvelopeIcon } from "@heroicons/react/24/solid";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
-    SelectValue,
 } from "@/components/ui/select";
+import { store } from "@/lib/reduxStore";
+import { EnvelopeIcon } from "@heroicons/react/24/solid";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeftIcon, Copy } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+    LoaderFunctionArgs,
+    useLoaderData,
+    useNavigate,
+} from "react-router-dom";
+import { z } from "zod";
+import { Order, OrderStatusEnum } from "../../../types/dataType";
+import { BookPayload, BookValidator } from "../CreateBook/types";
 import StatusChip from "../ManageOrders/components/StatusChip";
+import { OrderAddressValidator } from "@/user/routes/checkout/Checkout";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { useToast } from "@/components/ui/use-toast";
 
 async function loader({ params }: LoaderFunctionArgs) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return orders[0];
+    const { orderID } = params;
+    const promise = store.dispatch(
+        userOrderApi.endpoints.getUserOrderByID.initiate(orderID)
+    );
+    const res = await promise;
+    return res.data;
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    // return orders[0];
 }
+
+const OrderStatusValidator = z.object({
+    status: OrderStatusEnum,
+});
+const EditOrderValidator = OrderAddressValidator.merge(OrderStatusValidator);
+type EditOrderPayload = z.infer<typeof EditOrderValidator>;
 
 export default function EditOrder() {
     const order = useLoaderData() as Order;
+    const { toast } = useToast;
     const navigate = useNavigate();
-    const [openAuthorDropdown, setOpenAuthorDropdown] = useState(false);
-    const [openCategoryDropdown, setOpenCategoryDropdown] = useState(false);
-    const [authorButtonWidth, setAuthorButtonWidth] = useState(0);
-    const authorButtonRef = useRef<HTMLButtonElement>(null);
-    const form = useForm({
-        resolver: zodResolver(BookValidator),
-        defaultValues: {
-            title: "",
-            slug: "",
-            imageUrl: "",
-            previewUrl: "",
-            category: "",
-            author: "",
-            price: null,
-            series: "",
-            description: "",
-            sku: null,
-        },
+    const form = useForm<EditOrderPayload>({
+        resolver: zodResolver(EditOrderValidator),
     });
-
-    // useEffect(() => {
-    //     form.setValue("title", book.title);
-    //     form.setValue("author", book.author);
-    //     form.setValue("slug", book.slug);
-    //     form.setValue("price", book.price);
-    //     form.setValue("sku", book.sku);
-    //     form.setValue("category", book.category);
-    //     form.setValue("description", book.description);
-    //     form.setValue("imageUrl", book.imageUrl);
-    //     form.setValue("previewUrl", book.previewUrl);
-    // }, []);
+    const [updateOrder, { isLoading: isUpdatingOrder }] =
+        useUpdateUserOrderMutation();
 
     useEffect(() => {
-        // NOTE: Set the width of dropdown menu to the same width as the trigger
-        function onResize() {
-            if (authorButtonRef.current) {
-                setAuthorButtonWidth(authorButtonRef.current.offsetWidth);
-            }
+        if (order) {
+            form.setValue("receiverName", order.receiverName);
+            form.setValue("receiverEmail", order.receiverEmail);
+            form.setValue("receiverPhoneNumber", order.receiverPhoneNumber);
+            form.setValue("stateRegion", order.stateRegion);
+            form.setValue("status", order.status);
+            form.setValue("streetAddress", order.streetAddress);
+            form.setValue("postcode", order.postcode);
+            form.setValue("addressUnit", order.addressUnit);
         }
+    }, [order]);
 
-        onResize();
-
-        window.addEventListener("resize", onResize);
-
-        return () => {
-            window.removeEventListener("resize", onResize);
-        };
-    }, [authorButtonRef]);
-
-    function onSubmit(data: BookPayload) {
-        console.log(data);
-    }
-
-    function onGenerateSlug() {
-        // Generate slug based on book title
-        // If no book title, show snakcbar
-        const bookTitle = form.getValues("title");
-        if (!bookTitle) {
-        } else {
-            const slug = bookTitle.split(" ").join("-").toLowerCase();
-            form.setValue("slug", slug);
-            form.clearErrors("slug");
-        }
+    function onSubmit(data: EditOrderPayload) {
+        const newOrder = { ...data, orderID: order.id };
+        updateOrder(newOrder)
+            .unwrap()
+            .then((_) => {
+                navigate(-1, { replace: true });
+            })
+            .catch((err) => {
+                toast({
+                    variant: "destructive",
+                    title: "Something went wrong, please try again later.",
+                });
+            });
     }
 
     function onNavigateBack() {
@@ -134,135 +106,235 @@ export default function EditOrder() {
                     (Order id: {order.id})
                 </span>
             </h2>
-
-            <div className="space-y-[40px]">
-                {/* User Section */}
-                <div className="flex items-center gap-[56px]">
-                    <div className="w-[316px] space-y-3">
-                        <h4 className="text-slate-500">User</h4>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Avatar>
-                                    <AvatarImage
-                                        src={order.user.profileImageUrl}
-                                    />
-                                    <AvatarFallback>
-                                        {order.user.fullName.charAt(0)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="text-sm">
-                                    <p>{order.user.fullName}</p>
-                                    <p className="text-slate-400">
-                                        {order.user.email}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center text-slate-500">
-                                <Button variant="ghost" size="sm">
-                                    <EnvelopeIcon className="w-5" />
-                                </Button>
-                                <Button variant="ghost" size="sm">
-                                    <Copy className="w-5" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        <h4 className="text-slate-500">Order Status</h4>
-                        <Select>
-                            <SelectTrigger className="h-[44px] min-w-[180px]">
-                                <StatusChip status="Processing" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup className="space-y-2">
-                                    <SelectItem value="apple">
-                                        <StatusChip status="Pending" />
-                                    </SelectItem>
-                                    <SelectItem value="banana">
-                                        <StatusChip status="Processing" />
-                                    </SelectItem>
-                                    <SelectItem value="blueberry">
-                                        <StatusChip status="Completed" />
-                                    </SelectItem>
-                                    <SelectItem value="grapes">
-                                        <StatusChip status="Cancelled" />
-                                    </SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                {/* Address Section */}
-                <div>
-                    <h4 className="text-slate-500 mb-[18px]">Order Status</h4>
-                    <div className="flex items-center gap-[56px]">
-                        <div className="w-[316px] space-y-2">
-                            <Input
-                                label="State / Region"
-                                defaultValue="Johor"
-                            />
-                            <Input
-                                label="Street Address"
-                                defaultValue="Johor"
-                            />
-                        </div>
-                        <div className="w-[316px] space-y-2">
-                            <Input
-                                label="Postcode / ZIP"
-                                defaultValue="Johor"
-                            />
-                            <Input
-                                label="Apartment / Suit / Unit / etc. (Optional)"
-                                defaultValue="Johor"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Items Section */}
-                <div>
-                    <h4 className="text-slate-500 mb-[18px]">Items</h4>
-                    <div className="flex items-center gap-[50px] flex-wrap">
-                        {order.items?.map((item) => {
-                            const subTotal =
-                                Math.round(
-                                    item.book.price * item.quantity * 100
-                                ) / 100;
-                            return (
-                                <div className="flex items-center w-[320px] justify-between">
-                                    <div className="flex items-center gap-[18px]">
-                                        <img
-                                            src={item.book.imageUrl}
-                                            alt="Book's cover image"
-                                            className="max-w-[55px] shadow-md"
-                                        />
-                                        <div>
-                                            <p className="max-w-[140px] truncate text-sm">
-                                                {item.book.title}
-                                                asdasdasdasdasdasdasdasdadsasd
-                                            </p>
-                                            <p className="text-slate-500">
-                                                <span>x </span>
-                                                {item.quantity}
-                                            </p>
+            {order ? (
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="space-y-[40px]">
+                            {/* User Section */}
+                            <div className="flex items-center gap-[56px]">
+                                <div className="w-[316px] space-y-3">
+                                    <h4 className="text-slate-500">User</h4>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Avatar>
+                                                <AvatarImage
+                                                    src={
+                                                        order?.user
+                                                            ?.profileImageUrl
+                                                    }
+                                                />
+                                                <AvatarFallback>
+                                                    {order?.user?.fullName?.charAt(
+                                                        0
+                                                    )}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="text-sm">
+                                                <p>{order?.user?.fullName}</p>
+                                                <p className="text-slate-400">
+                                                    {order?.user?.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center text-slate-500">
+                                            <Button variant="ghost" size="sm">
+                                                <EnvelopeIcon className="w-5" />
+                                            </Button>
+                                            <Button variant="ghost" size="sm">
+                                                <Copy className="w-5" />
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div>
-                                        <p>
-                                            <span className="text-sm">RM </span>
-                                            {subTotal}
-                                        </p>
-                                    </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
 
-                <Button>Save Changes</Button>
-            </div>
+                                <div className="space-y-3">
+                                    <h4 className="text-slate-500">
+                                        Order Status
+                                    </h4>
+                                    <FormField
+                                        control={form.control}
+                                        name="status"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <Select
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }
+                                                    defaultValue={field.value}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-[44px] min-w-[180px]">
+                                                            <StatusChip
+                                                                status={
+                                                                    field.value
+                                                                }
+                                                            />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectGroup className="space-y-2">
+                                                            <SelectItem value="Pending">
+                                                                <StatusChip status="Pending" />
+                                                            </SelectItem>
+                                                            <SelectItem value="Processing">
+                                                                <StatusChip status="Processing" />
+                                                            </SelectItem>
+                                                            <SelectItem value="Delivery">
+                                                                <StatusChip status="Delivery" />
+                                                            </SelectItem>
+                                                            <SelectItem value="Completed">
+                                                                <StatusChip status="Completed" />
+                                                            </SelectItem>
+                                                            <SelectItem value="Cancelled">
+                                                                <StatusChip status="Cancelled" />
+                                                            </SelectItem>
+                                                            <SelectItem value="Refund">
+                                                                <StatusChip status="Refund" />
+                                                            </SelectItem>
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Address Section */}
+                            <div>
+                                <h4 className="text-slate-500 mb-[18px]">
+                                    Receiver Infomation
+                                </h4>
+                                <div className="grid grid-cols-2 items-center gap-[20px] max-w-[800px]">
+                                    <Input
+                                        label="Full Name"
+                                        defaultValue={order.receiverName}
+                                        {...form.register("receiverName")}
+                                        error={Boolean(
+                                            form.formState.errors.receiverName
+                                        )}
+                                        errorMessage={
+                                            form.formState.errors.receiverName
+                                                ?.message
+                                        }
+                                    />
+                                    <Input
+                                        label="Email (Optional)"
+                                        defaultValue={order.receiverEmail}
+                                    />
+                                    <Input
+                                        label="Phone Number"
+                                        defaultValue={order.receiverPhoneNumber}
+                                        {...form.register(
+                                            "receiverPhoneNumber"
+                                        )}
+                                        error={Boolean(
+                                            form.formState.errors
+                                                .receiverPhoneNumber
+                                        )}
+                                        errorMessage={
+                                            form.formState.errors
+                                                .receiverPhoneNumber?.message
+                                        }
+                                    />
+                                    <br />
+                                    <Input
+                                        label="State / Region"
+                                        defaultValue={order.stateRegion}
+                                        {...form.register("stateRegion")}
+                                        error={Boolean(
+                                            form.formState.errors.stateRegion
+                                        )}
+                                        errorMessage={
+                                            form.formState.errors.stateRegion
+                                                ?.message
+                                        }
+                                    />
+                                    <Input
+                                        label="Street Address"
+                                        defaultValue={order.streetAddress}
+                                        {...form.register("streetAddress")}
+                                        error={Boolean(
+                                            form.formState.errors.streetAddress
+                                        )}
+                                        errorMessage={
+                                            form.formState.errors.streetAddress
+                                                ?.message
+                                        }
+                                    />
+                                    <Input
+                                        label="Postcode / ZIP"
+                                        defaultValue={order.postcode}
+                                        {...form.register("postcode")}
+                                        error={Boolean(
+                                            form.formState.errors.postcode
+                                        )}
+                                        errorMessage={
+                                            form.formState.errors.postcode
+                                                ?.message
+                                        }
+                                    />
+                                    <Input
+                                        label="Apartment / Suit / Unit / etc. (Optional)"
+                                        defaultValue={order.addressUnit}
+                                        {...form.register("addressUnit")}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Items Section */}
+                            <div>
+                                <h4 className="text-slate-500 mb-[18px]">
+                                    Items
+                                </h4>
+                                <div className="flex items-center gap-[50px] flex-wrap">
+                                    {order?.items?.map((item) => {
+                                        const subTotal =
+                                            Math.round(
+                                                item.book.price *
+                                                    item.quantity *
+                                                    100
+                                            ) / 100;
+                                        return (
+                                            <div className="flex items-center w-[320px] justify-between">
+                                                <div className="flex items-center gap-[18px]">
+                                                    <img
+                                                        src={item.book.imageUrl}
+                                                        alt="Book's cover image"
+                                                        className="max-w-[55px] shadow-md"
+                                                    />
+                                                    <div>
+                                                        <p className="max-w-[140px] truncate text-sm">
+                                                            {item.book.title}
+                                                            asdasdasdasdasdasdasdasdadsasd
+                                                        </p>
+                                                        <p className="text-slate-500">
+                                                            <span>x </span>
+                                                            {item.quantity}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p>
+                                                        <span className="text-sm">
+                                                            RM{" "}
+                                                        </span>
+                                                        {subTotal}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <Button type="submit">Save Changes</Button>
+                        </div>
+                    </form>
+                </Form>
+            ) : (
+                <div>helo</div>
+            )}
         </div>
     );
 }

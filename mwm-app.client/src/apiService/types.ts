@@ -56,11 +56,18 @@ export type AuthorWithBooks = Author & {
 };
 
 export type CreateOrderPayload = OrderAddressPayload & {
-    items: ShoppingCartItem[];
+    items: { cartID: string; bookID: string; quantity: number }[];
     price: number;
 };
 
 export type UpdateOrderPayload = {
+    receiverName?: string;
+    receiverEmail?: string;
+    receiverPhoneNumber?: string;
+    stateRegion?: string;
+    postcode?: string;
+    streetAddress?: string;
+    addressUnit?: string;
     orderID: string;
-    updateStatus: OrderStatus;
+    status: OrderStatus;
 };

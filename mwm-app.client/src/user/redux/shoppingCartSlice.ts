@@ -1,6 +1,5 @@
 import { ShoppingCartItem } from "@/apiService/types";
 import { createSlice } from "@reduxjs/toolkit";
-import { AsyncLocalStorage } from "async_hooks";
 
 type ShoppingCartState = {
     selectedCartItems: ShoppingCartItem[];
@@ -42,6 +41,7 @@ export const shoppingCartSlice = createSlice({
         },
         clearSelectedCartItems: (state) => {
             state.selectedCartItems = [];
+            localStorage.removeItem("selectedCheckoutItems");
         },
     },
 });
