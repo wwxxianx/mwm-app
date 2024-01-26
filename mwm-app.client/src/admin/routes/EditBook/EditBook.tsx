@@ -1,33 +1,24 @@
+import AuthorDropdownMenu from "@/admin/components/AuthorDropdownMenu";
+import CategoryDropdownMenu from "@/admin/components/CategoryDropdownMenu";
+import {
+    useGetBookByIdQuery,
+    useUpdateBookMutation,
+} from "@/apiService/apiService";
 import { Button } from "@/components/ui/button";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
 import FileDropzone from "@/components/ui/fileDropzone";
-import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { authors, books, categories } from "@/lib/fakeData";
-import { ArrowPathIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem } from "@/components/ui/form";
-import { BookPayload, BookValidator } from "../CreateBook/types";
-import {
-    LoaderFunctionArgs,
-    useLoaderData,
-    useNavigate,
-} from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { books } from "@/lib/fakeData";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeftIcon } from "lucide-react";
-import { Book } from "../../../types/dataType";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { LoaderFunctionArgs, useNavigate, useParams } from "react-router-dom";
+import { BookPayload, BookValidator } from "../CreateBook/types";
+import { getFileDownloadUrl } from "@/utils/getFileDownloadUrl";
+import { useToast } from "@/components/ui/use-toast";
 
 async function loader({ params }: LoaderFunctionArgs) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -35,12 +26,15 @@ async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function EditBook() {
-    const book = useLoaderData() as Book;
+    const { bookID } = useParams();
+    const { toast } = useToast();
     const navigate = useNavigate();
-    const [openAuthorDropdown, setOpenAuthorDropdown] = useState(false);
-    const [openCategoryDropdown, setOpenCategoryDropdown] = useState(false);
-    const [authorButtonWidth, setAuthorButtonWidth] = useState(0);
-    const authorButtonRef = useRef<HTMLButtonElement>(null);
+    const { data: book } = useGetBookByIdQuery(bookID);
+    const [updateBook, { isLoading: isUpdatingBook }] = useUpdateBookMutation();
+    const [isUploadingImageFile, setIsUploadingImageFile] = useState(false);
+    const [isUploadingPreviewFile, setIsUploadingPreviewFile] = useState(false);
+    const [selectedImageFile, setSelectedImageFile] = useState<any>(null);
+    const [selectedPreviewFile, setSelectedPreviewFile] = useState<any>(null);
     const form = useForm({
         resolver: zodResolver(BookValidator),
         defaultValues: {
@@ -58,36 +52,81 @@ export default function EditBook() {
     });
 
     useEffect(() => {
-        form.setValue("title", book.title);
-        form.setValue("author", book.author.fullName);
-        form.setValue("slug", book.slug);
-        form.setValue("price", book.price);
-        form.setValue("sku", book.sku);
-        form.setValue("category", book.category);
-        form.setValue("description", book.description);
-        form.setValue("imageUrl", book.imageUrl);
-        form.setValue("previewUrl", book.previewUrl ?? "");
-    }, []);
-
-    useEffect(() => {
-        // NOTE: Set the width of dropdown menu to the same width as the trigger
-        function onResize() {
-            if (authorButtonRef.current) {
-                setAuthorButtonWidth(authorButtonRef.current.offsetWidth);
-            }
+        if (book) {
+            form.setValue("title", book.title);
+            form.setValue("author", book.author.id);
+            form.setValue("slug", book.slug);
+            form.setValue("price", book.price);
+            form.setValue("sku", book.sku);
+            form.setValue("category", book.category.id);
+            form.setValue("description", book.description);
+            form.setValue("imageUrl", book.imageUrl);
+            form.setValue("previewUrl", book.previewUrl ?? "");
         }
+    }, [book]);
 
-        onResize();
+    function onImageFileChange(acceptedFiles: any[]) {
+        const firstFile = acceptedFiles[0];
+        setSelectedImageFile({
+            preview: URL.createObjectURL(firstFile),
+            name: firstFile.name,
+            file: firstFile,
+        });
+        form.setValue("imageUrl", firstFile.name);
+        form.clearErrors("imageUrl");
+    }
 
-        window.addEventListener("resize", onResize);
-
-        return () => {
-            window.removeEventListener("resize", onResize);
-        };
-    }, [authorButtonRef]);
-
-    function onSubmit(data: BookPayload) {
-        console.log(data);
+    async function onSubmit(data: BookPayload) {
+        // Update cover image
+        let imageUrl = book?.imageUrl;
+        if (selectedImageFile?.file) {
+            // Cover image changed
+            setIsUploadingImageFile(true);
+            const newImageUrl = await getFileDownloadUrl(
+                "author-profile",
+                data.title,
+                selectedImageFile.file
+            );
+            if (!newImageUrl) {
+                return toast({
+                    variant: "destructive",
+                    title: "Upload cover image failed, please try again later.",
+                });
+            }
+            imageUrl = newImageUrl;
+            setIsUploadingImageFile(false);
+        }
+        // Update preview file
+        let previewUrl = book?.previewUrl;
+        if (selectedPreviewFile?.file) {
+            // Cover image changed
+            setIsUploadingPreviewFile(true);
+            const newPreviewUrl = await getFileDownloadUrl(
+                "book-preview",
+                data.title,
+                selectedPreviewFile.file
+            );
+            if (!newPreviewUrl) {
+                return toast({
+                    variant: "destructive",
+                    title: "Upload preview file failed, please try again later.",
+                });
+            }
+            previewUrl = newPreviewUrl;
+            setIsUploadingPreviewFile(false);
+        }
+        updateBook({
+            ...data,
+            id: book?.id,
+            authorId: data.author,
+            categoryId: data.category,
+            imageUrl: imageUrl,
+            previewUrl: previewUrl,
+        })
+            .unwrap()
+            .then((_) => {
+                navigate(-1);
+            });
     }
 
     function onGenerateSlug() {
@@ -140,85 +179,20 @@ export default function EditBook() {
                         control={form.control}
                         render={({ field }) => (
                             <FormItem>
-                                <div className="w-full">
-                                    <Popover
-                                        open={openAuthorDropdown}
-                                        onOpenChange={setOpenAuthorDropdown}
-                                    >
-                                        <p className="text-slate-600 text-sm font-normal mb-2">
-                                            Author{" "}
-                                            <span className="text-red-400">
-                                                *
-                                            </span>
-                                        </p>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className="w-full justify-between text-slate-600 normal-case"
-                                                ref={authorButtonRef}
-                                                error={Boolean(
-                                                    form.formState.errors.author
-                                                )}
-                                                errorMessage={
-                                                    form.formState.errors
-                                                        .author &&
-                                                    form.formState.errors.author
-                                                        .message
-                                                }
-                                            >
-                                                {field.value?.length === 0
-                                                    ? "Select author..."
-                                                    : field.value}
-                                                <ChevronUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
-                                            className="p-0"
-                                            style={{
-                                                width: `${authorButtonWidth}px`,
-                                            }}
-                                        >
-                                            <Command>
-                                                <CommandInput
-                                                    placeholder="Search framework..."
-                                                    className="h-9"
-                                                />
-                                                <CommandEmpty>
-                                                    No framework found.
-                                                </CommandEmpty>
-                                                <CommandGroup>
-                                                    {authors.map((author) => (
-                                                        <CommandItem
-                                                            key={
-                                                                author.fullName
-                                                            }
-                                                            value={
-                                                                author.fullName
-                                                            }
-                                                            onSelect={(
-                                                                currentAuthor
-                                                            ) => {
-                                                                form.setValue(
-                                                                    "author",
-                                                                    author.fullName
-                                                                );
-                                                                form.clearErrors(
-                                                                    "author"
-                                                                );
-                                                                setOpenAuthorDropdown(
-                                                                    false
-                                                                );
-                                                            }}
-                                                        >
-                                                            {author.fullName}
-                                                        </CommandItem>
-                                                    ))}
-                                                </CommandGroup>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
+                                <AuthorDropdownMenu
+                                    value={field.value}
+                                    error={Boolean(
+                                        form.formState.errors.author
+                                    )}
+                                    errorMessage={
+                                        form.formState.errors.author &&
+                                        form.formState.errors.author.message
+                                    }
+                                    onValueChange={(value) => {
+                                        form.setValue("author", value);
+                                        form.clearErrors("author");
+                                    }}
+                                />
                             </FormItem>
                         )}
                     />
@@ -274,89 +248,20 @@ export default function EditBook() {
                         control={form.control}
                         render={({ field }) => (
                             <FormItem>
-                                <div className="w-full">
-                                    <Popover
-                                        open={openCategoryDropdown}
-                                        onOpenChange={setOpenCategoryDropdown}
-                                    >
-                                        <p className="text-slate-600 text-sm font-normal mb-2">
-                                            Book Category{" "}
-                                            <span className="text-red-400">
-                                                *
-                                            </span>
-                                        </p>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className="w-full justify-between text-slate-600"
-                                                ref={authorButtonRef}
-                                                error={Boolean(
-                                                    form.formState.errors
-                                                        .category
-                                                )}
-                                                errorMessage={
-                                                    form.formState.errors
-                                                        .category &&
-                                                    form.formState.errors
-                                                        .category.message
-                                                }
-                                            >
-                                                {field.value?.length === 0
-                                                    ? "Select category..."
-                                                    : field.value}
-                                                <ChevronUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
-                                            className="p-0"
-                                            style={{
-                                                width: `${authorButtonWidth}px`,
-                                            }}
-                                        >
-                                            <Command>
-                                                <CommandInput
-                                                    placeholder="Search framework..."
-                                                    className="h-9"
-                                                />
-                                                <CommandEmpty>
-                                                    No framework found.
-                                                </CommandEmpty>
-                                                <CommandGroup>
-                                                    {categories.map(
-                                                        (category) => (
-                                                            <CommandItem
-                                                                {...field}
-                                                                key={
-                                                                    category.value
-                                                                }
-                                                                value={
-                                                                    category.value
-                                                                }
-                                                                onSelect={(
-                                                                    currentCategory
-                                                                ) => {
-                                                                    form.setValue(
-                                                                        "category",
-                                                                        category.value
-                                                                    );
-                                                                    form.clearErrors(
-                                                                        "category"
-                                                                    );
-                                                                    setOpenCategoryDropdown(
-                                                                        false
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {category.label}
-                                                            </CommandItem>
-                                                        )
-                                                    )}
-                                                </CommandGroup>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
+                                <CategoryDropdownMenu
+                                    value={field.value}
+                                    error={Boolean(
+                                        form.formState.errors.category
+                                    )}
+                                    errorMessage={
+                                        form.formState.errors.category &&
+                                        form.formState.errors.category.message
+                                    }
+                                    onValueChange={(value) => {
+                                        form.setValue("category", value);
+                                        form.clearErrors("category");
+                                    }}
+                                />
                             </FormItem>
                         )}
                     />
@@ -373,14 +278,23 @@ export default function EditBook() {
                         }
                     />
 
-                    <FileDropzone label="Image" type="image" />
+                    <FileDropzone
+                        label="Image"
+                        type="image"
+                        previewFileUrl={book?.imageUrl}
+                        onDrop={onImageFileChange}
+                        selectedFile={selectedImageFile}
+                    />
+
                     <FileDropzone label="Book Preview" type="file" />
 
                     <Button
                         className="w-[200px] ml-auto col-span-full"
                         type="submit"
+                        isLoading={isUpdatingBook}
+                        disabled={isUpdatingBook}
                     >
-                        Create
+                        Save changes
                     </Button>
                 </form>
             </Form>

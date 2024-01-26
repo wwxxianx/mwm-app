@@ -9,7 +9,6 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
@@ -18,28 +17,34 @@ import { initUser } from "../../redux/userSlice";
 import HomepageCart from "./components/HomepageCart";
 import MobileNavigation from "./components/MobileNavigation";
 import UserDropdownMenu from "./components/UserDropdownMenu";
-
-const topCategories = [
-    {
-        category: "Fiction",
-    },
-    { category: "Business & Management" },
-    { category: "Economics" },
-    { category: "Non-fiction" },
-    { category: "Poetry" },
-    { category: "Self Improvement" },
-    { category: "Science" },
-];
+import {
+    useGetFeaturedBooksQuery,
+    useGetTrendingAuthorsQuery,
+    useGetTrendingCategoriesQuery,
+} from "@/apiService/apiService";
+import { Category } from "@/types/dataType";
+import { updateSelectedCategories } from "@/user/redux/bookSlice";
 
 export default function UserNavigation() {
     const dispatch = useAppDispatch();
     const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
-    const token = useAppSelector((state) => state.user.token);
+    const { data: trendingCategories } = useGetTrendingCategoriesQuery();
+    const { data: featuredBooks } = useGetFeaturedBooksQuery();
+    const { data: trendingAuthors } = useGetTrendingAuthorsQuery();
 
     useEffect(() => {
         // Check user from localStorage and stay user signed in
         dispatch(initUser());
     }, []);
+
+    function handleTrendingCategoryClick(category: Category) {
+        dispatch(
+            updateSelectedCategories({
+                categoryID: category.id,
+                isFromNav: true,
+            })
+        );
+    }
 
     return (
         <div className="h-screen bg-turquoise-50 font-playfair flex flex-col">
@@ -52,7 +57,7 @@ export default function UserNavigation() {
                         className="w-[110px] md:w-[100px]"
                     />
                 </Link>
-                <NavigationMenu className="hidden md:flex justify-center md:justify-start min-w-full items-center px-4">
+                <NavigationMenu className="hidden md:flex justify-center md:justify-start min-w-full items-center px-8 py-6 bg-turquoise-50/70 backdrop-blur-sm fixed top-0">
                     <NavigationMenuList>
                         <NavigationMenuItem className="mr-4">
                             <NavLink to={"/"}>
@@ -85,7 +90,7 @@ export default function UserNavigation() {
                             <NavigationMenuTrigger className="bg-transparent text-base font-normal hover:bg-transparent">
                                 <NavLink
                                     to={"/books"}
-                                    target="_blank"
+                                    target="_top"
                                     className={({ isActive }) =>
                                         cn({
                                             "font-medium": isActive,
@@ -98,30 +103,41 @@ export default function UserNavigation() {
                             <NavigationMenuContent className="p-0 bg-turquoise-50">
                                 <div className="grid grid-cols-3 bg-turquoise-50 gap-0 w-[750px] max-h-[650px] ml-5 pb-6 pt-4">
                                     <div className="col-span-1">
-                                        <p className="text-group-label uppercase font-inter font-medium pl-0">
+                                        <p className="text-group-label uppercase font-inter font-medium pl-0 mb-2">
                                             Top Categories
                                         </p>
                                         <div className="flex flex-col gap-4">
-                                            {topCategories.map((category) => {
-                                                return (
-                                                    <Link
-                                                        to={"/"}
-                                                        className="inline-block font-inter font-normal text-sm text-black/60 hover:text-black"
-                                                    >
-                                                        {category.category}
-                                                    </Link>
-                                                );
-                                            })}
+                                            {trendingCategories?.map(
+                                                (category) => {
+                                                    return (
+                                                        <Link
+                                                            to={"/books"}
+                                                            className="inline-block font-inter font-normal text-sm text-black/60 hover:text-black"
+                                                            onClick={() =>
+                                                                handleTrendingCategoryClick(
+                                                                    category
+                                                                )
+                                                            }
+                                                        >
+                                                            {category.category}
+                                                        </Link>
+                                                    );
+                                                }
+                                            )}
                                         </div>
                                     </div>
                                     <div className="col-span-2">
-                                        <p className="text-group-label uppercase font-inter font-medium pl-0">
+                                        <p className="text-group-label uppercase font-inter font-medium pl-0 mb-2">
                                             Featured Books
                                         </p>
                                         <div className="grid grid-cols-2 gap-4">
-                                            {books.map((book) => {
+                                            {featuredBooks?.map((book) => {
                                                 return (
-                                                    <div className="flex items-center gap-2">
+                                                    <Link
+                                                        to={`/book/${book.id}`}
+                                                        className="flex items-center gap-2"
+                                                        target="_top"
+                                                    >
                                                         <BookCover
                                                             imageUrl={
                                                                 book.imageUrl
@@ -129,7 +145,7 @@ export default function UserNavigation() {
                                                             className="max-w-[60px] rounded-sm"
                                                         />
                                                         <div className="space-y-1">
-                                                            <h4 className="font-playfair text-xs max-w-[120px] truncate">
+                                                            <h4 className="font-playfair text-xs max-w-[120px] line-clamp-2">
                                                                 {book.title}
                                                             </h4>
                                                             <h5 className="font-playfair text-black/60 text-xs max-w-[120px] truncate">
@@ -139,7 +155,7 @@ export default function UserNavigation() {
                                                                 }
                                                             </h5>
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 );
                                             })}
                                         </div>
@@ -152,7 +168,7 @@ export default function UserNavigation() {
                             <NavigationMenuTrigger className="bg-transparent text-base font-normal hover:bg-transparent">
                                 <NavLink
                                     to={"/authors"}
-                                    target="_blank"
+                                    target="_top"
                                     className={({ isActive }) =>
                                         cn({
                                             "font-medium": isActive,
@@ -164,49 +180,39 @@ export default function UserNavigation() {
                             </NavigationMenuTrigger>
                             <NavigationMenuContent className="p-0 bg-turquoise-50">
                                 <div className="grid grid-cols-3 bg-turquoise-50 px-6 gap-0 w-[750px] max-h-[650px] ml-5 pb-6 mt-0">
-                                    <div className="col-span-1">
+                                    <div className="col-span-3">
                                         <p className="text-group-label uppercase font-inter font-medium pl-0">
-                                            Top Categories
+                                            Trending Authors
                                         </p>
-                                        <div className="flex flex-col gap-4">
-                                            {topCategories.map((category) => {
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {trendingAuthors?.map((author) => {
                                                 return (
                                                     <Link
-                                                        to={"/"}
-                                                        className="inline-block font-inter font-normal text-sm text-black/60 hover:text-black"
+                                                        to={`/author/${author.id}`}
+                                                        className="flex items-center gap-2"
+                                                        target="_top"
                                                     >
-                                                        {category.category}
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <p className="text-group-label uppercase font-inter font-medium pl-0">
-                                            Featured Books
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {books.map((book) => {
-                                                return (
-                                                    <div className="flex items-center gap-2">
-                                                        <BookCover
-                                                            imageUrl={
-                                                                book.imageUrl
+                                                        <img
+                                                            src={
+                                                                author.imageUrl
                                                             }
+                                                            alt="Author image"
                                                             className="max-w-[60px] rounded-sm"
                                                         />
                                                         <div className="space-y-1">
                                                             <h4 className="font-playfair text-xs max-w-[120px] truncate">
-                                                                {book.title}
-                                                            </h4>
-                                                            <h5 className="font-playfair text-black/60 text-xs max-w-[120px] truncate">
                                                                 {
-                                                                    book.author
+                                                                    author.fullName
+                                                                }
+                                                            </h4>
+                                                            {/* <h5 className="font-playfair text-black/60 text-xs max-w-[120px] truncate">
+                                                                {
+                                                                    author.author
                                                                         .fullName
                                                                 }
-                                                            </h5>
+                                                            </h5> */}
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 );
                                             })}
                                         </div>
@@ -216,7 +222,7 @@ export default function UserNavigation() {
                         </NavigationMenuItem>
                     </NavigationMenuList>
                     <div className="hidden md:flex items-center ml-auto">
-                        <HomepageCart />
+                        {isLoggedIn && <HomepageCart />}
                         {isLoggedIn ? (
                             <UserDropdownMenu />
                         ) : (
@@ -227,7 +233,7 @@ export default function UserNavigation() {
                 <MobileNavigation />
             </div>
 
-            <main>
+            <main className="pt-16">
                 <Outlet />
             </main>
 

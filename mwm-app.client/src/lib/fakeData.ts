@@ -93,7 +93,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[0],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -106,7 +109,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/3fqRdhM/steve-jobs-4.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -120,7 +126,10 @@ export const books: Book[] = [
         imageUrl:
             "https://i.ibb.co/k9jtg6P/design-for-writers-book-cover-tf-2-a-million-to-one.webp",
         author: authors[2],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -133,7 +142,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -146,7 +158,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -159,7 +174,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -172,7 +190,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,
@@ -185,7 +206,10 @@ export const books: Book[] = [
         slug: "book-title",
         imageUrl: "https://i.ibb.co/yqYD401/sapiens-3.jpg",
         author: authors[1],
-        category: "Fiction",
+        category: {
+            id: "1",
+            category: "Fiction",
+        },
         description:
             "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.",
         sku: 20,

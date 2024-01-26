@@ -49,7 +49,7 @@ export default function TopBooks() {
                                     className="max-w-[120px] md:max-w-[150px] lg:max-w-[200px]"
                                 />
                                 <p className="font-medium text-xs md:text-sm text-[#D2504E]">
-                                    Fiction
+                                    {value.book.category.category}
                                 </p>
                                 <h2 className="font-medium text-sm md:text-base line-clamp-2">
                                     {value.book.title}

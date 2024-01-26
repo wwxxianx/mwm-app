@@ -1,56 +1,76 @@
+import { useGetTrendingCategoryBooksQuery } from "@/apiService/apiService";
+import EconomicsUrl from "@/assets/economics.jpg";
 import FictionUrl from "@/assets/fiction.jpg";
+import HistoryUrl from "@/assets/history.jpg";
 import HorrorUrl from "@/assets/horror.jpg";
 import NovelUrl from "@/assets/novel.jpg";
+import TechnologyUrl from "@/assets/technology.jpg";
 import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
 import HoverCard from "@/user/components/HoverCard/HoverCard";
 import { textUnderline } from "@/utils/classUtilities";
+import { useMemo } from "react";
 
 export default function TopCategories() {
-    const topCategories = [
-        {
-            category: "Fiction",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: FictionUrl,
-        },
-        {
-            category: "Horror",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: HorrorUrl,
-        },
-        {
-            category: "Novel",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: NovelUrl,
-        },
-        {
-            category: "Fiction",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: FictionUrl,
-        },
-        {
-            category: "Horror",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: HorrorUrl,
-        },
-        {
-            category: "Novel",
-            subTitle:
-                "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
-            books: books.slice(0, 3),
-            bgImage: NovelUrl,
-        },
-    ];
+    const { data: trendingCategoryBooks } = useGetTrendingCategoryBooksQuery();
+    const topCategories = useMemo(() => {
+        return [
+            {
+                category: "Fiction",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "Fiction"
+                ),
+                bgImage: FictionUrl,
+            },
+            {
+                category: "Horror",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "Horror"
+                ),
+                bgImage: HorrorUrl,
+            },
+            {
+                category: "Novel",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "Novel"
+                ),
+                bgImage: NovelUrl,
+            },
+            {
+                category: "Technology",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "Technology"
+                ),
+                bgImage: TechnologyUrl,
+            },
+            {
+                category: "History",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "History"
+                ),
+                bgImage: HistoryUrl,
+            },
+            {
+                category: "Economics",
+                subTitle:
+                    "Check out all of these gorgeous mountain trips with beautiful views of, you guessed it, the mountains",
+                books: trendingCategoryBooks?.filter(
+                    (b) => b.category.category === "Economics"
+                ),
+                bgImage: EconomicsUrl,
+            },
+        ];
+    }, [trendingCategoryBooks]);
 
     return (
         <div className="container">

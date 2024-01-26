@@ -15,7 +15,9 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { updateSelectedCartItems } from "@/user/redux/shoppingCartSlice";
 import {
     ArrowTopRightOnSquareIcon,
     ShoppingBagIcon,
@@ -34,12 +36,16 @@ type HomepageCartProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export default function HomepageCart(props: HomepageCartProps) {
+    const dispatch = useAppDispatch();
     const { toast } = useToast();
     const { data: cartItems } = useGetUserCartItemsQuery();
     const [updateCartItem, { isLoading: isUpdatingCartItem }] =
         useUpdateUserCartItemMutation();
     const [deleteCartItem, { isLoading: isDeletingCartItem }] =
         useDeleteUserCartItemMutation();
+    const selectedCheckoutItems = useAppSelector(
+        (state) => state.shoppingCart.selectedCartItems
+    );
 
     async function onUpdateCartItem(
         shoppingCartItem: ShoppingCartItem,
@@ -68,6 +74,10 @@ export default function HomepageCart(props: HomepageCartProps) {
                 title: "Failed to remove cart item, please try again later.",
             });
         }
+    }
+
+    function onItemCheck(cartItem: ShoppingCartItem) {
+        dispatch(updateSelectedCartItems(cartItem));
     }
 
     return (
@@ -102,11 +112,25 @@ export default function HomepageCart(props: HomepageCartProps) {
                     </div>
 
                     {cartItems?.map((cartItem) => {
+                        let isCurrentItemSelectedForCheckout =
+                            selectedCheckoutItems.filter(
+                                (i) => i.id === cartItem.id
+                            )?.length;
+
                         return (
                             <div className="flex gap-2 mt-8">
                                 {/* Actions */}
                                 <div className="flex flex-col gap-1 justify-start items-start mt-2">
-                                    <Checkbox className="mx-3 hover:bg-black/10 w-5 h-5 border-[1.5px]" />
+                                    <Checkbox
+                                        className="mx-3 hover:bg-black/10 w-5 h-5 border-[1.5px]"
+                                        checked={Boolean(
+                                            isCurrentItemSelectedForCheckout
+                                        )}
+                                        onCheckedChange={() => {
+                                            console.log("click");
+                                            onItemCheck(cartItem);
+                                        }}
+                                    />
                                     <Button
                                         size="sm"
                                         variant="ghostClient"
@@ -182,7 +206,7 @@ export default function HomepageCart(props: HomepageCartProps) {
                     </div>
                     <SheetClose asChild>
                         <Link
-                            to={"/login"}
+                            to={"/checkout"}
                             className={cn(
                                 buttonVariants({
                                     variant: "clientDefault",

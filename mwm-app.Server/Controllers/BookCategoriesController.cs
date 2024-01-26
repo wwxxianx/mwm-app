@@ -29,6 +29,12 @@ namespace mwm_app.Server.Controllers
             return await _context.BookCategories.ToListAsync();
         }
 
+        [HttpGet("trending")]
+        public async Task<ActionResult<IEnumerable<BookCategory>>> GetTrendingBookCategory()
+        {
+            return await _context.BookCategories.Where(c => c.IsTrending).ToListAsync();
+        }
+
         // GET: api/BookCategories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BookCategory>> GetBookCategory(string id)

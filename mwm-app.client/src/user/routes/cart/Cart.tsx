@@ -1,14 +1,52 @@
+import {
+    useDeleteUserCartItemMutation,
+    useGetUserCartItemsQuery,
+    useUpdateUserCartItemMutation,
+} from "@/apiService/userShoppingCartApi";
 import BookCover from "@/components/ui/BookCover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { cartItems } from "@/lib/fakeData";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 
 export default function Cart() {
+    const { data: cartItems } = useGetUserCartItemsQuery();
     let isMobile = useMediaQuery("(max-width: 768px)");
-    let empty = false;
+
+    const [updateCartItem, { isLoading: isUpdatingCartItem }] =
+        useUpdateUserCartItemMutation();
+    const [deleteCartItem, { isLoading: isDeletingCartItem }] =
+        useDeleteUserCartItemMutation();
+
+    async function onUpdateCartItem(
+        shoppingCartItem: ShoppingCartItem,
+        cartAction: "increment" | "decrement"
+    ) {
+        if (cartAction === "decrement" && shoppingCartItem.quantity === 1) {
+            return toast({
+                variant: "destructive",
+                title: "Cart item quantity can't less than 1",
+            });
+        }
+        await updateCartItem({
+            shoppingCartID: shoppingCartItem.id,
+            cartAction,
+        }).unwrap();
+    }
+
+    async function onDeleteCartItem(shoppingCartItem: ShoppingCartItem) {
+        try {
+            await deleteCartItem({
+                shoppingCartID: shoppingCartItem.id,
+            }).unwrap();
+        } catch (err) {
+            toast({
+                variant: "destructive",
+                title: "Failed to remove cart item, please try again later.",
+            });
+        }
+    }
 
     function RenderedContent() {
         const labelClassName =
@@ -30,9 +68,9 @@ export default function Cart() {
                 </div>
                 <div className="max-w-[450px] mx-auto">
                     <p className="ml-3 text-lg">
-                        Your Shopping Cart (30 items)
+                        Your Shopping Cart ({cartItems?.length} items)
                     </p>
-                    {cartItems.map((cartItem) => {
+                    {cartItems?.map((cartItem) => {
                         return (
                             <div className="flex gap-1 items-start mt-6">
                                 {/* Actions */}
@@ -43,17 +81,17 @@ export default function Cart() {
                                     </Button>
                                 </div>
                                 <BookCover
-                                    imageUrl={cartItem.item.imageUrl}
+                                    imageUrl={cartItem.book.imageUrl}
                                     className="max-w-[58px]"
                                 />
                                 <div className="ml-1">
                                     <h3 className="text-sm">
-                                        {cartItem.item.title}
+                                        {cartItem.book.title}
                                     </h3>
                                     <h4 className="text-xs text-black/60">
-                                        {cartItem.item.author.fullName}
+                                        {cartItem.book.author.fullName}
                                     </h4>
-                                    <p>RM {cartItem.item.price}</p>
+                                    <p>RM {cartItem.book.price}</p>
                                 </div>
                                 {/* Quantity */}
                                 <div className="flex items-center gap-1 my-1 ml-auto">
@@ -98,7 +136,7 @@ export default function Cart() {
                         <p className={labelClassName}>Subtotal</p>
                     </div>
                     <div className="space-y-8 pb-20">
-                        {cartItems.map((cartItem) => {
+                        {cartItems?.map((cartItem) => {
                             return (
                                 <div className="grid grid-cols-7">
                                     <div className="flex pl-2">
@@ -108,26 +146,29 @@ export default function Cart() {
                                             <Button
                                                 size="sm"
                                                 variant="ghostAlert"
+                                                onClick={() =>
+                                                    onDeleteCartItem(cartItem)
+                                                }
                                             >
                                                 <TrashIcon className="w-5" />
                                             </Button>
                                         </div>
 
                                         <BookCover
-                                            imageUrl={cartItem.item.imageUrl}
+                                            imageUrl={cartItem.book.imageUrl}
                                             className="max-w-[70px]"
                                         />
                                     </div>
                                     {/* Product Info */}
                                     <div className="col-span-3">
-                                        <h3>{cartItem.item.title}</h3>
+                                        <h3>{cartItem.book.title}</h3>
                                         <h5 className="text-black/60">
-                                            {cartItem.item.author.fullName}
+                                            {cartItem.book.author.fullName}
                                         </h5>
                                     </div>
                                     {/* Unit Price */}
                                     <p className="ml-auto">
-                                        RM {cartItem.item.price}
+                                        RM {cartItem.book.price}
                                     </p>
                                     {/* Quantity */}
                                     <div className="flex gap-1 ml-auto">
@@ -135,6 +176,12 @@ export default function Cart() {
                                             size="sm"
                                             variant="ghostClient"
                                             className="px-2 py-2"
+                                            onClick={() =>
+                                                onUpdateCartItem(
+                                                    cartItem,
+                                                    "decrement"
+                                                )
+                                            }
                                         >
                                             <MinusIcon className="w-4" />
                                         </Button>
@@ -145,12 +192,21 @@ export default function Cart() {
                                             size="sm"
                                             variant="ghostClient"
                                             className="px-2 py-2"
+                                            onClick={() =>
+                                                onUpdateCartItem(
+                                                    cartItem,
+                                                    "increment"
+                                                )
+                                            }
                                         >
                                             <PlusIcon className="w-4" />
                                         </Button>
                                     </div>
                                     {/* Subtotal */}
-                                    <p className="ml-auto">RM 108</p>
+                                    <p className="ml-auto">
+                                        {cartItem.quantity *
+                                            cartItem.book.price}
+                                    </p>
                                 </div>
                             );
                         })}
@@ -174,11 +230,11 @@ export default function Cart() {
 
     return (
         <div className="bg-turquoise-50">
-            {empty ? <EmptyCart /> : <RenderedContent />}
+            {cartItems?.length <= 0 ? <EmptyCart /> : <RenderedContent />}
         </div>
     );
 }
 
 function EmptyCart() {
-    return <div></div>;
+    return <div>There's no book in your cart</div>;
 }

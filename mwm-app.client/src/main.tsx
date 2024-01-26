@@ -2,11 +2,15 @@ import { initializeApp } from "firebase/app";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+    Navigate,
+    RouterProvider,
+    createBrowserRouter,
+} from "react-router-dom";
 import AdminNavBar from "./admin/navigation/Navigation";
 import AdminRoot from "./admin/routes/AdminRoot";
 import CreateBook from "./admin/routes/CreateBook/CreateBook";
-import EditBook, { bookLoader } from "./admin/routes/EditBook/EditBook";
+import EditBook from "./admin/routes/EditBook/EditBook";
 import EditOrder, { orderLoader } from "./admin/routes/EditOrder/EditOrder";
 import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
 import AdminLogin from "./admin/routes/Login/Login";
@@ -23,6 +27,7 @@ import ManageUsers, {
     usersLoader,
 } from "./admin/routes/ManageUsers/ManageUsers";
 import TopThreeBooks from "./admin/routes/TopThreeBooks/TopThreeBooks";
+import { Toaster } from "./components/ui/toaster";
 import "./index.css";
 import { store } from "./lib/reduxStore";
 import AboutUs from "./user/routes/aboutUs/AboutUs";
@@ -33,6 +38,7 @@ import UserFavourites from "./user/routes/account/routes/favourites/UserFavourit
 import UserProfile from "./user/routes/account/routes/profile/UserProfile";
 import UserPurchases from "./user/routes/account/routes/purchases/UserPurchases";
 import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
+import AuthorDetails from "./user/routes/author/AuthorDetails";
 import Authors from "./user/routes/authors/Authors";
 import BookDetails, { clientBookLoader } from "./user/routes/book/BookDetails";
 import Books from "./user/routes/books/Books";
@@ -43,7 +49,23 @@ import UserNavigation from "./user/routes/navigation/UserNavigation";
 import PrivacyPolicy from "./user/routes/privacyPolicy/PrivacyPolicy";
 import SignUp from "./user/routes/signUp/SignUp";
 import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
-import { Toaster } from "./components/ui/toaster";
+import { useAppSelector } from "./lib/hooks";
+import Checkout from "./user/routes/checkout/Checkout";
+
+const PrivateRoute = (Component) => {
+    const PrivateRouteWrapper = (props) => {
+        const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+        const token = localStorage.getItem("userToken");
+
+        return token != null ? (
+            <Component {...props} />
+        ) : (
+            <Navigate to="/" replace />
+        );
+    };
+
+    return <PrivateRouteWrapper />;
+};
 
 const router = createBrowserRouter([
     {
@@ -63,17 +85,25 @@ const router = createBrowserRouter([
                 element: <Authors />,
             },
             {
+                path: "author/:authorID",
+                element: <AuthorDetails />,
+            },
+            {
                 path: "book/:bookId",
                 element: <BookDetails />,
                 loader: clientBookLoader,
             },
             {
                 path: "cart",
-                element: <Cart />,
+                element: PrivateRoute(Cart),
+            },
+            {
+                path: "checkout",
+                element: <Checkout />,
             },
             {
                 path: "user",
-                element: <UserAccountNav />,
+                element: PrivateRoute(UserAccountNav),
                 children: [
                     {
                         path: "account",
@@ -186,9 +216,9 @@ const router = createBrowserRouter([
                         element: <CreateBook />,
                     },
                     {
-                        path: "edit-book/:bookId",
+                        path: "edit-book/:bookID",
                         element: <EditBook />,
-                        loader: bookLoader,
+                        // loader: bookLoader,
                     },
                     {
                         path: "manage-admins",
@@ -208,12 +238,20 @@ const router = createBrowserRouter([
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyD1-7Hit1bOsRAAYCzLfyEQ_96V4K0WcIY",
-    authDomain: "linkedin-clone-225b2.firebaseapp.com",
-    projectId: "linkedin-clone-225b2",
-    storageBucket: "linkedin-clone-225b2.appspot.com",
-    messagingSenderId: "72975579786",
-    appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
+    // US region
+    // apiKey: "AIzaSyD1-7Hit1bOsRAAYCzLfyEQ_96V4K0WcIY",
+    // authDomain: "linkedin-clone-225b2.firebaseapp.com",
+    // projectId: "linkedin-clone-225b2",
+    // storageBucket: "linkedin-clone-225b2.appspot.com",
+    // messagingSenderId: "72975579786",
+    // appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
+    // Asia region
+    apiKey: "AIzaSyDDIdeOH80IjjT8PcPcT2U5HO58dwop05k",
+    authDomain: "bolt-sport.firebaseapp.com",
+    projectId: "bolt-sport",
+    storageBucket: "bolt-sport.appspot.com",
+    messagingSenderId: "689176755278",
+    appId: "1:689176755278:web:4bed012cd3a2cd9c2c171f",
 };
 
 const app = initializeApp(firebaseConfig);

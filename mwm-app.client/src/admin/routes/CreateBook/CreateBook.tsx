@@ -14,7 +14,6 @@ import { getFileDownloadUrl } from "../../../utils/getFileDownloadUrl";
 import AuthorDropdownMenu from "../../components/AuthorDropdownMenu";
 import CategoryDropdownMenu from "../../components/CategoryDropdownMenu";
 import { BookPayload, BookValidator } from "./types";
-import { triggerShouldRevalidateManageBooks } from "@/admin/redux/routing/routingSlice";
 
 export default function CreateBook() {
     const dispatch = useAppDispatch();

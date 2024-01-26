@@ -8,9 +8,11 @@ import {
 import { Author, Book, Category } from "../types/dataType";
 import {
     AdminResponse,
+    AuthorWithBooks,
     BookAPIPayload,
     BookRequest,
     PaginatedResponse,
+    UpdateBookAPIPayload,
 } from "./types";
 
 export const api = createApi({
@@ -48,6 +50,30 @@ export const api = createApi({
                 }
             },
         }),
+        updateBook: builder.mutation<Book, UpdateBookAPIPayload>({
+            query: (book) => ({
+                url: `Books/${book.id}`,
+                method: "PUT",
+                body: book,
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data: updatedBook } = await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData("getBooks", {}, (draft) => {
+                            return draft?.map((book) => {
+                                if (book.id === updatedBook.id) {
+                                    return updatedBook;
+                                }
+                                return book;
+                            });
+                        })
+                    );
+                } catch (err) {
+                    console.log("update cahced books error: ", err);
+                }
+            },
+        }),
         getBooks: builder.query<PaginatedResponse<Book> | Book[], BookRequest>({
             query: (requestFilter) => {
                 const { pageNumber, categoryIDs, searchQuery } = requestFilter;
@@ -68,7 +94,6 @@ export const api = createApi({
                 if (searchQuery) {
                     baseUri += `?searchQuery=${searchQuery}`;
                 }
-                console.log(baseUri);
                 return {
                     url: baseUri,
                     method: "GET",
@@ -80,6 +105,18 @@ export const api = createApi({
                 url: `Books/${bookId}`,
                 method: "GET",
             }),
+        }),
+        getBookByAuthorID: builder.query<Book[], string>({
+            query: (authorID) => ({
+                url: `Books/Author?authorID=${authorID}`,
+                method: "GET",
+            }),
+        }),
+        getTrendingCategoryBooks: builder.query<Book[], void>({
+            query: () => "Books/trendingCategoryBook",
+        }),
+        getFeaturedBooks: builder.query<Book[], void>({
+            query: () => "Books/featuredBooks",
         }),
 
         // Book Category
@@ -108,6 +145,9 @@ export const api = createApi({
         }),
         getCategories: builder.query<Category[], void>({
             query: () => "BookCategories",
+        }),
+        getTrendingCategories: builder.query<Category[], void>({
+            query: () => "BookCategories/trending",
         }),
         deleteCategory: builder.mutation<any, string>({
             query: (id) => ({
@@ -210,6 +250,18 @@ export const api = createApi({
         getAuthors: builder.query<Author[], void>({
             query: () => "Authors",
         }),
+        getAuthorByID: builder.query<Author, string>({
+            query: (authorID) => `Authors/${authorID}`,
+        }),
+        getAuthorsByName: builder.query<Author[], string>({
+            query: (authorName) => `Authors?searchQuery=${authorName}`,
+        }),
+        getAuthorsWithBooks: builder.query<AuthorWithBooks[], void>({
+            query: () => "Authors?include=book",
+        }),
+        getTrendingAuthors: builder.query<Author[], void>({
+            query: () => `Authors/trending`,
+        }),
         updateAuthor: builder.mutation<any, Author>({
             query: (author) => ({
                 url: `Authors/${author.id}`,
@@ -253,9 +305,7 @@ export const api = createApi({
                             undefined,
                             (draft) => {
                                 return draft?.filter(
-                                    (author) =>
-                                        author.id !==
-                                        requestBody
+                                    (author) => author.id !== requestBody
                                 );
                             }
                         )
@@ -297,10 +347,19 @@ export const {
     useUpdateTopBooksMutation,
     useGetTopBooksQuery,
     useGetBookByIdQuery,
+    useGetTrendingCategoriesQuery,
+    useUpdateBookMutation,
+    useGetTrendingCategoryBooksQuery,
+    useGetFeaturedBooksQuery,
+    useGetBookByAuthorIDQuery,
 
     // Author
     useCreateAuthorMutation,
     useGetAuthorsQuery,
     useUpdateAuthorMutation,
     useDeleteAuthorMutation,
+    useGetAuthorsWithBooksQuery,
+    useGetAuthorsByNameQuery,
+    useGetAuthorByIDQuery,
+    useGetTrendingAuthorsQuery,
 } = api;

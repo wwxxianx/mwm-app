@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
 using mwm_app.Server.Data.DTO;
+using mwm_app.Server.Data.ResponseDTO;
 using mwm_app.Server.Models;
 
 namespace mwm_app.Server.Controllers
@@ -22,11 +24,46 @@ namespace mwm_app.Server.Controllers
             _context = context;
         }
 
+        public class AuthorRequest {
+            public ICollection<string>? Include { get; set; }
+
+            public string? SearchQuery { get; set; }
+        }
+
         // GET: api/Authors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Author>>> GetAuthors()
+        public async Task<IActionResult> GetAuthors([FromQuery] AuthorRequest authorRequest)
         {
-            return await _context.Authors.ToListAsync();
+            if (!string.IsNullOrEmpty(authorRequest.SearchQuery)) 
+            {
+                // Split the search query into individual words
+                var searchWords = authorRequest.SearchQuery.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                // Filter books that contain any of the search words in the title
+                var authors = await _context.Authors.Where(b => searchWords.Any(word => b.FullName.Contains(word))).ToListAsync();
+                return Ok(authors);
+            } 
+            else if (authorRequest.Include.IsNullOrEmpty())
+            {
+                return Ok(await _context.Authors.ToListAsync());
+            } 
+            else
+            {
+                var authorsWithBooks = await _context.Authors
+                    .Include(a => a.Books)
+                        .ThenInclude(b => b.Category)
+                    .ToListAsync();
+
+                var authorResponse = authorsWithBooks.Select(author => 
+                    new AuthorResponseDTO
+                    {
+                        ID = author.ID,
+                        FullName = author.FullName,
+                        ImageUrl = author.ImageUrl,
+                        Books = author.Books.Select(b => BookResponseDTO.CreateFromBook(b)).ToList(),
+                    }
+                );
+                return Ok(authorResponse);
+            }
         }
 
         // GET: api/Authors/5
@@ -41,6 +78,19 @@ namespace mwm_app.Server.Controllers
             }
 
             return author;
+        }
+
+        [HttpGet("trending")]
+        public async Task<ActionResult<ICollection<Author>>> GetTrendingAuthor()
+        {
+            var authors = await _context.Authors.OrderBy(a => a.FullName).Take(8).ToListAsync();
+
+            if (authors == null)
+            {
+                return NotFound();
+            }
+
+            return authors;
         }
 
         // PUT: api/Authors/5

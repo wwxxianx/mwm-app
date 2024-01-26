@@ -26,7 +26,7 @@ type BookDropdownMenuProps = {
 
 export default function BookDropdownMenu(props: BookDropdownMenuProps) {
     const { label, error, errorMessage, value, onValueChange } = props;
-    const { data: books, isLoading } = useGetBooksQuery();
+    const { data: books, isLoading } = useGetBooksQuery({});
     const [openDropdown, setOpenDropdown] = useState(false);
     const [triggerButtonWidth, setTriggerButtonWidth] = useState(0);
     const triggerButtonRef = useRef<HTMLButtonElement>(null);
@@ -106,7 +106,7 @@ export default function BookDropdownMenu(props: BookDropdownMenuProps) {
                             className="h-9"
                         />
                         <CommandEmpty>No framework found.</CommandEmpty>
-                        <CommandGroup>
+                        <CommandGroup className="max-h-[380px] overflow-y-scroll">
                             {books?.map((book, index) => (
                                 <CommandItem
                                     key={book.id}

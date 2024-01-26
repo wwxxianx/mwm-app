@@ -27,7 +27,7 @@ export const userShoppingCartApi = api.injectEndpoints({
                             "getUserCartItems",
                             undefined,
                             (draft) => {
-                                return [...draft, newCartItem];
+                                return [newCartItem, ...draft];
                             }
                         )
                     );

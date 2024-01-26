@@ -10,14 +10,16 @@ import {
 import { users } from "@/lib/fakeData";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../../lib/hooks";
 import { logout } from "../../../redux/userSlice";
 
 export default function UserDropdownMenu() {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     function onLogout() {
         dispatch(logout());
+        navigate("/");
     }
 
     return (
@@ -45,7 +47,10 @@ export default function UserDropdownMenu() {
                     <Link to={"/user/purchases"}>Purchases</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-rose-500 items-center gap-1 hover:bg-rose-100 hover:text-rose-500 focus:bg-rose-100 focus:text-rose-500" onClick={onLogout}>
+                <DropdownMenuItem
+                    className="text-rose-500 items-center gap-1 hover:bg-rose-100 hover:text-rose-500 focus:bg-rose-100 focus:text-rose-500"
+                    onClick={onLogout}
+                >
                     <LogOut className="w-4" />
                     <span>Log Out</span>
                 </DropdownMenuItem>

@@ -4,6 +4,7 @@ namespace mwm_app.Server.Data.DTO
 {
     public class BookDTO
     {
+        public string? ID { get; set; }
         public string Title { get; set; }
 
         public string Slug { get; set; }

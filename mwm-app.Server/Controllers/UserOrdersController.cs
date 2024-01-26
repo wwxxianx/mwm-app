@@ -14,11 +14,11 @@ namespace mwm_app.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ShoppingCartsController : ControllerBase
+    public class UserOrdersController : ControllerBase
     {
         private readonly MainDBContext _context;
 
-        public ShoppingCartsController(MainDBContext context)
+        public UserOrdersController(MainDBContext context)
         {
             _context = context;
         }

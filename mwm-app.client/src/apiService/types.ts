@@ -1,6 +1,6 @@
-import { Admin, Book, User } from "@/types/dataType";
+import { Admin, Author, Book, OrderStatus, User } from "@/types/dataType";
 import { BookPayload } from "../admin/routes/CreateBook/types";
-import internal from "stream";
+import { OrderAddressPayload } from "@/user/routes/checkout/Checkout";
 
 export type UserResponse = {
     user: User;
@@ -15,6 +15,10 @@ export type AdminResponse = {
 export type BookAPIPayload = BookPayload & {
     authorId: string;
     categoryId: string;
+};
+
+export type UpdateBookAPIPayload = BookAPIPayload & {
+    id: string;
 };
 
 export type UserFavouriteBook = {
@@ -45,4 +49,18 @@ export type BookRequest = {
     pageNumber?: number;
     categoryIDs?: string[];
     searchQuery?: string;
-}
+};
+
+export type AuthorWithBooks = Author & {
+    books: Book[];
+};
+
+export type CreateOrderPayload = OrderAddressPayload & {
+    items: ShoppingCartItem[];
+    price: number;
+};
+
+export type UpdateOrderPayload = {
+    orderID: string;
+    updateStatus: OrderStatus;
+};

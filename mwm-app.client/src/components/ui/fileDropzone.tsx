@@ -77,7 +77,7 @@ export default function FileDropzone(props: FileDropzoneProps) {
         }
 
         return <ImageIcon />;
-    }, [selectedFile]);
+    }, [selectedFile, previewFileUrl]);
 
     useEffect(() => {
         // Make sure to revoke the data uris to avoid memory leaks, will run on unmount

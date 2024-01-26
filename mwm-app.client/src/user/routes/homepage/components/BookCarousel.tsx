@@ -1,10 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { books } from "@/lib/fakeData";
+import { useGetTopBooksQuery } from "@/apiService/apiService";
 import { cn } from "@/lib/utils";
 import { Carousel } from "@/user/components/Carousel/Carousel";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
-import { LibraryBig } from "lucide-react";
 import { HTMLAttributes, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -13,8 +11,9 @@ type BookCarouselProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export default function BookCarousel({ className }: BookCarouselProps) {
+    const { data: topBooks, isLoading } = useGetTopBooksQuery();
     const [currentActiveIndex, setCurrentActiveIndex] = useState(1);
-    const currentBook = books[currentActiveIndex];
+    const currentBook = topBooks?.[currentActiveIndex].book;
 
     function onCarouselItemClick(index: number) {
         if (index === currentActiveIndex) {
@@ -86,14 +85,14 @@ export default function BookCarousel({ className }: BookCarouselProps) {
                 )}
             >
                 <Carousel
-                    items={books.slice(0, 3)}
+                    items={topBooks}
                     currentActive={currentActiveIndex}
                     onCarouselItemClick={onCarouselItemClick}
                 />
             </div>
             <div className="relative min-w-[311px] mt-14 lg:max-w-[590px]">
                 <motion.div
-                    key={currentBook.id}
+                    key={currentBook?.id}
                     variants={containerVariants}
                     initial="initial"
                     animate="animate"
@@ -103,10 +102,10 @@ export default function BookCarousel({ className }: BookCarouselProps) {
                     <div className="flex items-start justify-between">
                         <motion.div>
                             <h2 className="text-lg md:text-xl font-medium">
-                                {currentBook.title}
+                                {currentBook?.title}
                             </h2>
                             <p className="text-black/60 lg:mt-2">
-                                by {currentBook.author.fullName}
+                                by {currentBook?.author?.fullName}
                             </p>
                         </motion.div>
                         {/* <motion.div
@@ -124,7 +123,7 @@ export default function BookCarousel({ className }: BookCarouselProps) {
                             </p>
                         </motion.div> */}
                         <Link
-                            to={`/book/${currentBook.id}`}
+                            to={`/book/${currentBook?.id}`}
                             // variant="ghost"
                             className="flex items-center gap-2 rounded-none hover:bg-transparent group"
                         >
@@ -148,7 +147,7 @@ export default function BookCarousel({ className }: BookCarouselProps) {
                         variants={descriptionVariants}
                         className="text-sm mt-3 tracking-wide text-slate-600 lg:text-base leading-6"
                     >
-                        {currentBook.description}
+                        {currentBook?.description}
                     </motion.p>
                 </motion.div>
             </div>
