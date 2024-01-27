@@ -30,7 +30,7 @@ export default function HoverCard(props: HoverCardProps) {
                 <div className="flex items-center gap-4 overflow-visible">
                     {books?.map((book) => {
                         return (
-                            <Link to={`/book/${book.id}`}>
+                            <Link to={`/book/${book.id}`} target="_top">
                                 <BookCover
                                     imageUrl={book.imageUrl}
                                     className="max-w-[90px] cursor-pointer hover:scale-105 transition-all"

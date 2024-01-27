@@ -6,31 +6,18 @@ import {
     SheetFooter,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import {
     ClipboardDocumentIcon,
     HomeIcon,
     ShoppingBagIcon,
     UserCircleIcon,
 } from "@heroicons/react/24/outline";
-import { ArrowUpRightIcon, Bars3Icon } from "@heroicons/react/24/solid";
-import { BookText, BookUser, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Bars3Icon } from "@heroicons/react/24/solid";
+import { BookText, BookUser } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function MobileNavigation() {
-    const [isBookDropdownOpen, setIsBookDropdownOpen] = useState(false);
-    function onToggleBookDropdown() {
-        setIsBookDropdownOpen((prev) => !prev);
-    }
-
-    function onOpenBookDropdown() {
-        setIsBookDropdownOpen(true);
-    }
-
-    function onCloseBookDropdown() {
-        setIsBookDropdownOpen(false);
-    }
+    
     return (
         <Sheet>
             <SheetTrigger asChild>

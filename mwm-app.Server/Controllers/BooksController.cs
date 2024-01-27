@@ -36,6 +36,24 @@ namespace mwm_app.Server.Controllers
             public string? SearchQuery { get; set; }
         }
 
+        public class RelevantBookRequest
+        {
+            public int? Limit { get; set; }
+
+            public string? CategoryID { get; set; }
+        }
+
+        [HttpGet("testing")]
+        public async Task<ActionResult> GetBookTesting()
+        {
+            var books = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .ToListAsync();
+
+            return Ok(books);
+        }
+
         // GET: api/Books
         [HttpGet]
         public async Task<ActionResult> GetBooks([FromQuery] BookRequest bookRequest)
@@ -76,6 +94,31 @@ namespace mwm_app.Server.Controllers
                 HasPreviousPage = paginatedBooks.HasPreviousPage,
                 TotalPages = paginatedBooks.TotalPages,
             });
+        }
+
+        [HttpGet("relevant")]
+        public async Task<ActionResult> GetRelevantBook([FromQuery] RelevantBookRequest bookRequest)
+        {
+            var books = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Where(b => b.Category.ID == bookRequest.CategoryID)
+                .Take(bookRequest.Limit ?? 10)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+            
+            if (books.Count < bookRequest.Limit)
+            {
+                var otherBooks = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Take((bookRequest.Limit ?? 10) - books.Count)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+                books.AddRange(otherBooks);
+            }
+
+            return Ok(books);
         }
 
         [HttpGet("{id}")]
@@ -287,10 +330,10 @@ namespace mwm_app.Server.Controllers
         }
 
         // DELETE: api/Books/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(string id)
+        [HttpDelete("{bookID}")]
+        public async Task<IActionResult> DeleteBook(string bookID)
         {
-            var book = await _context.Books.FindAsync(id);
+            var book = await _context.Books.FindAsync(bookID);
             if (book == null)
             {
                 return NotFound();

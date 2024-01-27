@@ -98,25 +98,6 @@ export default function FileDropzone(props: FileDropzoneProps) {
             >
                 <input {...getInputProps()} />
                 <RenderedImage />
-                {/*{selectedFile ? (*/}
-                {/*    <div key={selectedFile.name} className="max-w-[180px]">*/}
-                {/*        {type === "image" ? (*/}
-                {/*            <img*/}
-                {/*                src={selectedFile.preview}*/}
-                {/*                // Revoke data uri after image is loaded*/}
-                {/*                onLoad={() => {*/}
-                {/*                    URL.revokeObjectURL(selectedFile.preview);*/}
-                {/*                }}*/}
-                {/*            />*/}
-                {/*        ) : (*/}
-                {/*            <p className="text-center text-sm text-slate-600">*/}
-                {/*                {selectedFile?.name}*/}
-                {/*            </p>*/}
-                {/*        )}*/}
-                {/*    </div>*/}
-                {/*) : (*/}
-                {/*    <ImageIcon />*/}
-                {/*)}*/}
                 <p className="text-slate-800 font-medium">
                     Drop or Select file
                 </p>

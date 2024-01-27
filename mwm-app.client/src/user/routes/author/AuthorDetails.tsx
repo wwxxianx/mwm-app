@@ -1,8 +1,7 @@
-import { authors, books } from "@/lib/fakeData";
-import BooksSkeleton from "../books/components/BooksSkeleton";
+import { useGetAuthorByIDQuery, useGetBookByAuthorIDQuery } from "@/apiService/apiService";
 import BookDrawer from "@/user/components/BookDrawer";
 import { useParams } from "react-router-dom";
-import { useGetAuthorByIDQuery, useGetBookByAuthorIDQuery } from "@/apiService/apiService";
+import BooksSkeleton from "../books/components/BooksSkeleton";
 
 export default function AuthorDetails() {
     const { authorID } = useParams();
@@ -29,7 +28,7 @@ export default function AuthorDetails() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-8 mt-3 md:mt-5 px-28">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-8 mt-3 md:mt-10 px-28">
                 {isLoadingAuthorBooks ? (
                     <BooksSkeleton />
                 ) : authorBooks?.length ? (

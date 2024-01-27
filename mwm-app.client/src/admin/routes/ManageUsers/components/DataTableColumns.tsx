@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { DataTableColumnHeader } from "../../ManageBooks/components/DataTableColumnHeader";
 import { User } from "../../../../types/dataType";
+import { format, parseISO } from "date-fns";
 
 export const userTableColumns: ColumnDef<User>[] = [
     {
@@ -35,9 +36,11 @@ export const userTableColumns: ColumnDef<User>[] = [
 
             return (
                 <div className="flex space-x-2 items-center text-slate-700">
-                    <Avatar>
+                    <Avatar className="items-center justify-center bg-slate-200">
                         <AvatarImage src={user.profileImageUrl} />
-                        <AvatarFallback>{user.fullName}</AvatarFallback>
+                        <AvatarFallback>
+                            {user.fullName.charAt(0)}
+                        </AvatarFallback>
                     </Avatar>
                     <span className="max-w-[500px] truncate font-medium">
                         {row.getValue("fullName")}
@@ -61,8 +64,6 @@ export const userTableColumns: ColumnDef<User>[] = [
         // filterFn: (row, id, value) => {
         //     return value.includes(row.getValue(id));
         // },
-        enableColumnFilter: true,
-        enableGlobalFilter: true,
     },
     {
         accessorKey: "phoneNumber",
@@ -72,7 +73,46 @@ export const userTableColumns: ColumnDef<User>[] = [
         cell: ({ row }) => {
             return (
                 <div className="flex w-[100px] items-center text-slate-700">
-                    <span>{row.getValue("phoneNumber")}</span>
+                    <span>{row.getValue("phoneNumber") ?? "-"}</span>
+                </div>
+            );
+        },
+        filterFn: (row, id, value) => {
+            return value.includes(row.getValue(id));
+        },
+    },
+    {
+        accessorKey: "gender",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Phone" />
+        ),
+        cell: ({ row }) => {
+            return (
+                <div className="flex w-[100px] items-center text-slate-700">
+                    <span>{row.getValue("gender") ?? "-"}</span>
+                </div>
+            );
+        },
+        filterFn: (row, id, value) => {
+            return value.includes(row.getValue(id));
+        },
+    },
+    {
+        accessorKey: "birthDate",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Birth" />
+        ),
+        cell: ({ row }) => {
+            let birtDate = row.getValue("birthDate");
+            if (birtDate) {
+                const dateString = birtDate;
+                const date = parseISO(dateString);
+
+                birtDate = format(date, "yyyy-MM-dd");
+            }
+            return (
+                <div className="flex w-[100px] items-center text-slate-700">
+                    <span>{birtDate ?? "-"}</span>
                 </div>
             );
         },

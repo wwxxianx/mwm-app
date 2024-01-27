@@ -49,7 +49,7 @@ export default function UserNavigation() {
     return (
         <div className="h-screen bg-turquoise-50 font-playfair flex flex-col">
             <div className="container relative flex items-center justify-center pt-6">
-                <Link to={"/home"} className="md:hidden">
+                <Link to={"/"} target="_top" className="md:hidden">
                     <img
                         src={LogoImageUrl}
                         alt="Logo image"

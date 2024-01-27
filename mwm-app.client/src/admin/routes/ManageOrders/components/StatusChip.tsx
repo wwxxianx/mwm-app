@@ -18,7 +18,9 @@ export default function StatusChip(props: StatusChipProps) {
             ? "bg-rose-100 text-rose-600 text-center"
             : status === "Processing"
             ? "bg-amber-100 text-yellow-600 text-center"
-            : "bg-purple-100 text-purple-600 text-center";
+            : status === "Refund"
+            ? "bg-purple-100 text-purple-600 text-center"
+            : "text-slate-700";
 
     return (
         <div className="flex items-center">

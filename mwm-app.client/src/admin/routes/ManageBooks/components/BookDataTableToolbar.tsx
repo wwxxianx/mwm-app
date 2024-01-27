@@ -25,41 +25,6 @@ type CategoryOption = {
     icon?: React.ComponentType<{ className?: string }>;
 };
 
-// const categories: CategoryOption[] = [
-//     {
-//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
-//         label: "Fiction",
-//         value: "Fiction",
-//     },
-//     {
-//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
-//         label: "Non-fiction",
-//         value: "Non-fiction",
-//     },
-//     {
-//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
-//         label: "Education",
-//         value: "Education",
-//     },
-//     {
-//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
-//         label: "Design",
-//         value: "Design",
-//     },
-//     {
-//         id: "4a6a777f-583a-4322-b9e7-395a233ce3f8",
-//         label: "Technology",
-//         value: "Technology",
-//     },
-// ];
-
-function authorOptions() {
-    return authors.map((author) => ({
-        label: author.fullName,
-        value: author.fullName,
-    }));
-}
-
 export function BookDataTableToolbar<TData>({
     table,
 }: DataTableToolbarProps<TData>) {

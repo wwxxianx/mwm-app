@@ -51,37 +51,6 @@ export default function Books() {
         categoryIDs: selectedCategories,
     });
     const { data: categories } = useGetCategoriesQuery();
-    const { data: favourites } = useGetUserFavouritesQuery();
-    const [addToFavourite, { isLoading: isCreating }] =
-        useCreateUserFavouriteMutation();
-    const [deleteFavourite, { isLoading: isDeleting }] =
-        useDeleteUserFavouriteMutation();
-    const [addToCart, { isLoading: isAddingToCart }] =
-        useCreateUserCartItemMutation();
-
-    async function onTriggerFavourite(bookID: string) {
-        const data = { bookID: bookID };
-        const isCurrentBookInFavourite = favourites?.filter(
-            (f) => f.book.id === bookID
-        ).length;
-        if (isCurrentBookInFavourite) {
-            await deleteFavourite(data).unwrap();
-        } else {
-            await addToFavourite(data).unwrap();
-        }
-    }
-
-    async function onAddToCart(bookID: string) {
-        try {
-            await addToCart({ bookID: bookID }).unwrap();
-        } catch (err) {
-            toast({
-                variant: "default",
-                title: err?.data?.message ?? "Something went wrong",
-                description: "You can update your cart item.",
-            });
-        }
-    }
 
     function onCategoryCheck(category: Category) {
         dispatch(updateSelectedCategories({ categoryID: category.id }));
@@ -177,7 +146,14 @@ export default function Books() {
                 <Pagination className="mt-20">
                     <PaginationContent>
                         <PaginationItem>
-                            <PaginationPrevious href="#" />
+                            <PaginationPrevious
+                                href="#"
+                                onClick={() =>
+                                    setCurrentPage((prev) =>
+                                        prev > 1 ? prev - 1 : prev
+                                    )
+                                }
+                            />
                         </PaginationItem>
                         {new Array(books?.totalPages)
                             .fill(1)
@@ -196,7 +172,16 @@ export default function Books() {
                                 );
                             })}
                         <PaginationItem>
-                            <PaginationNext href="#" />
+                            <PaginationNext
+                                href="#"
+                                onClick={() =>
+                                    setCurrentPage((prev) =>
+                                        prev === books?.totalPages
+                                            ? prev
+                                            : prev + 1
+                                    )
+                                }
+                            />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>

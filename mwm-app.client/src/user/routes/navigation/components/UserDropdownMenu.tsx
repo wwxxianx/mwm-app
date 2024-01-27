@@ -7,14 +7,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { users } from "@/lib/fakeData";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../../../lib/hooks";
+import { useAppDispatch, useAppSelector } from "../../../../lib/hooks";
 import { logout } from "../../../redux/userSlice";
 
 export default function UserDropdownMenu() {
+    const user = useAppSelector((state) => state.user.user);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     function onLogout() {
@@ -26,8 +26,11 @@ export default function UserDropdownMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger>
                 <Avatar>
-                    <AvatarImage src={users[0].profileImageUrl} />
-                    <AvatarFallback>NG</AvatarFallback>
+                    <AvatarImage
+                        src={user?.profileImageUrl}
+                        className="w-full h-full"
+                    />
+                    <AvatarFallback>{user?.fullName.charAt(0)}</AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -38,13 +41,19 @@ export default function UserDropdownMenu() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                    <Link to={"/user/account/profile"}>Profile</Link>
+                    <Link to={"/user/account/profile"} target="_top">
+                        Profile
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                    <Link to={"/user/favourites"}>Favourites</Link>
+                    <Link to={"/user/favourites"} target="_top">
+                        Favourites
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                    <Link to={"/user/purchases"}>Purchases</Link>
+                    <Link to={"/user/purchases"} target="_top">
+                        Purchases
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

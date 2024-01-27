@@ -1,3 +1,4 @@
+import { useUpdateUserOrderMutation } from "@/apiService/userOrderApi";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -9,14 +10,42 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/components/ui/use-toast";
+import { Order } from "@/types/dataType";
+import { useState } from "react";
 
-export default function CancelPurchaseDialog() {
+export default function CancelPurchaseDialog(props: { order: Order }) {
+    const { order } = props;
+    const { toast } = useToast();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [updateOrder, { isLoading: isUpdatingOrder }] =
+        useUpdateUserOrderMutation();
+
+    function onCancelOrder() {
+        updateOrder({ ...order, orderID: order.id, status: "Cancelled" })
+            .unwrap()
+            .then((_) => {
+                setIsDialogOpen(false);
+            })
+            .catch((err) => {
+                toast({
+                    variant: "destructive",
+                    title: "Something went wrong.",
+                });
+            });
+    }
+
     return (
-        <Dialog>
+        <Dialog open={isDialogOpen}>
             <DialogTrigger>
-                <Button variant={"outlineClient"}>Cancel Order</Button>
+                <Button
+                    variant={"outlineClient"}
+                    onClick={() => setIsDialogOpen(true)}
+                >
+                    Cancel Order
+                </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent onCloseDialog={() => setIsDialogOpen(false)}>
                 <DialogHeader>
                     <DialogTitle>Are you sure to cancel order?</DialogTitle>
                     <DialogDescription>
@@ -41,7 +70,12 @@ export default function CancelPurchaseDialog() {
                             <Label htmlFor="r3">Modify existing order</Label>
                         </div>
                     </RadioGroup>
-                    <Button variant={"clientDefault"} type="submit" className="w-full">
+                    <Button
+                        variant={"clientDefault"}
+                        type="button"
+                        className="w-full"
+                        onClick={onCancelOrder}
+                    >
                         Confirm
                     </Button>
                 </form>

@@ -5,12 +5,14 @@ import {
     AuthorPayload,
     CategoryPayload,
 } from "../admin/routes/ManageBooks/types";
-import { Author, Book, Category } from "../types/dataType";
+import { Author, Book, Category, User } from "../types/dataType";
 import {
     AdminResponse,
     AuthorWithBooks,
     BookAPIPayload,
     BookRequest,
+    BookReview,
+    CreateBookReviewPayload,
     PaginatedResponse,
     UpdateBookAPIPayload,
 } from "./types";
@@ -22,7 +24,7 @@ export const api = createApi({
         prepareHeaders: (headers, { getState }) => {
             //By default, if we have a token in the store, let's use that for authenticated requests
             const token = localStorage.getItem("userToken");
-            if (token) {
+            if (token !== "undefined" && token) {
                 const parsedToken = JSON.parse(token);
                 headers.set("authorization", `Bearer ${parsedToken}`);
             }
@@ -74,6 +76,26 @@ export const api = createApi({
                 }
             },
         }),
+        deleteBook: builder.mutation<void, string>({
+            query: (bookID) => ({
+                url: `Books/${bookID}`,
+                method: "DELETE",
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    dispatch(
+                        api.util.updateQueryData("getBooks", {}, (draft) => {
+                            return draft?.filter(
+                                (book) => book.id !== requestBody
+                            );
+                        })
+                    );
+                } catch (err) {
+                    console.log("update cahced books error: ", err);
+                }
+            },
+        }),
         getBooks: builder.query<PaginatedResponse<Book> | Book[], BookRequest>({
             query: (requestFilter) => {
                 const { pageNumber, categoryIDs, searchQuery } = requestFilter;
@@ -117,6 +139,44 @@ export const api = createApi({
         }),
         getFeaturedBooks: builder.query<Book[], void>({
             query: () => "Books/featuredBooks",
+        }),
+        getBookReviews: builder.query<BookReview[], string>({
+            query: (bookID) => `BookReviews?bookID=${bookID}`,
+        }),
+        createBookReview: builder.mutation<BookReview, CreateBookReviewPayload>(
+            {
+                query: (body) => ({
+                    url: "BookReviews",
+                    method: "POST",
+                    body: body,
+                }),
+                async onQueryStarted(
+                    requestBody,
+                    { dispatch, queryFulfilled }
+                ) {
+                    try {
+                        const { data: newBookReview } = await queryFulfilled;
+                        dispatch(
+                            api.util.updateQueryData(
+                                "getBookReviews",
+                                requestBody.bookID,
+                                (draft) => {
+                                    return [newBookReview, ...draft];
+                                }
+                            )
+                        );
+                    } catch (err) {
+                        console.log("update cahced categories error: ", err);
+                    }
+                },
+            }
+        ),
+        getRelevantBooks: builder.query<
+            Book[],
+            { categoryID: string; limit: number }
+        >({
+            query: (request) =>
+                `Books/relevant?categoryID=${request.categoryID}&limit=${request.limit}`,
         }),
 
         // Book Category
@@ -329,6 +389,10 @@ export const api = createApi({
                 body: credentials,
             }),
         }),
+
+        getAllUsers: builder.query<User[], void>({
+            query: () => "Users",
+        }),
     }),
 });
 
@@ -352,6 +416,10 @@ export const {
     useGetTrendingCategoryBooksQuery,
     useGetFeaturedBooksQuery,
     useGetBookByAuthorIDQuery,
+    useGetBookReviewsQuery,
+    useCreateBookReviewMutation,
+    useGetRelevantBooksQuery,
+    useDeleteBookMutation,
 
     // Author
     useCreateAuthorMutation,
@@ -362,4 +430,7 @@ export const {
     useGetAuthorsByNameQuery,
     useGetAuthorByIDQuery,
     useGetTrendingAuthorsQuery,
+
+    // User
+    useGetAllUsersQuery,
 } = api;

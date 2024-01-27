@@ -14,9 +14,12 @@ export const AuthorSchema = z.object({
 export const UserSchema = z.object({
     id: z.number(),
     fullName: z.string(),
-    phoneNumber: z.string().nullable(),
+    phoneNumber: z.string().optional().nullable(),
     email: z.string(),
     profileImageUrl: z.string().optional().nullable(),
+    gender: z.string().optional().nullable(),
+    password: z.string(),
+    birthDate: z.string().optional().nullable(),
 });
 
 // export const CartItemSchema = z.object({

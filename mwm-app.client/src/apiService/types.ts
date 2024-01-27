@@ -71,3 +71,21 @@ export type UpdateOrderPayload = {
     orderID: string;
     status: OrderStatus;
 };
+
+export type BookReview = {
+    id: string;
+    reviewTitle: string;
+    reviewDescription: string;
+    rating: number;
+    createdAt: string;
+    updatedAt: string;
+    user: User;
+    book?: Book;
+};
+
+export type CreateBookReviewPayload = {
+    reviewTitle: string;
+    reviewDescription: string;
+    rating: number;
+    bookID: string;
+};

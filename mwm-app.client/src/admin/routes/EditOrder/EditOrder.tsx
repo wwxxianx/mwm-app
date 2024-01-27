@@ -45,8 +45,8 @@ async function loader({ params }: LoaderFunctionArgs) {
 const OrderStatusValidator = z.object({
     status: OrderStatusEnum,
 });
-const EditOrderValidator = OrderAddressValidator.merge(OrderStatusValidator);
-type EditOrderPayload = z.infer<typeof EditOrderValidator>;
+export const EditOrderValidator = OrderAddressValidator.merge(OrderStatusValidator);
+export type EditOrderPayload = z.infer<typeof EditOrderValidator>;
 
 export default function EditOrder() {
     const order = useLoaderData() as Order;

@@ -1,7 +1,7 @@
-import { Order, OrderStatus } from "@/types/dataType";
+import { useGetUserOrdersQuery } from "@/apiService/userOrderApi";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { books } from "@/lib/fakeData";
+import { Order, OrderStatus } from "@/types/dataType";
 import {
     Delete,
     Package,
@@ -16,7 +16,6 @@ import CancelPurchaseDialog from "./components/CancelPurchaseDialog";
 import EditPurchaseDialog from "./components/EditPurchaseDialog";
 import RateDialog from "./components/RateDialog";
 import RefundDialog from "./components/RefundDialog";
-import { useGetUserOrdersQuery } from "@/apiService/userOrderApi";
 
 export default function UserPurchases() {
     const { data: userOrders } = useGetUserOrdersQuery();
@@ -180,8 +179,8 @@ function OrderItem(props: { order: Order }) {
             case "Processing":
                 return (
                     <div className="flex items-center gap-2">
-                        <CancelPurchaseDialog />
-                        <EditPurchaseDialog />
+                        <CancelPurchaseDialog order={order} />
+                        <EditPurchaseDialog order={order} />
                     </div>
                 );
             case "Delivery":
@@ -194,10 +193,11 @@ function OrderItem(props: { order: Order }) {
                     </Button>
                 );
             case "Completed":
+                const booksForReview = order.items?.map((item) => item.book);
                 return (
                     <div className="flex items-center gap-2">
                         <RefundDialog />
-                        <RateDialog />
+                        <RateDialog book={booksForReview} />
                     </div>
                 );
             case "Refund":

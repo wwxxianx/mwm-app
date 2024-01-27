@@ -1,5 +1,6 @@
 import { api } from "@/apiService/apiService";
 import { userAuthApi } from "@/apiService/userAuthApi";
+import { userProfileApi } from "@/apiService/userProfileApi";
 import { User } from "@/types/dataType";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -30,18 +31,20 @@ export const userSlice = createSlice({
             // Check user from localStorage and let user stay singed in
             const user = localStorage.getItem("userProfile");
             const token = localStorage.getItem("userToken");
+            console.log(token);
+            console.log(typeof token);
+            if (token === "undefined" || !token) {
+                // TODO: Reassign token
+                console.log("no token");
+                return;
+            }
+            state.token = JSON.parse(token);
             if (!user) {
                 return;
             }
             const parsedUser = JSON.parse(user);
             state.user = parsedUser;
             state.isLoggedIn = true;
-            if (!token) {
-                // TODO: Reassign token
-                console.log("no token");
-                return;
-            }
-            state.token = JSON.parse(token);
         },
     },
     extraReducers: (builder) => {
@@ -63,11 +66,21 @@ export const userSlice = createSlice({
                 storeUserProfile(payload.user, payload.token);
             }
         );
+        builder.addMatcher(
+            userProfileApi.endpoints.updateUserProfile.matchFulfilled,
+            (state, { payload }) => {
+                state.user = payload;
+                storeUserProfile(payload);
+            }
+        );
     },
 });
 
-function storeUserProfile(user: User, token: string) {
+function storeUserProfile(user: User, token?: string) {
     localStorage.setItem("userProfile", JSON.stringify(user));
+    if (!token) {
+        return;
+    }
     localStorage.setItem("userToken", JSON.stringify(token));
 }
 

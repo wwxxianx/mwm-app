@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
+using mwm_app.Server.Data.DTO;
 using mwm_app.Server.Models;
 using NuGet.Protocol.Plugins;
 
@@ -47,15 +48,6 @@ namespace mwm_app.Server.Controllers
             }
 
             return Ok(new { user = user, token = user.UserToken });
-        }
-
-        [HttpGet("testing")]
-        public async Task<ActionResult<string>> Testing()
-        {
-            var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
-            return token;
-            var currentUser = HttpContext.User;
-            return currentUser.Claims.FirstOrDefault(c => c.Type == "ID").Value;
         }
 
         private string GenerateJWT(User user)
@@ -121,33 +113,31 @@ namespace mwm_app.Server.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        [HttpPut("{userID}")]
+        public async Task<IActionResult> PutUser(int userID, UserProfileDTO userProfileDTO)
         {
-            if (id != user.ID)
+            var userToUpdate = await _context.Users.FirstAsync(u => u.ID == userID);
+            if (userToUpdate == null) 
             {
                 return BadRequest();
             }
-
-            _context.Entry(user).State = EntityState.Modified;
+            userToUpdate.FullName = userProfileDTO.FullName;
+            userToUpdate.PhoneNumber = userProfileDTO.PhoneNumber;
+            userToUpdate.BirthDate = userProfileDTO.BirthDate;
+            userToUpdate.Gender = userProfileDTO.Gender;
+            userToUpdate.ProfileImageUrl = userProfileDTO.ProfileImageUrl;
+            userToUpdate.Email = userProfileDTO.Email;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+            catch (DbUpdateException)
+            {   
+                return BadRequest();
             }
 
-            return NoContent();
+            return Ok(userToUpdate);
         }
 
         // POST: api/Users

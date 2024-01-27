@@ -29,6 +29,8 @@ namespace mwm_app.Server.Models
 
         public int SKU { get; set; }
 
+        public ICollection<BookReview> BookReviews { get; set; }
+
         public DateTime? PublishedAt { get; set; }
 
         public DateTime CreatedAt { get; set; }

@@ -29,7 +29,7 @@ import {
     PlusIcon,
 } from "@heroicons/react/24/solid";
 import { HTMLAttributes } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type HomepageCartProps = HTMLAttributes<HTMLDivElement> & {
     className?: string;
@@ -37,6 +37,7 @@ type HomepageCartProps = HTMLAttributes<HTMLDivElement> & {
 
 export default function HomepageCart(props: HomepageCartProps) {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const { toast } = useToast();
     const { data: cartItems } = useGetUserCartItemsQuery();
     const [updateCartItem, { isLoading: isUpdatingCartItem }] =
@@ -78,6 +79,17 @@ export default function HomepageCart(props: HomepageCartProps) {
 
     function onItemCheck(cartItem: ShoppingCartItem) {
         dispatch(updateSelectedCartItems(cartItem));
+    }
+
+    function navigateToCheckout() {
+        if (!selectedCheckoutItems?.length) {
+            return toast({
+                variant: "destructive",
+                title: "Please select items to checkout",
+            });
+        }
+        console.log("has");
+        navigate("/checkout");
     }
 
     return (
@@ -127,7 +139,6 @@ export default function HomepageCart(props: HomepageCartProps) {
                                             isCurrentItemSelectedForCheckout
                                         )}
                                         onCheckedChange={() => {
-                                            console.log("click");
                                             onItemCheck(cartItem);
                                         }}
                                     />
@@ -205,17 +216,17 @@ export default function HomepageCart(props: HomepageCartProps) {
                         <p className="font-medium text-lg">RM 499</p>
                     </div>
                     <SheetClose asChild>
-                        <Link
-                            to={"/checkout"}
+                        <Button
                             className={cn(
                                 buttonVariants({
                                     variant: "clientDefault",
                                 }),
                                 "h-[47px] text-base font-normal"
                             )}
+                            onClick={navigateToCheckout}
                         >
                             Checkout
-                        </Link>
+                        </Button>
                     </SheetClose>
                     <SheetClose asChild>
                         <Link

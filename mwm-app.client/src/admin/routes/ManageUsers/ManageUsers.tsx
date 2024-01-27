@@ -1,7 +1,6 @@
+import { useGetAllUsersQuery } from "@/apiService/apiService";
 import { users } from "@/lib/fakeData";
-import { useLoaderData } from "react-router-dom";
 import { DataTable } from "../ManageBooks/components/DataTable";
-import { User } from "../../../types/dataType";
 import { userTableColumns } from "./components/DataTableColumns";
 
 export async function loader() {
@@ -9,7 +8,7 @@ export async function loader() {
 }
 
 export default function ManageUsers() {
-    const usersData = useLoaderData() as User[];
+    const { data: users } = useGetAllUsersQuery();
 
     return (
         <div>
@@ -22,7 +21,7 @@ export default function ManageUsers() {
                 </div>
             </div>
             <DataTable
-                data={usersData}
+                data={users ?? []}
                 columns={userTableColumns}
                 type="user"
             />

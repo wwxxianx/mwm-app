@@ -16,11 +16,13 @@ import { Link } from "react-router-dom";
 
 type BookDrawerProps = {
     book: Book;
+    bookCoverStyle?: string;
+    bookTitleStyle?: string;
 };
 
 export default function BookDrawer(props: BookDrawerProps) {
+    const { book, bookCoverStyle, bookTitleStyle } = props;
     const { toast } = useToast();
-    const { book } = props;
     const { data: favourites } = useGetUserFavouritesQuery();
     const [addToFavourite, { isLoading: isCreating }] =
         useCreateUserFavouriteMutation();
@@ -79,9 +81,17 @@ export default function BookDrawer(props: BookDrawerProps) {
                 <div tabIndex={0}>
                     <BookCover
                         imageUrl={book.imageUrl}
-                        className="shadow-sm mx-auto cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all"
+                        className={cn(
+                            "shadow-sm mx-auto cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all",
+                            bookCoverStyle
+                        )}
                     />
-                    <h2 className="font-medium text-sm mt-2 text-center">
+                    <h2
+                        className={cn(
+                            "font-medium text-sm mt-2 text-center",
+                            bookTitleStyle
+                        )}
+                    >
                         {book.title}
                     </h2>
                     <h3 className="font-medium text-sm text-black/60 text-center">

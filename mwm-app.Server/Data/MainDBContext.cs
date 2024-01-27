@@ -18,6 +18,7 @@ namespace mwm_app.Server.Data
         public DbSet<UserFavouriteBook> UserFavouriteBooks { get; set; }
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<UserOrder> UserOrders { get; set; }
+        public DbSet<BookReview> BookReviews { get; set; }
         // Change default table name
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,7 @@ namespace mwm_app.Server.Data
             modelBuilder.Entity<TopBook>().ToTable("TopBook");
             modelBuilder.Entity<ShoppingCart>().ToTable("ShoppingCart");
             modelBuilder.Entity<UserOrder>().ToTable("UserOrder");
+            modelBuilder.Entity<BookReview>().ToTable("BookReview");
         }
     }
 }

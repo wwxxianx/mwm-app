@@ -1,3 +1,4 @@
+import { useUpdateUserOrderMutation } from "@/apiService/userOrderApi";
 import Alert from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,13 +9,19 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RefundDialog() {
     const [currentProgress, setCurrentProgress] = useState(1);
     const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
+    const { toast } = useToast();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [updateOrder, { isLoading: isUpdatingOrder }] =
+        useUpdateUserOrderMutation();
+
 
     function onBookClick(bookId: string) {
         if (selectedBookIds.includes(bookId)) {

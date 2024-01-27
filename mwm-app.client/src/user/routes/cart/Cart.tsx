@@ -1,3 +1,4 @@
+import { ShoppingCartItem } from "@/apiService/types";
 import {
     useDeleteUserCartItemMutation,
     useGetUserCartItemsQuery,
@@ -6,18 +7,28 @@ import {
 import BookCover from "@/components/ui/BookCover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { updateSelectedCartItems } from "@/user/redux/shoppingCartSlice";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
     const { data: cartItems } = useGetUserCartItemsQuery();
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     let isMobile = useMediaQuery("(max-width: 768px)");
 
     const [updateCartItem, { isLoading: isUpdatingCartItem }] =
         useUpdateUserCartItemMutation();
     const [deleteCartItem, { isLoading: isDeletingCartItem }] =
         useDeleteUserCartItemMutation();
+    const selectedCheckoutItems = useAppSelector(
+        (state) => state.shoppingCart.selectedCartItems
+    );
 
     async function onUpdateCartItem(
         shoppingCartItem: ShoppingCartItem,
@@ -48,12 +59,26 @@ export default function Cart() {
         }
     }
 
+    function onItemCheck(cartItem: ShoppingCartItem) {
+        dispatch(updateSelectedCartItems(cartItem));
+    }
+
+    function navigateToCheckout() {
+        if (!selectedCheckoutItems?.length) {
+            return toast({
+                variant: "destructive",
+                title: "Please select items to checkout",
+            });
+        }
+        navigate("/checkout");
+    }
+
     function RenderedContent() {
         const labelClassName =
             "ml-auto relative pb-1 before:absolute before:left-[50%] before:translate-x-[-50%] before:bottom-0 before:content-[' '] before:border-b-[1.5px] before:border-black before:w-[80%]";
 
         return isMobile ? (
-            <div className="pt-6 md:pl-2 pr-4">
+            <div className="pt-6 pb-[200px] md:pl-2 pr-4">
                 {/* Fixed Footer Checkout for Mobile */}
                 <div className="fixed z-[50] bottom-0 w-full flex items-center justify-end gap-2 bg-white px-3 py-3 border-y-[1.5px] border-black">
                     <p>3 items</p>
@@ -62,6 +87,7 @@ export default function Cart() {
                         variant="clientDefault"
                         className="drop-shadow-none ml-2 text-base rounded-none"
                         size="lg"
+                        onClick={navigateToCheckout}
                     >
                         Checkout
                     </Button>
@@ -71,12 +97,30 @@ export default function Cart() {
                         Your Shopping Cart ({cartItems?.length} items)
                     </p>
                     {cartItems?.map((cartItem) => {
+                        let isCurrentItemSelectedForCheckout =
+                            selectedCheckoutItems.filter(
+                                (i) => i.id === cartItem.id
+                            )?.length;
                         return (
                             <div className="flex gap-1 items-start mt-6">
                                 {/* Actions */}
                                 <div className="flex flex-col items-start mt-2">
-                                    <Checkbox className="w-5 h-5 ml-3 border-[1.5px] hover:bg-black/10" />
-                                    <Button size="sm" variant="ghostAlert">
+                                    <Checkbox
+                                        className="w-5 h-5 ml-3 border-[1.5px] hover:bg-black/10"
+                                        checked={Boolean(
+                                            isCurrentItemSelectedForCheckout
+                                        )}
+                                        onCheckedChange={() =>
+                                            onItemCheck(cartItem)
+                                        }
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="ghostAlert"
+                                        onClick={() =>
+                                            onDeleteCartItem(cartItem)
+                                        }
+                                    >
                                         <TrashIcon className="w-5" />
                                     </Button>
                                 </div>
@@ -99,6 +143,12 @@ export default function Cart() {
                                         size="sm"
                                         variant="ghostClient"
                                         className="px-2 py-2"
+                                        onClick={() =>
+                                            onUpdateCartItem(
+                                                cartItem,
+                                                "decrement"
+                                            )
+                                        }
                                     >
                                         <MinusIcon className="w-4" />
                                     </Button>
@@ -109,6 +159,12 @@ export default function Cart() {
                                         size="sm"
                                         variant="ghostClient"
                                         className="px-2 py-2"
+                                        onClick={() =>
+                                            onUpdateCartItem(
+                                                cartItem,
+                                                "increment"
+                                            )
+                                        }
                                     >
                                         <PlusIcon className="w-4" />
                                     </Button>
@@ -137,12 +193,25 @@ export default function Cart() {
                     </div>
                     <div className="space-y-8 pb-20">
                         {cartItems?.map((cartItem) => {
+                            let isCurrentItemSelectedForCheckout =
+                                selectedCheckoutItems.filter(
+                                    (i) => i.id === cartItem.id
+                                )?.length;
+
                             return (
                                 <div className="grid grid-cols-7">
                                     <div className="flex pl-2">
                                         {/* Actions */}
                                         <div className="flex flex-col items-start mt-2">
-                                            <Checkbox className="w-5 h-5 ml-3 border-[1.5px] hover:bg-black/10" />
+                                            <Checkbox
+                                                className="w-5 h-5 ml-3 border-[1.5px] hover:bg-black/10"
+                                                checked={Boolean(
+                                                    isCurrentItemSelectedForCheckout
+                                                )}
+                                                onClick={() =>
+                                                    onItemCheck(cartItem)
+                                                }
+                                            />
                                             <Button
                                                 size="sm"
                                                 variant="ghostAlert"
@@ -219,6 +288,7 @@ export default function Cart() {
                             variant="clientDefault"
                             className="drop-shadow-none ml-2 text-base rounded-none"
                             size="lg"
+                            onClick={navigateToCheckout}
                         >
                             Checkout
                         </Button>

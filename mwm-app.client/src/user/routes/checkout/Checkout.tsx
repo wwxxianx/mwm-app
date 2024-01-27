@@ -131,25 +131,27 @@ export default function Checkout() {
     }
 
     return (
-        <div className="container flex flex-col items-center max-w-[700px]">
+        <div className="container flex flex-col items-center max-w-[700px] pt-20 font-playfair">
             {/* Steps */}
-            <div className="flex justify-center items-center gap-6 pb-12">
+            <div className="flex justify-center items-center gap-1 md:gap-6 pb-12">
                 <div className="flex flex-col items-center gap-3">
                     <Button
                         variant={"clientDefault"}
-                        className="relative text-2xl h-[60px] w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]"
+                        className="relative text-2xl w-[50px] h-[50px] md:h-[60px] md:w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]"
                         onClick={() => handleStepClick(1)}
                     >
                         1
                     </Button>
-                    <p className="font-medium text-lg">Billing Address</p>
+                    <p className="font-medium text-sm md:text-lg text-center max-h-[10px] md:max-h-none">
+                        Billing Address
+                    </p>
                 </div>
-                <hr className="bg-black h-[1.5px] w-[100px] mb-8" />
+                <hr className="bg-black h-[1.5px] w-[40px] md:w-[100px] mb-8" />
                 <div className="flex flex-col items-center gap-3">
                     <Button
                         variant={"clientDefault"}
                         className={cn(
-                            "relative text-2xl h-[60px] w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]",
+                            "relative text-2xl w-[50px] h-[50px] md:h-[60px] md:w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]",
                             {
                                 "bg-transparent shadow-none text-black opacity-40":
                                     currentStep < 2,
@@ -160,19 +162,19 @@ export default function Checkout() {
                         2
                     </Button>
                     <p
-                        className={cn("font-medium text-lg", {
+                        className={cn("font-medium text-sm md:text-lg", {
                             "opacity-40": currentStep < 2,
                         })}
                     >
                         Payment
                     </p>
                 </div>
-                <hr className="bg-black h-[1.5px] w-[100px] mb-8" />
+                <hr className="bg-black h-[1.5px] w-[40px] md:w-[100px] mb-8" />
                 <div className="flex flex-col items-center gap-3">
                     <Button
                         variant={"clientDefault"}
                         className={cn(
-                            "relative text-2xl h-[60px] w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]",
+                            "relative text-2xl w-[50px] h-[50px] md:h-[60px] md:w-[60px] before:content-[' '] before:border-r-[1.5px] before:border-b-[1.5px] before:w-full before:h-full before:border-black before:absolute before:translate-x-[5px] before:translate-y-[5px]",
                             {
                                 "bg-transparent shadow-none text-black opacity-40":
                                     currentStep !== 3,
@@ -183,7 +185,7 @@ export default function Checkout() {
                         3
                     </Button>
                     <p
-                        className={cn("font-medium text-lg", {
+                        className={cn("font-medium text-sm md:text-lg", {
                             "opacity-40": currentStep !== 3,
                         })}
                     >
@@ -198,7 +200,7 @@ export default function Checkout() {
                         onSubmit={addressForm.handleSubmit(onAddressFormSubmit)}
                         className="grid grid-cols-2 gap-8 w-full"
                     >
-                        <div className="col-span-2 flex justify-center items-center gap-2 translate-y-8 mt-6">
+                        <div className="col-span-2 flex justify-center items-center gap-2 translate-y-8 md:mt-6">
                             <UserIcon className="w-6" />
                             <p className="font-cinzel font-medium">
                                 Personal Info
@@ -219,7 +221,7 @@ export default function Checkout() {
                         />
 
                         <Input
-                            label="receiverEmail (Optional) :"
+                            label="Email (Optional) :"
                             {...addressForm.register("receiverEmail")}
                             error={Boolean(
                                 addressForm.formState.errors.receiverEmail
