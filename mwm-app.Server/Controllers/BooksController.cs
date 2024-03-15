@@ -227,6 +227,12 @@ namespace mwm_app.Server.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<BookResponseDTO>> PutBook(string id, BookDTO bookDTO)
         {
+            var transformedSlug = bookDTO.Slug.ToLower();
+            var slugExist = await _context.Books.FirstOrDefaultAsync(b => b.ID != id && b.Slug.Equals(transformedSlug));
+            if (slugExist != null)
+            {
+                return StatusCode(409, new ErrorResponse { errorMessage = "Slug already exist, pls use another slug" });
+            }
             if (id != bookDTO.ID)
             {
                 return BadRequest();
@@ -279,6 +285,12 @@ namespace mwm_app.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> PostBook(BookDTO bookDTO)
         {
+            var transformedSlug = bookDTO.Slug.ToLower();
+            var slugExist = await _context.Books.FirstOrDefaultAsync(b => b.Slug.Equals(transformedSlug));
+            if (slugExist != null)
+            {
+                return StatusCode(409, new ErrorResponse { errorMessage = "Slug already exist, pls use another slug" });
+            }
             var category = await _context.BookCategories.FirstAsync(category => category.ID == bookDTO.CategoryId);
             if (category == null)
             {

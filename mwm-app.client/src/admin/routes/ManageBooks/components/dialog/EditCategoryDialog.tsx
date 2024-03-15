@@ -14,7 +14,7 @@ import { PencilIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useUpdateCategoryMutation } from "../../../../../apiService/apiService";
+import { useUpdateCategoryMutation } from "../../../../../apiService/bookApi";
 import { useToast } from "../../../../../components/ui/use-toast";
 import { CategoryPayload, CategoryValidator } from "../../types";
 

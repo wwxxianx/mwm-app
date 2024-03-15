@@ -5,15 +5,15 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
-import { BookSchema } from "../../../../types/dataType";
-import { Pencil, Trash2 } from "lucide-react";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
+import { Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BookSchema } from "../../../../types/dataType";
+import DeleteBookDialog from "./dialog/DeleteBookDialog";
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>;
@@ -49,11 +49,7 @@ export function BookDataTableRowActions<TData>({
                     <span>Edit</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="items-center gap-2 text-rose-600 focus:text-rose-700 focus:bg-rose-100">
-                    <Trash2 className="w-4" />
-                    <span>Delete</span>
-                    <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                </DropdownMenuItem>
+                <DeleteBookDialog book={book} />
             </DropdownMenuContent>
         </DropdownMenu>
     );

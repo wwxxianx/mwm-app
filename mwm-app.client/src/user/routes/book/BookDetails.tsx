@@ -2,7 +2,7 @@ import {
     api,
     useGetBookReviewsQuery,
     useGetRelevantBooksQuery,
-} from "@/apiService/apiService";
+} from "@/apiService/bookApi";
 import {
     useCreateUserFavouriteMutation,
     useDeleteUserFavouriteMutation,

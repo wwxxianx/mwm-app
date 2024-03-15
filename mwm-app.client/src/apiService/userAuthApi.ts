@@ -1,5 +1,5 @@
 import { UserAuthPayload } from "@/user/routes/login/types";
-import { api } from "./apiService";
+import { api } from "./bookApi";
 import { UserResponse } from "./types";
 
 export const userAuthApi = api.injectEndpoints({

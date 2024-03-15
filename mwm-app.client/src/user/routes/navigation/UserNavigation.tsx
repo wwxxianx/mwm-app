@@ -21,7 +21,7 @@ import {
     useGetFeaturedBooksQuery,
     useGetTrendingAuthorsQuery,
     useGetTrendingCategoriesQuery,
-} from "@/apiService/apiService";
+} from "@/apiService/bookApi";
 import { Category } from "@/types/dataType";
 import { updateSelectedCategories } from "@/user/redux/bookSlice";
 

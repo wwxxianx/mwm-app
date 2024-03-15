@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
-import { useGetBooksQuery } from "../../apiService/apiService";
+import { useGetBooksQuery } from "../../apiService/bookApi";
 import { cn } from "@/lib/utils";
 
 type BookDropdownMenuProps = {
@@ -102,7 +102,7 @@ export default function BookDropdownMenu(props: BookDropdownMenuProps) {
                         }}
                     >
                         <CommandInput
-                            placeholder="Search framework..."
+                            placeholder="Search books..."
                             className="h-9"
                         />
                         <CommandEmpty>No framework found.</CommandEmpty>

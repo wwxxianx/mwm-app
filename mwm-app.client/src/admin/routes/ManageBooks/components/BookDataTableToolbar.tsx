@@ -11,7 +11,7 @@ import { authors } from "@/lib/fakeData";
 import {
     useGetAuthorsQuery,
     useGetCategoriesQuery,
-} from "@/apiService/apiService";
+} from "@/apiService/bookApi";
 import { useMemo } from "react";
 
 type DataTableToolbarProps<TData> = {

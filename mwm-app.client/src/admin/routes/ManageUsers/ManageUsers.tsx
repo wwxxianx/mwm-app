@@ -1,4 +1,4 @@
-import { useGetAllUsersQuery } from "@/apiService/apiService";
+import { useGetAllUsersQuery } from "@/apiService/bookApi";
 import { users } from "@/lib/fakeData";
 import { DataTable } from "../ManageBooks/components/DataTable";
 import { userTableColumns } from "./components/DataTableColumns";

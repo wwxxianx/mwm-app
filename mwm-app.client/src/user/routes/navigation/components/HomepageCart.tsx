@@ -28,7 +28,7 @@ import {
     MinusIcon,
     PlusIcon,
 } from "@heroicons/react/24/solid";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 type HomepageCartProps = HTMLAttributes<HTMLDivElement> & {
@@ -47,6 +47,11 @@ export default function HomepageCart(props: HomepageCartProps) {
     const selectedCheckoutItems = useAppSelector(
         (state) => state.shoppingCart.selectedCartItems
     );
+    const totalAmount = useMemo(() => {
+        return selectedCheckoutItems.reduce((acc, item) => {
+            return acc + item.book.price * item.quantity;
+        }, 0);
+    }, [selectedCheckoutItems]);
 
     async function onUpdateCartItem(
         shoppingCartItem: ShoppingCartItem,
@@ -203,7 +208,7 @@ export default function HomepageCart(props: HomepageCartProps) {
                                                 <PlusIcon className="w-4" />
                                             </Button>
                                         </div>
-                                        <p>RM129</p>
+                                        <p>RM{cartItem.book.price}</p>
                                     </div>
                                 </div>
                             </div>
@@ -212,8 +217,13 @@ export default function HomepageCart(props: HomepageCartProps) {
                 </div>
                 <SheetFooter className="md:flex-col md:gap-2 md:space-x-0 md:mt-auto pt-10">
                     <div className="font-playfair flex items-center justify-between">
-                        <p>0 item selected</p>
-                        <p className="font-medium text-lg">RM 499</p>
+                        <p>
+                            {selectedCheckoutItems?.length === 0
+                                ? "No"
+                                : selectedCheckoutItems?.length}{" "}
+                            item selected
+                        </p>
+                        <p className="font-medium text-lg">RM {totalAmount}</p>
                     </div>
                     <SheetClose asChild>
                         <Button
@@ -224,6 +234,7 @@ export default function HomepageCart(props: HomepageCartProps) {
                                 "h-[47px] text-base font-normal"
                             )}
                             onClick={navigateToCheckout}
+                            disabled={selectedCheckoutItems?.length === 0}
                         >
                             Checkout
                         </Button>

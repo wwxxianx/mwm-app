@@ -294,6 +294,51 @@ namespace mwm_app.Server.Migrations
                     b.ToTable("User", "AdminSchema");
                 });
 
+            modelBuilder.Entity("mwm_app.Server.Models.UserAddress", b =>
+                {
+                    b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AddressUnit")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Postcode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverPhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StateRegion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StreetAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserAddress", "AdminSchema");
+                });
+
             modelBuilder.Entity("mwm_app.Server.Models.UserFavouriteBook", b =>
                 {
                     b.Property<string>("ID")
@@ -459,6 +504,17 @@ namespace mwm_app.Server.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("mwm_app.Server.Models.UserAddress", b =>
+                {
+                    b.HasOne("mwm_app.Server.Models.User", "User")
+                        .WithMany("Addresses")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("mwm_app.Server.Models.UserFavouriteBook", b =>
                 {
                     b.HasOne("mwm_app.Server.Models.Book", "Book")
@@ -506,6 +562,8 @@ namespace mwm_app.Server.Migrations
 
             modelBuilder.Entity("mwm_app.Server.Models.User", b =>
                 {
+                    b.Navigation("Addresses");
+
                     b.Navigation("BookReviews");
 
                     b.Navigation("CartItems");

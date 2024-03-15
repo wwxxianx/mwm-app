@@ -3,7 +3,7 @@ import CategoryDropdownMenu from "@/admin/components/CategoryDropdownMenu";
 import {
     useGetBookByIdQuery,
     useUpdateBookMutation,
-} from "@/apiService/apiService";
+} from "@/apiService/bookApi";
 import { Button } from "@/components/ui/button";
 import FileDropzone from "@/components/ui/fileDropzone";
 import { Form, FormField, FormItem } from "@/components/ui/form";
@@ -155,7 +155,7 @@ export default function EditBook() {
                 <ChevronLeftIcon className="w-5" />
                 Back to Books
             </Button>
-            <h2 className="text-xl font-medium mb-4">Create a new book</h2>
+            <h2 className="text-xl font-medium mb-4">Edit book</h2>
             <h4 className="text-lg mb-2">Book info</h4>
             <Form {...form}>
                 <form

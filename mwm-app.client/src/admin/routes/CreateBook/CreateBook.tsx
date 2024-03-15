@@ -9,16 +9,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useCreateBookMutation } from "../../../apiService/apiService";
+import { useCreateBookMutation } from "../../../apiService/bookApi";
 import { getFileDownloadUrl } from "../../../utils/getFileDownloadUrl";
 import AuthorDropdownMenu from "../../components/AuthorDropdownMenu";
 import CategoryDropdownMenu from "../../components/CategoryDropdownMenu";
 import { BookPayload, BookValidator } from "./types";
+import { useToast } from "@/components/ui/use-toast";
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 
 export default function CreateBook() {
     const dispatch = useAppDispatch();
+    const { toast } = useToast();
     const navigate = useNavigate();
-    const [createBook, { isLoading }] = useCreateBookMutation();
+    const [createBook, { isLoading, isError, error }] = useCreateBookMutation();
     const [isUploadingFile, setIsUploadingFile] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState<any>(null);
     const [selectedPreviewFile, setSelectedPreviewFile] = useState<any>(null);
@@ -87,6 +90,14 @@ export default function CreateBook() {
             .then((_) => {
                 // dispatch(triggerShouldRevalidateManageBooks(true));
                 navigate(-1);
+            })
+            .catch((err) => {
+                toast({
+                    variant: "destructive",
+                    title:
+                        err?.data?.errorMessage ||
+                        "Something went wrong, please try again later.",
+                });
             });
     }
 
@@ -105,6 +116,15 @@ export default function CreateBook() {
     return (
         <div>
             <h2 className="text-xl font-medium mb-4">Create a new book</h2>
+            {isError && (
+                <div className="flex gap-2 items-center">
+                    <ExclamationCircleIcon className="text-rose-500 w-6" />
+                    <p className="font-medium text-rose-700">
+                        {error?.data?.errorMessage ??
+                            "Something went wrong, please try again later"}
+                    </p>
+                </div>
+            )}
             <h4 className="text-lg mb-2">Book info</h4>
             <Form {...form}>
                 <form

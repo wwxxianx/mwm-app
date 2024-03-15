@@ -61,9 +61,19 @@ export const userTableColumns: ColumnDef<User>[] = [
                 </div>
             );
         },
-        // filterFn: (row, id, value) => {
-        //     return value.includes(row.getValue(id));
-        // },
+    },
+    {
+        accessorKey: "password",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Password" />
+        ),
+        cell: ({ row }) => {
+            return (
+                <div className="flex w-[100px] items-center text-slate-700">
+                    <span>{row.getValue("password")}</span>
+                </div>
+            );
+        },
     },
     {
         accessorKey: "phoneNumber",

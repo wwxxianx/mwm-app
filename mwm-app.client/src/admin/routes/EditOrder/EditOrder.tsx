@@ -3,7 +3,7 @@ import {
     userOrderApi,
 } from "@/apiService/userOrderApi";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -16,7 +16,7 @@ import { store } from "@/lib/reduxStore";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeftIcon, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
     LoaderFunctionArgs,
@@ -25,11 +25,11 @@ import {
 } from "react-router-dom";
 import { z } from "zod";
 import { Order, OrderStatusEnum } from "../../../types/dataType";
-import { BookPayload, BookValidator } from "../CreateBook/types";
 import StatusChip from "../ManageOrders/components/StatusChip";
-import { OrderAddressValidator } from "@/user/routes/checkout/Checkout";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
+import { OrderAddressValidator } from "@/user/routes/checkout/validation/validator";
+import { useClipboard } from "@/hooks/useClipboard";
 
 async function loader({ params }: LoaderFunctionArgs) {
     const { orderID } = params;
@@ -45,10 +45,12 @@ async function loader({ params }: LoaderFunctionArgs) {
 const OrderStatusValidator = z.object({
     status: OrderStatusEnum,
 });
-export const EditOrderValidator = OrderAddressValidator.merge(OrderStatusValidator);
+export const EditOrderValidator =
+    OrderAddressValidator.merge(OrderStatusValidator);
 export type EditOrderPayload = z.infer<typeof EditOrderValidator>;
 
 export default function EditOrder() {
+    const clipboard = useClipboard();
     const order = useLoaderData() as Order;
     const { toast } = useToast;
     const navigate = useNavigate();
@@ -84,6 +86,10 @@ export default function EditOrder() {
                     title: "Something went wrong, please try again later.",
                 });
             });
+    }
+
+    function onCopyUserEmail(email: string) {
+        clipboard.copy(email);
     }
 
     function onNavigateBack() {
@@ -137,10 +143,27 @@ export default function EditOrder() {
                                             </div>
                                         </div>
                                         <div className="flex items-center text-slate-500">
-                                            <Button variant="ghost" size="sm">
+                                            <a
+                                                href={`mailto:${order?.user?.email}`}
+                                                className={buttonVariants({
+                                                    variant: "ghost",
+                                                    size: "sm",
+                                                })}
+                                            >
                                                 <EnvelopeIcon className="w-5" />
-                                            </Button>
-                                            <Button variant="ghost" size="sm">
+                                            </a>
+
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() =>
+                                                    onCopyUserEmail(
+                                                        order?.user
+                                                            ?.email as string
+                                                    )
+                                                }
+                                            >
                                                 <Copy className="w-5" />
                                             </Button>
                                         </div>

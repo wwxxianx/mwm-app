@@ -1,4 +1,4 @@
-import { api } from "@/apiService/apiService";
+import { api } from "@/apiService/bookApi";
 import { userAuthApi } from "@/apiService/userAuthApi";
 import { userProfileApi } from "@/apiService/userProfileApi";
 import { User } from "@/types/dataType";

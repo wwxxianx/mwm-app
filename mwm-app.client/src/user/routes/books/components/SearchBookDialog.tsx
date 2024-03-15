@@ -1,6 +1,6 @@
 import { useDebouncedState } from "@/hooks/useDebounceState";
 import SearchDialog from "./SearchDialog";
-import { useGetBooksQuery } from "@/apiService/apiService";
+import { useGetBooksQuery } from "@/apiService/bookApi";
 import { Book } from "@/types/dataType";
 import { Link } from "react-router-dom";
 import BookCover from "@/components/ui/BookCover";

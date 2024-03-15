@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useUpdateUserOrderMutation } from "@/apiService/userOrderApi";
 import { useToast } from "@/components/ui/use-toast";
+import DeleteOrderDialog from "./DeleteOrderDialog";
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>;
@@ -138,11 +139,7 @@ export function DataTableRowActions<TData>({
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="items-center gap-2 text-rose-600 focus:text-rose-700 focus:bg-rose-100">
-                    <Trash2 className="w-4" />
-                    <span>Delete</span>
-                    <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                </DropdownMenuItem>
+                <DeleteOrderDialog order={order} />
             </DropdownMenuContent>
         </DropdownMenu>
     );

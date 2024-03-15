@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useDeleteAuthorMutation } from "@/apiService/apiService";
+import { useDeleteAuthorMutation } from "@/apiService/bookApi";
 import { useRevalidate } from "@/hooks/useRevalide";
 import { useToast } from "@/components/ui/use-toast";
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
+using mwm_app.Server.Data.DTO;
 using mwm_app.Server.Models;
 
 namespace mwm_app.Server.Controllers
@@ -72,7 +73,7 @@ namespace mwm_app.Server.Controllers
         }
 
         // POST: api/Admins/register
-        [HttpPost("register")]
+        // [HttpPost("register")]
         // public async Task<ActionResult<Customer>> RegisterUser(AuthPayload payload)
         // {
         //     // Perform user registration logic, such as validation and saving to the database
@@ -111,14 +112,17 @@ namespace mwm_app.Server.Controllers
         // PUT: api/Admins/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAdmin(string id, Admin admin)
+        public async Task<IActionResult> PutAdmin(string id, AdminDTO adminDTO)
         {
-            if (id != admin.ID)
+            var emailExist = await _context.Admins.FirstOrDefaultAsync(a => a.ID != id && a.Email.Equals(adminDTO.Email));
+            if (emailExist != null)
             {
-                return BadRequest();
+                return StatusCode(409, new ErrorResponse { errorMessage = "Email already exist"});
             }
-
-            _context.Entry(admin).State = EntityState.Modified;
+            var adminToUpdate = await _context.Admins.FirstAsync(a => a.ID == id);
+            adminToUpdate.FullName = adminDTO.FullName;
+            adminToUpdate.Email = adminDTO.Email;
+            adminToUpdate.Password = adminDTO.Password;
 
             try
             {
@@ -141,9 +145,20 @@ namespace mwm_app.Server.Controllers
 
         // POST: api/Admins
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Admin>> PostAdmin(Admin admin)
+        [HttpPost("register")]
+        public async Task<ActionResult<Admin>> PostAdmin(AdminDTO adminDTO)
         {
+            var emailExist = await _context.Admins.FirstOrDefaultAsync(a => a.Email.Equals(adminDTO.Email));
+            if (emailExist != null)
+            {
+                return StatusCode(409, new ErrorResponse { errorMessage = "Email already exist" });
+            }
+            var admin = new Admin
+            {
+                FullName = adminDTO.FullName,
+                Email = adminDTO.Email,
+                Password = adminDTO.Password,
+            };
             _context.Admins.Add(admin);
             try
             {

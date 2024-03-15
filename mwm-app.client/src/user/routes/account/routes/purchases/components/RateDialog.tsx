@@ -1,7 +1,7 @@
 import {
     useCreateBookReviewMutation,
     useGetBookReviewsQuery,
-} from "@/apiService/apiService";
+} from "@/apiService/bookApi";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,

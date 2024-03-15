@@ -1,4 +1,4 @@
-import { useGetAuthorsByNameQuery } from "@/apiService/apiService";
+import { useGetAuthorsByNameQuery } from "@/apiService/bookApi";
 import SearchDialog from "../../books/components/SearchDialog";
 import { useDebouncedState } from "@/hooks/useDebounceState";
 import { Link } from "react-router-dom";

@@ -13,7 +13,7 @@ import { PlusSmallIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useCreateBookCategoryMutation } from "../../../../../apiService/apiService";
+import { useCreateBookCategoryMutation } from "../../../../../apiService/bookApi";
 import { CategoryPayload, CategoryValidator } from "../../types";
 
 // export async function action({ request, params }) {

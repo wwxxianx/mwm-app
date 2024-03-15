@@ -13,7 +13,7 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import { useGetAuthorsQuery } from "../../apiService/apiService";
+import { useGetAuthorsQuery } from "../../apiService/bookApi";
 
 type AuthorDropdownMenuProps = {
     value?: string;
@@ -47,7 +47,7 @@ export default function AuthorDropdownMenu(props: AuthorDropdownMenuProps) {
     }, [authorButtonRef]);
 
     function onSelect(value: string) {
-        console.log('value passed to onSelect', value);
+        console.log("value passed to onSelect", value);
         onValueChange(value);
         setOpenAuthorDropdown(false);
     }
@@ -59,10 +59,7 @@ export default function AuthorDropdownMenu(props: AuthorDropdownMenuProps) {
                 onOpenChange={setOpenAuthorDropdown}
             >
                 <p className="text-slate-600 text-sm font-normal mb-2">
-                    Author{" "}
-                    <span className="text-red-400">
-                        *
-                    </span>
+                    Author <span className="text-red-400">*</span>
                 </p>
                 <PopoverTrigger asChild>
                     <Button
@@ -73,7 +70,10 @@ export default function AuthorDropdownMenu(props: AuthorDropdownMenuProps) {
                         error={error}
                         errorMessage={errorMessage}
                     >
-                        {value?.length === 0 ? "Select author" : authors?.find(author => author.id === value)?.fullName }
+                        {value?.length === 0
+                            ? "Select author"
+                            : authors?.find((author) => author.id === value)
+                                  ?.fullName}
                         <ChevronUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
@@ -85,26 +85,26 @@ export default function AuthorDropdownMenu(props: AuthorDropdownMenuProps) {
                 >
                     <Command
                         filter={(value, search) => {
-                            const filteredAuthor = authors?.filter(author => author.fullName.toLowerCase().includes(search.toLowerCase()));
-                            return filteredAuthor?.filter(author => author.id === value).length;
+                            const filteredAuthor = authors?.filter((author) =>
+                                author.fullName
+                                    .toLowerCase()
+                                    .includes(search.toLowerCase())
+                            );
+                            return filteredAuthor?.filter(
+                                (author) => author.id === value
+                            ).length;
                         }}
                     >
                         <CommandInput
-                            placeholder="Search framework..."
+                            placeholder="Search authors..."
                             className="h-9"
                         />
-                        <CommandEmpty>
-                            No framework found.
-                        </CommandEmpty>
+                        <CommandEmpty>No framework found.</CommandEmpty>
                         <CommandGroup>
                             {authors?.map((author) => (
                                 <CommandItem
-                                    key={
-                                        author.id
-                                    }
-                                    value={
-                                        author.id
-                                    }
+                                    key={author.id}
+                                    value={author.id}
                                     onSelect={onSelect}
                                 >
                                     {author.fullName}

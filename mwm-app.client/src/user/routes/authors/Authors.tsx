@@ -1,4 +1,4 @@
-import { useGetAuthorsWithBooksQuery } from "@/apiService/apiService";
+import { useGetAuthorsWithBooksQuery } from "@/apiService/bookApi";
 import FountainPenImageUrl from "@/assets/fountain-pen.png";
 import BestLiteraryImageUrl from "@/assets/malmo-arab-film-award.png";
 import PenAmericaImageUrl from "@/assets/pen-america-award.png";

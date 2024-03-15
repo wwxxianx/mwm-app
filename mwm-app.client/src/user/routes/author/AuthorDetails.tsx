@@ -1,4 +1,7 @@
-import { useGetAuthorByIDQuery, useGetBookByAuthorIDQuery } from "@/apiService/apiService";
+import {
+    useGetAuthorByIDQuery,
+    useGetBookByAuthorIDQuery,
+} from "@/apiService/bookApi";
 import BookDrawer from "@/user/components/BookDrawer";
 import { useParams } from "react-router-dom";
 import BooksSkeleton from "../books/components/BooksSkeleton";

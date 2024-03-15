@@ -1,4 +1,4 @@
-import { api } from "./apiService";
+import { api } from "./bookApi";
 import { UserFavouriteBook, UserFavouriteRequest } from "./types";
 
 export const userFavouriteBookApi = api.injectEndpoints({

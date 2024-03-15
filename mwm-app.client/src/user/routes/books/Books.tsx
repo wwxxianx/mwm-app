@@ -1,7 +1,4 @@
-import {
-    useGetBooksQuery,
-    useGetCategoriesQuery,
-} from "@/apiService/apiService";
+import { useGetBooksQuery, useGetCategoriesQuery } from "@/apiService/bookApi";
 import { PaginatedResponse } from "@/apiService/types";
 import {
     useCreateUserFavouriteMutation,

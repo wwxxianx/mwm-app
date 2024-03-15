@@ -1,5 +1,5 @@
 import adminReducer from "@/admin/redux/admin/adminSlice";
-import { api } from "@/apiService/apiService";
+import { api } from "@/apiService/bookApi";
 import userReducer from "@/user/redux/userSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import adminDialogReducer from "../admin/redux/dialog/dialogSlice";

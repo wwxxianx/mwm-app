@@ -87,7 +87,7 @@ export default function Login() {
                     <Button
                         type="button"
                         variant="link"
-                        className="ml-0 pl-1 text-sm"
+                        className="ml-0 pl-1 text-sm underline"
                         onClick={onNavigateSignUp}
                     >
                         Sign up now!

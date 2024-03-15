@@ -1,5 +1,4 @@
 import { TopBook, TopBookRequest } from "@/admin/routes/TopThreeBooks/types";
-import { UserAuthPayload } from "@/user/routes/login/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
     AuthorPayload,
@@ -7,14 +6,13 @@ import {
 } from "../admin/routes/ManageBooks/types";
 import { Author, Book, Category, User } from "../types/dataType";
 import {
-    AdminResponse,
     AuthorWithBooks,
     BookAPIPayload,
     BookRequest,
     BookReview,
     CreateBookReviewPayload,
     PaginatedResponse,
-    UpdateBookAPIPayload,
+    UpdateBookAPIPayload
 } from "./types";
 
 export const api = createApi({
@@ -374,22 +372,6 @@ export const api = createApi({
             },
         }),
 
-        // Admin
-        adminLogin: builder.mutation<AdminResponse, UserAuthPayload>({
-            query: (credentials) => ({
-                url: "Admins/login",
-                method: "POST",
-                body: credentials,
-            }),
-        }),
-        adminRegister: builder.mutation<AdminResponse, UserAuthPayload>({
-            query: (credentials) => ({
-                url: "Admins/register",
-                method: "POST",
-                body: credentials,
-            }),
-        }),
-
         getAllUsers: builder.query<User[], void>({
             query: () => "Users",
         }),
@@ -397,10 +379,6 @@ export const api = createApi({
 });
 
 export const {
-    // Admin
-    useAdminLoginMutation,
-    useAdminRegisterMutation,
-
     // Book
     useCreateBookMutation,
     useCreateBookCategoryMutation,

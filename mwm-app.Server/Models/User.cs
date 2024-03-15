@@ -31,5 +31,7 @@ namespace mwm_app.Server.Models
         public ICollection<ShoppingCart> CartItems { get; set; }
 
         public ICollection<BookReview> BookReviews { get; set; }
+
+        public ICollection<UserAddress> Addresses { get; set; }
     }
 }

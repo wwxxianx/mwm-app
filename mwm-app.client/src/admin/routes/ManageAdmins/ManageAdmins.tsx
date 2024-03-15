@@ -1,30 +1,10 @@
-import { useEffect, useState } from "react";
-import UpdateAdminDialog from "./components/UpdateAdminDialog";
+import { useGetAllAdminsQuery } from "@/apiService/adminApi";
 import { DataTable } from "../ManageBooks/components/DataTable";
-import { admins } from "@/lib/fakeData";
 import { adminTableColumns } from "./components/DataTableColumns";
-import { useLoaderData } from "react-router-dom";
-import { Admin } from "../../../types/dataType";
-
-export async function loader() {
-    return admins;
-}
+import UpdateAdminDialog from "./components/UpdateAdminDialog";
 
 export default function ManageAdmins() {
-    const adminsData = useLoaderData() as Admin[];
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-    useEffect(() => {
-        console.log("render");
-    }, []);
-
-    function handleCloseCreateDialog() {
-        setIsCreateDialogOpen(false);
-    }
-
-    function handleOpenCreateDialog() {
-        setIsCreateDialogOpen(true);
-    }
+    const { data: admins } = useGetAllAdminsQuery();
 
     return (
         <div>
@@ -36,19 +16,13 @@ export default function ManageAdmins() {
                     </p>
                 </div>
 
-                <UpdateAdminDialog
-                    isDialogOpen={isCreateDialogOpen}
-                    onOpenDialog={handleOpenCreateDialog}
-                    onCloseDialog={handleCloseCreateDialog}
-                />
+                <UpdateAdminDialog />
             </div>
             <DataTable
-                data={adminsData}
+                data={admins ?? []}
                 columns={adminTableColumns}
                 type="admin"
             />
         </div>
     );
 }
-
-export { loader as adminsLoader };

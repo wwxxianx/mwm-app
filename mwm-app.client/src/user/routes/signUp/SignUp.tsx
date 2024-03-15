@@ -7,10 +7,11 @@ import { useForm } from "react-hook-form";
 import { UserRegisterPayload, UserRegisterValidator } from "./types";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterMutation } from "@/apiService/userAuthApi";
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 
 export default function SignUp() {
     const navigate = useNavigate();
-    const [register, { isLoading, isError }] = useRegisterMutation();
+    const [register, { isLoading, isError, error }] = useRegisterMutation();
     const form = useForm({
         resolver: zodResolver(UserRegisterValidator),
         defaultValues: {
@@ -26,8 +27,12 @@ export default function SignUp() {
                 email: data.email,
                 password: data.password,
             };
-            await register(user).unwrap();
-            navigate("/");
+            register(user)
+                .unwrap()
+                .then((_) => {
+                    navigate("/");
+                })
+                .catch((err) => {});
         } catch (_) {
             //
         }
@@ -46,6 +51,14 @@ export default function SignUp() {
                 <h3 className="text-xl font-medium my-5">
                     Create a new account
                 </h3>
+                {isError && (
+                    <div className="flex gap-2 items-center">
+                        <ExclamationCircleIcon className="w-6 text-rose-500" />
+                        <p className="text-rose-700">
+                            {error?.data?.errorMessage ?? "No error Message"}
+                        </p>
+                    </div>
+                )}
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <Input

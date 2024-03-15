@@ -1,4 +1,4 @@
-import { useGetTrendingCategoryBooksQuery } from "@/apiService/apiService";
+import { useGetTrendingCategoryBooksQuery } from "@/apiService/bookApi";
 import EconomicsUrl from "@/assets/economics.jpg";
 import FictionUrl from "@/assets/fiction.jpg";
 import HistoryUrl from "@/assets/history.jpg";

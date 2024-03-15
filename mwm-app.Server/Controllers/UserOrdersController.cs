@@ -161,6 +161,25 @@ namespace mwm_app.Server.Controllers
             // Removing fetched cart items
             _context.ShoppingCarts.RemoveRange(cartItemsToRemove);
 
+            // Check for new address
+            var userCurrentAddresses = await _context.UserAddresses.Where(a => a.User.ID == user.ID).ToListAsync();
+            if (userCurrentAddresses.Count == 0 || userCurrentAddresses == null)
+            {
+                // Add new address
+                var newAddress = new UserAddress
+                {
+                    User = user,
+                    StateRegion = userOrderDTO.StateRegion,
+                    AddressUnit = userOrderDTO.AddressUnit,
+                    Postcode = userOrderDTO.Postcode,
+                    ReceiverEmail = userOrderDTO.ReceiverEmail,
+                    ReceiverName = userOrderDTO.ReceiverName,
+                    ReceiverPhoneNumber = userOrderDTO.ReceiverPhoneNumber,
+                    StreetAddress = userOrderDTO.StreetAddress,
+                    IsDefault = true,
+                };
+            }
+
             try
             {
                 await _context.SaveChangesAsync();

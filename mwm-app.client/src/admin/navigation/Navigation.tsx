@@ -57,7 +57,7 @@ export default function AdminNavBar() {
             route: "editor-choice",
             label: "Editor Choice",
         },
-    ]
+    ];
 
     function handleLogout() {
         dispatch(adminLogout());
@@ -75,7 +75,7 @@ export default function AdminNavBar() {
     return (
         <div
             id="content-wrapper"
-            className="flex px-[12px] py-[32px] w-full min-h-screen bg-indigo-50"
+            className="flex pl-[12px] pr-[26px] py-[32px] w-full min-h-screen bg-indigo-50"
         >
             <div id="sidebar-menu" className="w-fit mr-2">
                 {/* Avatar Row */}
@@ -86,7 +86,7 @@ export default function AdminNavBar() {
                     </Avatar>
 
                     <div>
-                        <p className="text-slate-900">MaterialStudio</p>
+                        <p className="text-slate-900">Book.com</p>
                         <p className="text-xs">Super Admin</p>
                     </div>
 

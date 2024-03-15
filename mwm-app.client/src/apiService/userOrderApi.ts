@@ -1,5 +1,5 @@
 import { Order } from "@/types/dataType";
-import { api } from "./apiService";
+import { api } from "./bookApi";
 import { CreateOrderPayload, UpdateOrderPayload } from "./types";
 import { userShoppingCartApi } from "./userShoppingCartApi";
 
@@ -60,7 +60,7 @@ export const userOrderApi = api.injectEndpoints({
                         );
                     }
                 } catch (err) {
-                    console.log("Update cached user favourites failed", err);
+                    console.log("Update cached user order failed", err);
                 }
             },
         }),
@@ -115,7 +115,45 @@ export const userOrderApi = api.injectEndpoints({
                         )
                     );
                 } catch (err) {
-                    console.log("Update cached user favourites failed", err);
+                    console.log("Update cached user order failed", err);
+                }
+            },
+        }),
+        deleteUserOrder: builder.mutation<void, string>({
+            query: (orderID) => ({
+                url: `UserOrders/${orderID}`,
+                method: "DELETE",
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    // Update admin orders table data
+                    dispatch(
+                        userOrderApi.util.updateQueryData(
+                            "getAllUsersOrders",
+                            undefined,
+                            (draft) => {
+                                return draft?.filter(
+                                    (order) => order.id !== requestBody
+                                );
+                            }
+                        )
+                    );
+
+                    // Update user order page data
+                    dispatch(
+                        userOrderApi.util.updateQueryData(
+                            "getUserOrders",
+                            undefined,
+                            (draft) => {
+                                return draft?.filter(
+                                    (order) => order.id !== requestBody
+                                );
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log("Update cached user order failed", err);
                 }
             },
         }),
@@ -128,4 +166,5 @@ export const {
     useUpdateUserOrderMutation,
     useGetAllUsersOrdersQuery,
     useGetUserOrderByIDQuery,
+    useDeleteUserOrderMutation,
 } = userOrderApi;

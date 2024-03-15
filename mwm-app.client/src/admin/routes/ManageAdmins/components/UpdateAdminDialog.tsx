@@ -9,47 +9,31 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { admins } from "@/lib/fakeData";
+import { useToast } from "@/components/ui/use-toast";
 import { PencilIcon, PlusSmallIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Form as RouterForm, useNavigate } from "react-router-dom";
+import { Form as RouterForm } from "react-router-dom";
 import { Admin } from "../../../../types/dataType";
 import { AdminPayload, AdminValidator } from "../types";
+import {
+    useRegisterAdminMutation,
+    useUpdateAdminMutation,
+} from "@/apiService/adminApi";
 
 type UpdateAdminDialogProps = {
     admin?: Admin;
-    isDialogOpen: boolean;
-    onOpenDialog: () => void;
-    onCloseDialog: () => void;
 };
 
-export async function action({ request, params }) {
-    const formData = await request.formData();
-    const newAdmin = Object.fromEntries(formData);
-    if (
-        !newAdmin ||
-        !newAdmin?.email ||
-        !newAdmin?.fullName ||
-        !newAdmin?.password
-    ) {
-        // Error handling
-        return null;
-    }
-    if (request.method === "PUT") {
-        // Add new admin
-        admins.push(newAdmin as Admin);
-        console.log("action finished");
-        return null;
-    } else if (request.method === "POST") {
-        // Update existing admin
-    }
-}
-
 export default function UpdateAdminDialog(props: UpdateAdminDialogProps) {
-    const navigate = useNavigate();
-    const { onCloseDialog, onOpenDialog, isDialogOpen, admin } = props;
+    const { toast } = useToast();
+    const [updateAdmin, { isLoading: isUpdatingAdmin }] =
+        useUpdateAdminMutation();
+    const [createAdmin, { isLoading: isCreatingAdmin }] =
+        useRegisterAdminMutation();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { admin } = props;
     const form = useForm({
         resolver: zodResolver(AdminValidator),
         defaultValues: {
@@ -65,50 +49,57 @@ export default function UpdateAdminDialog(props: UpdateAdminDialogProps) {
             form.setValue("fullName", admin.fullName);
             form.setValue("password", admin.password);
         }
-    }, []);
+    }, [admin]);
 
     function onSubmit(data: AdminPayload) {
         if (!admin) {
             // Add new admin
-            const newAdmin = {
-                ...data,
-                id: "10",
-            };
-            // submit(newAdmin, { method: "put" });
-            admins.push(newAdmin);
-            navigate(0, { state: { revalidate: true } });
+            createAdmin(data)
+                .unwrap()
+                .then((_) => {
+                    setIsDialogOpen(false);
+                })
+                .catch((err) => {
+                    toast({
+                        title: "Error",
+                        description: err.data.message ?? "Something went wrong",
+                        variant: "destructive",
+                    });
+                });
         } else {
-            // Update existing admin
-            const newAdmin = {
-                ...data,
-                id: admin.id,
-            };
-            // submit(newAdmin, { method: "post" });
+            // Update admin
+            const adminToUpdate = { ...data, id: admin.id };
+            updateAdmin(adminToUpdate)
+                .unwrap()
+                .then((_) => {
+                    setIsDialogOpen(false);
+                })
+                .catch((err) => {
+                    toast({
+                        title: "Error",
+                        description: err.data.message ?? "Something went wrong",
+                        variant: "destructive",
+                    });
+                });
         }
-        onCloseDialog();
+        setIsDialogOpen(false);
     }
 
     return (
-        <Dialog open={isDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
                 {admin ? (
-                    <Button variant="ghost" size="sm" onClick={onOpenDialog}>
+                    <Button variant="ghost" size="sm">
                         <PencilIcon className="w-4" />
                     </Button>
                 ) : (
-                    <Button
-                        className="flex items-center gap-1 ml-auto"
-                        onClick={onOpenDialog}
-                    >
+                    <Button className="flex items-center gap-1 ml-auto">
                         <PlusSmallIcon className="w-5" />
                         <span>Invite new admin</span>
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent
-                className="sm:max-w-[425px]"
-                onCloseDialog={onCloseDialog}
-            >
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>{admin ? "Edit" : "Create"} Admin</DialogTitle>
                     <DialogDescription>
@@ -196,7 +187,11 @@ export default function UpdateAdminDialog(props: UpdateAdminDialogProps) {
                             )}
                         />
 
-                        <Button className="w-fit ml-auto">
+                        <Button
+                            className="w-fit ml-auto"
+                            isLoading={isCreatingAdmin || isUpdatingAdmin}
+                            disabled={isCreatingAdmin || isUpdatingAdmin}
+                        >
                             {admin ? "Save Changes" : "Create"}
                         </Button>
                     </RouterForm>
@@ -205,5 +200,3 @@ export default function UpdateAdminDialog(props: UpdateAdminDialogProps) {
         </Dialog>
     );
 }
-
-export { action as updateAdminAction };

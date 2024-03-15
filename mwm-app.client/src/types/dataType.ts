@@ -42,7 +42,7 @@ export const AdminSchema = z.object({
         .string()
         .min(1, { message: "Admin email is required" })
         .email({ message: "Invalid email" }),
-    //password: z.string().min(1, { message: "Admin password is required" }),
+    password: z.string().min(1, { message: "Admin password is required" }),
 });
 
 export const CategorySchema = z.object({
@@ -115,6 +115,18 @@ export const OrderSchema = z.object({
     items: z.array(OrderItemSchema).optional(),
 });
 
+export const UserAddressSchema = z.object({
+    id: z.string(),
+    receiverName: z.string(),
+    receiverPhoneNumber: z.string(),
+    receiverEmail: z.string().optional().nullable(),
+    stateRegion: z.string(),
+    postcode: z.string(),
+    streetAddress: z.string(),
+    addressUnit: z.string().optional().nullable(),
+    isDefault: z.boolean(),
+});
+
 export type Book = z.infer<typeof BookSchema>;
 export type OrderStatus = z.infer<typeof OrderStatusEnum>;
 export type User = z.infer<typeof UserSchema>;
@@ -123,3 +135,4 @@ export type OrderItem = z.infer<typeof OrderItemSchema>;
 export type Admin = z.infer<typeof AdminSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type Author = z.infer<typeof AuthorSchema>;
+export type UserAddress = z.infer<typeof UserAddressSchema>;

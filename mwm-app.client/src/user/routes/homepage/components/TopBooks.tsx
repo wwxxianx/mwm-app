@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { textUnderline } from "@/utils/classUtilities";
 import Medal3Url from "@/assets/medal-3.png";
-import { useGetTopBooksQuery } from "@/apiService/apiService";
+import { useGetTopBooksQuery } from "@/apiService/bookApi";
 import { Link } from "react-router-dom";
 
 export default function TopBooks() {

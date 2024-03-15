@@ -13,7 +13,7 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import { useGetCategoriesQuery } from "../../apiService/apiService";
+import { useGetCategoriesQuery } from "../../apiService/bookApi";
 
 type CategoryDropdownMenuProps = {
     value?: string;
@@ -53,15 +53,9 @@ export default function CategoryDropdownMenu(props: CategoryDropdownMenuProps) {
 
     return (
         <div className="w-full">
-            <Popover
-                open={openDropdown}
-                onOpenChange={setOpenDropdown}
-            >
+            <Popover open={openDropdown} onOpenChange={setOpenDropdown}>
                 <p className="text-slate-600 text-sm font-normal mb-2">
-                    Category{" "}
-                    <span className="text-red-400">
-                        *
-                    </span>
+                    Category <span className="text-red-400">*</span>
                 </p>
                 <PopoverTrigger asChild>
                     <Button
@@ -72,7 +66,11 @@ export default function CategoryDropdownMenu(props: CategoryDropdownMenuProps) {
                         error={error}
                         errorMessage={errorMessage}
                     >
-                        {value?.length === 0 ? "Select category" : categories?.find(category => category.id === value)?.category }
+                        {value?.length === 0
+                            ? "Select category"
+                            : categories?.find(
+                                  (category) => category.id === value
+                              )?.category}
                         <ChevronUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
@@ -84,26 +82,27 @@ export default function CategoryDropdownMenu(props: CategoryDropdownMenuProps) {
                 >
                     <Command
                         filter={(value, search) => {
-                            const filteredCategories = categories?.filter(category => category.category.toLowerCase().includes(search.toLowerCase()));
-                            return filteredCategories?.filter(category => category.id === value).length;
+                            const filteredCategories = categories?.filter(
+                                (category) =>
+                                    category.category
+                                        .toLowerCase()
+                                        .includes(search.toLowerCase())
+                            );
+                            return filteredCategories?.filter(
+                                (category) => category.id === value
+                            ).length;
                         }}
                     >
                         <CommandInput
-                            placeholder="Search framework..."
+                            placeholder="Search book category..."
                             className="h-9"
                         />
-                        <CommandEmpty>
-                            No framework found.
-                        </CommandEmpty>
+                        <CommandEmpty>No framework found.</CommandEmpty>
                         <CommandGroup>
                             {categories?.map((category) => (
                                 <CommandItem
-                                    key={
-                                        category.id
-                                    }
-                                    value={
-                                        category.id
-                                    }
+                                    key={category.id}
+                                    value={category.id}
                                     onSelect={onSelect}
                                 >
                                     {category.category}

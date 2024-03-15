@@ -1,7 +1,7 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "../components/DataTable";
 import { authorDataTableColumns } from "../components/AuthorDataTableColumns";
-import { api, useGetAuthorsQuery } from "../../../../apiService/apiService";
+import { api, useGetAuthorsQuery } from "../../../../apiService/bookApi";
 import { store } from "../../../../lib/reduxStore";
 import { useLoaderData } from "react-router-dom";
 import { useEffect } from "react";

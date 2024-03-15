@@ -11,7 +11,7 @@ import {
 import { Category } from "@/types/dataType";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useDeleteCategoryMutation } from "../../../../../apiService/apiService";
+import { useDeleteCategoryMutation } from "../../../../../apiService/bookApi";
 import { useToast } from "../../../../../components/ui/use-toast";
 
 type DeleteCategoryDialogProps = {

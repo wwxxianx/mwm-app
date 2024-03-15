@@ -76,7 +76,11 @@ namespace mwm_app.Server.Controllers
         public async Task<ActionResult<LoginResponse>> RegisterUser(AuthPayload payload)
         {
             // Perform user registration logic, such as validation and saving to the database
-
+            var emailExist = await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(payload.Email));
+            if (emailExist != null)
+            {
+                return StatusCode(409, new { errorMessage = "Email already exist, please try another" });
+            }
             var newUser = new User() {
                 Email = payload.Email,
                 Password = payload.Password,

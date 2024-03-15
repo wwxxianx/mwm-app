@@ -10,32 +10,46 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { Admin } from "../../../../types/dataType";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { useDeleteAdminMutation } from "@/apiService/adminApi";
 
 type UpdateAdminDialogProps = {
     admin?: Admin;
-    isDialogOpen: boolean;
-    onOpenDialog: () => void;
-    onCloseDialog: () => void;
 };
 
 export default function DeleteAdminDialog(props: UpdateAdminDialogProps) {
-    const { onCloseDialog, onOpenDialog, isDialogOpen } = props;
+    const { admin } = props;
+    const { toast } = useToast();
+    const [deleteAdmin, { isLoading: isDeletingAdmin }] =
+        useDeleteAdminMutation();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     function onDelete() {
-        onCloseDialog();
+        if (admin != null) {
+            deleteAdmin(admin.id)
+                .unwrap()
+                .then((_) => {
+                    setIsDialogOpen(false);
+                })
+                .catch((err) => {
+                    toast({
+                        title: "Error",
+                        description: "Something went wrong",
+                        variant: "destructive",
+                    });
+                });
+        }
     }
 
     return (
-        <Dialog open={isDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghostAlert" size="sm" onClick={onOpenDialog}>
+                <Button variant="ghostAlert" size="sm">
                     <Trash2 className="w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent
-                className="sm:max-w-[425px]"
-                onCloseDialog={onCloseDialog}
-            >
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Are you sure want to delete ?</DialogTitle>
                     <DialogDescription>
@@ -44,7 +58,12 @@ export default function DeleteAdminDialog(props: UpdateAdminDialogProps) {
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="defaultAlert" onClick={onDelete}>
+                    <Button
+                        variant="defaultAlert"
+                        isLoading={isDeletingAdmin}
+                        onClick={onDelete}
+                        disabled={isDeletingAdmin}
+                    >
                         Yes
                     </Button>
                 </DialogFooter>

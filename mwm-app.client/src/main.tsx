@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import {
@@ -14,10 +14,7 @@ import EditBook from "./admin/routes/EditBook/EditBook";
 import EditOrder, { orderLoader } from "./admin/routes/EditOrder/EditOrder";
 import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
 import AdminLogin from "./admin/routes/Login/Login";
-import ManageAdmins, {
-    adminsLoader,
-} from "./admin/routes/ManageAdmins/ManageAdmins";
-import { updateAdminAction } from "./admin/routes/ManageAdmins/components/UpdateAdminDialog";
+import ManageAdmins from "./admin/routes/ManageAdmins/ManageAdmins";
 import ManageBooksNavRoot from "./admin/routes/ManageBooks/ManageBooksNavRoot";
 import ManageAuthors from "./admin/routes/ManageBooks/routes/ManageAuthors";
 import ManageBooks from "./admin/routes/ManageBooks/routes/ManageBooks";
@@ -51,6 +48,19 @@ import SignUp from "./user/routes/signUp/SignUp";
 import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
 import { useAppSelector } from "./lib/hooks";
 import Checkout from "./user/routes/checkout/Checkout";
+import CheckoutSuccess from "./user/routes/checkoutSuccess/CheckouttSuccess";
+import { useToast } from "./components/ui/use-toast";
+const PrivateRouteComponent = () => {
+    const { toast } = useToast();
+    useEffect(() => {
+        toast({
+            title: "Please login to your account first",
+            variant: "destructive",
+        });
+    }, []);
+
+    return <Navigate to="/" replace />;
+};
 
 const PrivateRoute = (Component) => {
     const PrivateRouteWrapper = (props) => {
@@ -60,7 +70,7 @@ const PrivateRoute = (Component) => {
         return token != null ? (
             <Component {...props} />
         ) : (
-            <Navigate to="/" replace />
+            <PrivateRouteComponent />
         );
     };
 
@@ -151,6 +161,10 @@ const router = createBrowserRouter([
         element: <Checkout />,
     },
     {
+        path: "checkout-success",
+        element: <CheckoutSuccess />,
+    },
+    {
         path: "login",
         element: <Login />,
     },
@@ -223,8 +237,6 @@ const router = createBrowserRouter([
                     {
                         path: "manage-admins",
                         element: <ManageAdmins />,
-                        loader: adminsLoader,
-                        action: updateAdminAction,
                     },
                 ],
             },

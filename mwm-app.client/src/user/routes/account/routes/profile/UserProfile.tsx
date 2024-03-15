@@ -46,13 +46,13 @@ export const UserProfileValidator = z.object({
 });
 
 export type UserProfilePayload = z.infer<typeof UserProfileValidator> & {
-    userID: string;
+    userID: number;
 };
 
 export default function UserProfile() {
     const user = useAppSelector((state) => state.user.user);
     const { toast } = useToast();
-    const { data: userProfile } = useGetUserProfileQuery(user?.id);
+    const { data: userProfile } = useGetUserProfileQuery(user ? user.id : 0);
     const [selectedImageFile, setSelectedImageFile] = useState<any>(null);
     const [updateProfile, { isLoading: isUpdatingProfile }] =
         useUpdateUserProfileMutation();
@@ -95,7 +95,12 @@ export default function UserProfile() {
 
         updateProfile(userProfile)
             .unwrap()
-            .then((_) => {})
+            .then((_) => {
+                toast({
+                    variant: "default",
+                    title: "Profile updated successfully!",
+                });
+            })
             .catch((err) => {
                 toast({
                     variant: "destructive",

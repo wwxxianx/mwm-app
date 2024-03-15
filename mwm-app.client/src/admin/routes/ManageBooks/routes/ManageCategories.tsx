@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { api, useGetCategoriesQuery } from "../../../../apiService/apiService";
+import { api, useGetCategoriesQuery } from "../../../../apiService/bookApi";
 import { store } from "../../../../lib/reduxStore";
 import { categoryDataTableColumns } from "../components/CategoryDataTableColumns";
 import { DataTable } from "../components/DataTable";
@@ -25,4 +25,3 @@ export default function ManageCategories() {
 }
 
 export { loader as categoriesLoader };
-

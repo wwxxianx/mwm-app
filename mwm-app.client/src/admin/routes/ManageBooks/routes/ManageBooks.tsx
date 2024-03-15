@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { api, useGetBooksQuery } from "../../../../apiService/apiService";
+import { api, useGetBooksQuery } from "../../../../apiService/bookApi";
 import { store } from "../../../../lib/reduxStore";
 import { bookDataTableColumns } from "../components/BookDataTableColumns";
 import { DataTable } from "../components/DataTable";

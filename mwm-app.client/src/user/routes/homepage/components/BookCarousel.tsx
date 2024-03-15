@@ -1,4 +1,4 @@
-import { useGetTopBooksQuery } from "@/apiService/apiService";
+import { useGetTopBooksQuery } from "@/apiService/bookApi";
 import { cn } from "@/lib/utils";
 import { Carousel } from "@/user/components/Carousel/Carousel";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
