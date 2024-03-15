@@ -1,6 +1,6 @@
 import { Admin, Author, Book, OrderStatus, User } from "@/types/dataType";
 import { BookPayload } from "../admin/routes/CreateBook/types";
-import { OrderAddressPayload } from "@/user/routes/checkout/Checkout";
+import { OrderAddressPayload } from "@/user/routes/checkout/validator";
 
 export type UserResponse = {
     user: User;
