@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import "./Carousel.css";
 import BookCover from "@/components/ui/BookCover";
+import { TopBook } from "@/admin/routes/top-three-books/types";
 
 const MAX_VISIBILITY = 3;
 
@@ -29,7 +30,7 @@ export function CarouselCard({
 }
 
 type CarouselProps = {
-    items: Book[];
+    items?: TopBook[];
     children?: ReactNode;
     currentActive: number;
     onCarouselItemClick: (index: number) => void;
@@ -42,7 +43,7 @@ export function Carousel({
 }: CarouselProps) {
     return (
         <div className="carousel relative w-full h-full flex items-center justify-center">
-            {items.map((item, i) => {
+            {items?.map((item, i) => {
                 return (
                     <div
                         className="card-container absolute"
@@ -64,7 +65,7 @@ export function Carousel({
                         <CarouselCard
                             onClick={() => onCarouselItemClick(i)}
                             isActive={currentActive === i}
-                            imageUrl={item.imageUrl}
+                            imageUrl={item.book.imageUrl}
                         />
                     </div>
                 );

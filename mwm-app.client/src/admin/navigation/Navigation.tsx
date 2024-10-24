@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { UserIcon, BookOpenIcon, TruckIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "../components/shared/IconButton";
-import { NavBarButton } from "../components/NavBarButton";
+import { NavBarButton } from "../components/navbar-button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,7 +26,7 @@ export default function AdminNavBar() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const navItems = [
+    const manageNavItems = [
         {
             route: "manage-users",
             label: "Users",
@@ -48,6 +48,16 @@ export default function AdminNavBar() {
             icon: UserRoundCog,
         },
     ];
+    const specialContentNavItems = [
+        {
+            route: "top-three-books",
+            label: "Top Three Books",
+        },
+        {
+            route: "editor-choice",
+            label: "Editor Choice",
+        },
+    ];
 
     function handleLogout() {
         dispatch(adminLogout());
@@ -65,7 +75,7 @@ export default function AdminNavBar() {
     return (
         <div
             id="content-wrapper"
-            className="flex px-[12px] py-[32px] w-full min-h-screen bg-indigo-50"
+            className="flex pl-[12px] pr-[26px] py-[32px] w-full min-h-screen bg-indigo-50"
         >
             <div id="sidebar-menu" className="w-fit mr-2">
                 {/* Avatar Row */}
@@ -76,7 +86,7 @@ export default function AdminNavBar() {
                     </Avatar>
 
                     <div>
-                        <p className="text-slate-900">MaterialStudio</p>
+                        <p className="text-slate-900">Book.com</p>
                         <p className="text-xs">Super Admin</p>
                     </div>
 
@@ -119,7 +129,7 @@ export default function AdminNavBar() {
                         <p className="text-sm text-slate-500 font-medium ml-3 mt-2 mb-2">
                             Manage
                         </p>
-                        {navItems.map((navItem) => {
+                        {manageNavItems.map((navItem) => {
                             const pathname = location.pathname;
                             const isActive =
                                 navItem.route === "manage-books"
@@ -129,6 +139,31 @@ export default function AdminNavBar() {
                                     ? pathname.includes(navItem.route) ||
                                       pathname.includes("edit-order")
                                     : pathname.includes(navItem.route);
+                            return (
+                                <li>
+                                    <NavBarButton
+                                        Icon={navItem.icon}
+                                        label={navItem.label}
+                                        active={isActive}
+                                        onClick={() => {
+                                            handleRouteChanged(navItem.route);
+                                        }}
+                                    />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+
+                {/* Special Content section */}
+                <nav className="w-full mt-8">
+                    <ul className="space-y-2">
+                        <p className="text-sm text-slate-500 font-medium ml-3 mt-2 mb-2">
+                            Special Content
+                        </p>
+                        {specialContentNavItems.map((navItem) => {
+                            const pathname = location.pathname;
+                            const isActive = pathname.includes(navItem.route);
                             return (
                                 <li>
                                     <NavBarButton

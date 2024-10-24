@@ -1,46 +1,126 @@
-import React from "react";
+import { initializeApp } from "firebase/app";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import AdminNavBar from "./admin/navigation/Navigation";
-import AdminRoot from "./admin/routes/AdminRoot";
-import CreateBook from "./admin/routes/CreateBook/CreateBook";
-import EditBook, { bookLoader } from "./admin/routes/EditBook/EditBook";
-import EditOrder, { orderLoader } from "./admin/routes/EditOrder/EditOrder";
-import AdminLogin from "./admin/routes/Login/Login";
-import ManageAdmins, {
-    adminsLoader,
-} from "./admin/routes/ManageAdmins/ManageAdmins";
-import { updateAdminAction } from "./admin/routes/ManageAdmins/components/UpdateAdminDialog";
-import ManageBooksNavRoot from "./admin/routes/ManageBooks/ManageBooksNavRoot";
-import ManageAuthors, { authorsLoader } from "./admin/routes/ManageBooks/routes/ManageAuthors";
-import ManageBooks, { booksLoader } from "./admin/routes/ManageBooks/routes/ManageBooks";
-import ManageCategories, { categoriesLoader } from "./admin/routes/ManageBooks/routes/ManageCategories";
-import ManageOrders from "./admin/routes/ManageOrders/ManageOrders";
+import {
+    Navigate,
+    RouterProvider,
+    createBrowserRouter,
+} from "react-router-dom";
+import AdminNavBar from "./admin/navigation/navigation";
+import AdminRoot from "./admin/routes/admin-root";
+import CreateBook from "./admin/routes/create-book/create-book";
+import EditBook from "./admin/routes/edit-book/edit-book";
+import EditOrder, { orderLoader } from "./admin/routes/edit-order/edit-order";
+import EditorChoice from "./admin/routes/editor-choice/editor-choice";
+import AdminLogin from "./admin/routes/login/login";
+import ManageAdmins from "./admin/routes/manage-admins/manage-admins";
+import ManageBooksNavRoot from "./admin/routes/manage-books/manage-books-nav-root";
+import ManageAuthors from "./admin/routes/manage-books/routes/manage-authors";
+import ManageBooks from "./admin/routes/manage-books/routes/manage-books";
+import ManageCategories from "./admin/routes/manage-books/routes/manage-categories";
+import ManageOrders from "./admin/routes/manage-orders/manage-orders";
 import ManageUsers, {
     usersLoader,
-} from "./admin/routes/ManageUsers/ManageUsers";
+} from "./admin/routes/manage-users/manage-users";
+import TopThreeBooks from "./admin/routes/top-three-books/top-three-books";
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as SoonerToaster } from "./components/ui/sonner";
 import "./index.css";
 import { store } from "./lib/reduxStore";
-import Authors from "./user/routes/authors/Authors";
-import BookDetails, { clientBookLoader } from "./user/routes/book/BookDetails";
-import Books from "./user/routes/books/Books";
-import Homepage from "./user/routes/homepage/Homepage";
-import Login from "./user/routes/login/Login";
-import UserNavigation from "./user/routes/navigation/UserNavigation";
-import SignUp from "./user/routes/signUp/SignUp";
-import Cart from "./user/routes/cart/Cart";
-import AboutUs from "./user/routes/aboutUs/AboutUs";
-import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
-import PrivacyPolicy from "./user/routes/privacyPolicy/PrivacyPolicy";
-import UserProfile from "./user/routes/account/routes/profile/UserProfile";
-import UserAccountNav from "./user/routes/account/UserAccountNav";
-import UserFavourites from "./user/routes/account/routes/favourites/UserFavourites";
-import UserPurchases from "./user/routes/account/routes/purchases/UserPurchases";
-import ChangePasswordPage from "./user/routes/account/routes/changePassword/ChangePassword";
-import AddressPage from "./user/routes/account/routes/address/Address";
-import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
-import { initializeApp } from "firebase/app";
+import AboutUs from "./user/routes/about-us/about-us";
+import UserAccountNav from "./user/routes/account/user-account-nav";
+import AddressPage from "./user/routes/account/routes/address/address";
+import ChangePasswordPage from "./user/routes/account/routes/change-password/change-password";
+import UserFavourites from "./user/routes/account/routes/favourites/user-favourites";
+import UserProfile from "./user/routes/account/routes/profile/user-profile";
+import UserPurchases from "./user/routes/account/routes/purchases/user-purchases";
+import PurchaseDetails from "./user/routes/account/routes/purchases/components/purchase-details";
+import AuthorDetails from "./user/routes/author/author-details";
+import Authors from "./user/routes/authors/authors";
+import BookDetails, { clientBookLoader } from "./user/routes/book/book-details";
+import Books from "./user/routes/books/books";
+import Cart from "./user/routes/cart/cart";
+import Homepage from "./user/routes/homepage/homepage";
+import Login from "./user/routes/login/login";
+import UserNavigation from "./user/routes/navigation/user-navigation";
+import PrivacyPolicy from "./user/routes/privacy-policy/privacy-policy";
+import SignUp from "./user/routes/sign-up/sign-up";
+import TermsAndConditions from "./user/routes/terms-and-conditions/terms-and-conditions";
+import { useAppSelector } from "./lib/hooks";
+import Checkout from "./user/routes/checkout/checkout";
+import CheckoutSuccess from "./user/routes/checkout-success/checkoutt-success";
+import { useToast } from "./components/ui/use-toast";
+import {
+    AuthenticateWithRedirectCallback,
+    ClerkProvider,
+    useUser,
+} from "@clerk/clerk-react";
+
+const PrivateRouteComponent = () => {
+    const { toast } = useToast();
+    useEffect(() => {
+        toast({
+            title: "Please login to your account first",
+            variant: "destructive",
+        });
+    }, []);
+
+    return <Navigate to="/" replace />;
+};
+
+const PrivateRoute = (Component) => {
+    const PrivateRouteWrapper = (props) => {
+        const token = localStorage.getItem("userToken");
+
+        return token != null ? (
+            <Component {...props} />
+        ) : (
+            <PrivateRouteComponent />
+        );
+    };
+
+    return <PrivateRouteWrapper />;
+};
+
+const PrivateAdminRoute = (Component) => {
+    const PrivateRouteWrapper = (props) => {
+        const token = localStorage.getItem("adminToken");
+
+        return token != null ? (
+            <Component {...props} />
+        ) : (
+            <PrivateAdminRouteComponent />
+        );
+    };
+
+    return <PrivateRouteWrapper />;
+};
+
+const PrivateAdminRouteComponent = () => {
+    const { toast } = useToast();
+    useEffect(() => {
+        toast({
+            title: "Please login to your account first",
+            variant: "destructive",
+        });
+    }, []);
+
+    return <Navigate to="/admin/login" replace />;
+};
+
+function SSOCallback() {
+    const { user } = useUser();
+
+    useEffect(() => {
+        if (user) {
+            console.log("Authenticated user:", user);
+        } else {
+            console.log("Nothing");
+        }
+    }, [user]);
+    return <AuthenticateWithRedirectCallback />;
+}
 
 const router = createBrowserRouter([
     {
@@ -60,17 +140,21 @@ const router = createBrowserRouter([
                 element: <Authors />,
             },
             {
+                path: "author/:authorID",
+                element: <AuthorDetails />,
+            },
+            {
                 path: "book/:bookId",
                 element: <BookDetails />,
                 loader: clientBookLoader,
             },
             {
                 path: "cart",
-                element: <Cart />,
+                element: PrivateRoute(Cart),
             },
             {
                 path: "user",
-                element: <UserAccountNav />,
+                element: PrivateRoute(UserAccountNav),
                 children: [
                     {
                         path: "account",
@@ -118,6 +202,18 @@ const router = createBrowserRouter([
         ],
     },
     {
+        path: "sso-callback",
+        element: <SSOCallback />,
+    },
+    {
+        path: "checkout",
+        element: PrivateRoute(Checkout),
+    },
+    {
+        path: "checkout-success",
+        element: <CheckoutSuccess />,
+    },
+    {
         path: "login",
         element: <Login />,
     },
@@ -131,11 +227,21 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "dashboard",
-                element: <AdminNavBar />,
+                element: PrivateAdminRoute(AdminNavBar),
                 children: [
                     {
                         path: "manage-users",
                         element: <ManageUsers />,
+                        loader: usersLoader,
+                    },
+                    {
+                        path: "top-three-books",
+                        element: <TopThreeBooks />,
+                        // loader: topBooksLoader,
+                    },
+                    {
+                        path: "editor-choice",
+                        element: <EditorChoice />,
                         loader: usersLoader,
                     },
                     {
@@ -145,17 +251,15 @@ const router = createBrowserRouter([
                             {
                                 path: "books",
                                 element: <ManageBooks />,
-                                loader: booksLoader,
+                                // loader: booksLoader,
                             },
                             {
                                 path: "authors",
                                 element: <ManageAuthors />,
-                                loader: authorsLoader,
                             },
                             {
                                 path: "categories",
                                 element: <ManageCategories />,
-                                loader: categoriesLoader,
                             },
                         ],
                     },
@@ -164,7 +268,7 @@ const router = createBrowserRouter([
                         element: <ManageOrders />,
                     },
                     {
-                        path: "edit-order/:orderId",
+                        path: "edit-order/:orderID",
                         element: <EditOrder />,
                         loader: orderLoader,
                     },
@@ -173,15 +277,13 @@ const router = createBrowserRouter([
                         element: <CreateBook />,
                     },
                     {
-                        path: "edit-book/:bookId",
+                        path: "edit-book/:bookID",
                         element: <EditBook />,
-                        loader: bookLoader,
+                        // loader: bookLoader,
                     },
                     {
                         path: "manage-admins",
                         element: <ManageAdmins />,
-                        loader: adminsLoader,
-                        action: updateAdminAction,
                     },
                 ],
             },
@@ -192,23 +294,35 @@ const router = createBrowserRouter([
         ],
     },
 ]);
-
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // Your web app's Firebase configuration
 const firebaseConfig = {
+    // US region
     apiKey: "AIzaSyD1-7Hit1bOsRAAYCzLfyEQ_96V4K0WcIY",
     authDomain: "linkedin-clone-225b2.firebaseapp.com",
     projectId: "linkedin-clone-225b2",
     storageBucket: "linkedin-clone-225b2.appspot.com",
     messagingSenderId: "72975579786",
-    appId: "1:72975579786:web:2c2f211b91280bb29fcb73"
+    appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
+    // Asia region
+    // apiKey: "AIzaSyDDIdeOH80IjjT8PcPcT2U5HO58dwop05k",
+    // authDomain: "bolt-sport.firebaseapp.com",
+    // projectId: "bolt-sport",
+    // storageBucket: "bolt-sport.appspot.com",
+    // messagingSenderId: "689176755278",
+    // appId: "1:689176755278:web:4bed012cd3a2cd9c2c171f",
 };
 
 const app = initializeApp(firebaseConfig);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <Provider store={store}>
-            <RouterProvider router={router} />
-        </Provider>
+        <ClerkProvider publishableKey={CLERK_KEY}>
+            <Provider store={store}>
+                <Toaster />
+                <SoonerToaster />
+                <RouterProvider router={router} />
+            </Provider>
+        </ClerkProvider>
     </React.StrictMode>
 );

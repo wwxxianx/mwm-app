@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
+using mwm_app.Server.Data.DTO;
 using mwm_app.Server.Models;
+using mwm_app.Server.Services;
 using NuGet.Protocol.Plugins;
 
 namespace mwm_app.Server.Controllers
@@ -46,17 +48,44 @@ namespace mwm_app.Server.Controllers
                 return BadRequest();
             }
 
-            var jwtToken = GenerateJWT(user);
-
-            return Ok(new { user = user, token = jwtToken });
+            return Ok(new { user = user, token = user.UserToken });
         }
 
-        [HttpGet("testing")]
-        [Authorize]
-        public async Task<ActionResult<string>> Testing()
+        public class GoogleAuthPayload
         {
-            var currentUser = HttpContext.User;
-            return currentUser.Claims.FirstOrDefault(c => c.Type == "ID").Value;
+            public string UID { get; set; }
+            public string Email { get; set; }
+            public string? ProfileImageUrl { get; set; }
+            public string? FullName { get; set; }
+        }
+        [HttpPost("googleLogin")]
+        public async Task<ActionResult<LoginResponse>> GoogleLogin(GoogleAuthPayload payload)
+        {
+            try
+            {
+                var userExisted = await _context.Users.FirstOrDefaultAsync(u => u.GoogleOAuthUID == payload.UID);
+                if (userExisted != null)
+                {
+                    return Ok(new { user = userExisted, token = userExisted.UserToken });
+                }
+                else
+                {
+                    var newUser = new User {
+                        Email = payload.Email,
+                        FullName = payload.FullName ?? payload.Email.Split("@").First(),
+                        UserToken = System.Guid.NewGuid().ToString(),
+                        GoogleOAuthUID = payload.UID,
+                        ProfileImageUrl = payload.ProfileImageUrl,
+                    };
+                    _context.Users.Add(newUser);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { user = newUser, token = newUser.UserToken });
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         private string GenerateJWT(User user)
@@ -82,18 +111,25 @@ namespace mwm_app.Server.Controllers
 
         // POST: api/Users/register
         [HttpPost("register")]
-        public async Task<ActionResult<User>> RegisterUser(AuthPayload payload)
+        public async Task<ActionResult<LoginResponse>> RegisterUser(AuthPayload payload)
         {
             // Perform user registration logic, such as validation and saving to the database
-            var newUser = new User();
-            newUser.Email = payload.Email;
-            newUser.Password = payload.Password;
-            newUser.FullName = payload.Email.Split("@").First();
+            var emailExist = await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(payload.Email));
+            if (emailExist != null)
+            {
+                return StatusCode(409, new { errorMessage = "Email already exist, please try another" });
+            }
+            var newUser = new User() {
+                Email = payload.Email,
+                Password = payload.Password,
+                FullName = payload.Email.Split("@").First(),
+                UserToken = System.Guid.NewGuid().ToString(),
+            };
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
             // You can customize the response as needed
-            return CreatedAtAction("GetUser", new { id = newUser.ID }, newUser);
+            return CreatedAtAction("GetUser", new { id = newUser.ID }, new { user = newUser, token = newUser.UserToken});
         }
 
         // GET: api/Users
@@ -119,33 +155,31 @@ namespace mwm_app.Server.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        [HttpPut("{userID}")]
+        public async Task<IActionResult> PutUser(int userID, UserProfileDTO userProfileDTO)
         {
-            if (id != user.ID)
+            var userToUpdate = await _context.Users.FirstAsync(u => u.ID == userID);
+            if (userToUpdate == null) 
             {
                 return BadRequest();
             }
-
-            _context.Entry(user).State = EntityState.Modified;
+            userToUpdate.FullName = userProfileDTO.FullName;
+            userToUpdate.PhoneNumber = userProfileDTO.PhoneNumber;
+            userToUpdate.BirthDate = userProfileDTO.BirthDate;
+            userToUpdate.Gender = userProfileDTO.Gender;
+            userToUpdate.ProfileImageUrl = userProfileDTO.ProfileImageUrl;
+            userToUpdate.Email = userProfileDTO.Email;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+            catch (DbUpdateException)
+            {   
+                return BadRequest();
             }
 
-            return NoContent();
+            return Ok(userToUpdate);
         }
 
         // POST: api/Users
@@ -173,11 +207,6 @@ namespace mwm_app.Server.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return _context.Users.Any(e => e.ID == id);
         }
     }
 }

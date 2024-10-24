@@ -47,8 +47,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
                 >
                     <input
-                        required
                         className="px-0 py-1 peer focus:outline-none bg-transparent flex-1"
+                        required={required}
                         type={
                             type === "password"
                                 ? showPassword
@@ -83,7 +83,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     {error && (
                         <ExclamationTriangleIcon className="w-4 text-rose-500" />
                     )}
-                    <p className="text-xs">{errorMessage}</p>
+                    <p className="text-xs md:text-sm">{errorMessage}</p>
                 </div>
             </div>
         );

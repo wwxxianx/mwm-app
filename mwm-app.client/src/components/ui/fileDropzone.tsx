@@ -1,4 +1,8 @@
-import { ExclamationTriangleIcon, FolderPlusIcon, PhotoIcon } from "@heroicons/react/24/solid";
+import {
+    ExclamationTriangleIcon,
+    FolderPlusIcon,
+    PhotoIcon,
+} from "@heroicons/react/24/solid";
 import { useCallback, useEffect } from "react";
 import { Accept, useDropzone } from "react-dropzone";
 import { cn } from "../../lib/utils";
@@ -6,6 +10,7 @@ import { cn } from "../../lib/utils";
 type FileDropzoneProps = {
     label?: string;
     type: "image" | "file";
+    required?: boolean;
     onDrop: (acceptedFiles: any[]) => void;
     previewFileUrl?: string;
     selectedFile?: FileState;
@@ -17,10 +22,19 @@ export type FileState = {
     preview?: string;
     name?: string;
     file?: File;
-}
+};
 
 export default function FileDropzone(props: FileDropzoneProps) {
-    const { label, type, selectedFile, previewFileUrl, error, errorMessage, onDrop } = props;
+    const {
+        label,
+        type,
+        selectedFile,
+        previewFileUrl,
+        error,
+        errorMessage,
+        onDrop,
+        required,
+    } = props;
     const acceptedFileTypes: Accept =
         type === "image" ? { "image/*": [] } : { "text/plain": [".pdf"] };
     const { getRootProps, getInputProps } = useDropzone({
@@ -59,6 +73,7 @@ export default function FileDropzone(props: FileDropzoneProps) {
                         />
                     ) : (
                         <p className="text-center text-sm text-slate-600">
+                            File name
                             {selectedFile?.name}
                         </p>
                     )}
@@ -69,15 +84,13 @@ export default function FileDropzone(props: FileDropzoneProps) {
         if (previewFileUrl) {
             return (
                 <div className="max-w-[180px]">
-                    <img
-                        src={previewFileUrl}
-                    />
+                    <img src={previewFileUrl} />
                 </div>
             );
         }
 
         return <ImageIcon />;
-    }, [selectedFile]);
+    }, [selectedFile, previewFileUrl]);
 
     useEffect(() => {
         // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
@@ -86,37 +99,23 @@ export default function FileDropzone(props: FileDropzoneProps) {
 
     return (
         <section>
-            <p className="text-slate-600 text-sm font-normal mb-2">{label}</p>
+            <p className="text-slate-600 text-sm font-normal mb-2">
+                {label}
+                {required && <span className="text-red-500"> *</span>}
+            </p>
             <div
                 {...getRootProps({
-                    className:
-                        "dropzone",
+                    className: "dropzone",
                 })}
-                className={cn("dropzone flex flex-col items-center justify-center gap-1 px-2 py-8 bg-slate-50 rounded-md border-slate-200 border-[1px] cursor-pointer hover:opacity-80", {
-                    "border-2 border-red-500": error,
-                })}
+                className={cn(
+                    "dropzone flex flex-col items-center justify-center gap-1 px-2 py-8 bg-slate-50 rounded-md border-slate-200 border-[1px] cursor-pointer hover:opacity-80",
+                    {
+                        "border-2 border-red-500": error,
+                    }
+                )}
             >
                 <input {...getInputProps()} />
                 <RenderedImage />
-                {/*{selectedFile ? (*/}
-                {/*    <div key={selectedFile.name} className="max-w-[180px]">*/}
-                {/*        {type === "image" ? (*/}
-                {/*            <img*/}
-                {/*                src={selectedFile.preview}*/}
-                {/*                // Revoke data uri after image is loaded*/}
-                {/*                onLoad={() => {*/}
-                {/*                    URL.revokeObjectURL(selectedFile.preview);*/}
-                {/*                }}*/}
-                {/*            />*/}
-                {/*        ) : (*/}
-                {/*            <p className="text-center text-sm text-slate-600">*/}
-                {/*                {selectedFile?.name}*/}
-                {/*            </p>*/}
-                {/*        )}*/}
-                {/*    </div>*/}
-                {/*) : (*/}
-                {/*    <ImageIcon />*/}
-                {/*)}*/}
                 <p className="text-slate-800 font-medium">
                     Drop or Select file
                 </p>

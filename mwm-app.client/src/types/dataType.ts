@@ -6,15 +6,20 @@ export const AuthorSchema = z.object({
         .string()
         .min(1, { message: "Category is required" })
         .max(100, { message: "Author name can't exceed 100 characters" }),
-    imageUrl: z.string().min(1, { message: "Author profile image is required" }),
+    imageUrl: z
+        .string()
+        .min(1, { message: "Author profile image is required" }),
 });
 
 export const UserSchema = z.object({
-    id: z.string(),
+    id: z.number(),
     fullName: z.string(),
-    phoneNumber: z.string(),
+    phoneNumber: z.string().optional().nullable(),
     email: z.string(),
-    profileImageUrl: z.string().optional(),
+    profileImageUrl: z.string().optional().nullable(),
+    gender: z.string().optional().nullable(),
+    password: z.string().optional().nullable(),
+    birthDate: z.string().optional().nullable(),
 });
 
 // export const CartItemSchema = z.object({
@@ -37,7 +42,7 @@ export const AdminSchema = z.object({
         .string()
         .min(1, { message: "Admin email is required" })
         .email({ message: "Invalid email" }),
-    //password: z.string().min(1, { message: "Admin password is required" }),
+    password: z.string().min(1, { message: "Admin password is required" }),
 });
 
 export const CategorySchema = z.object({
@@ -60,7 +65,7 @@ export const BookSchema = z.object({
         .min(1, { message: "Slug is required" })
         .max(50, { message: "Slug can't exceed 50 characters" }),
     imageUrl: z.string().min(1, { message: "Cover image is required" }),
-    previewUrl: z.string().optional(),
+    previewUrl: z.string().optional().nullable(),
     category: CategorySchema,
     author: AuthorSchema,
     price: z.number().nonnegative({ message: "Invalid price" }),
@@ -75,7 +80,7 @@ export const BookSchema = z.object({
     updatedAt: z.string().optional().nullable(),
 });
 
-const OrderStatusEnum = z.enum([
+export const OrderStatusEnum = z.enum([
     "Pending",
     "Processing",
     "Delivery",
@@ -85,7 +90,11 @@ const OrderStatusEnum = z.enum([
 ]);
 
 export const OrderItemSchema = z.object({
-    book: BookSchema,
+    book: z.object({
+        ...BookSchema.shape,
+        category: CategorySchema.nullable(),
+        author: AuthorSchema.nullable(),
+    }),
     quantity: z.number().nonnegative({ message: "Invalid quantity" }),
 });
 
@@ -94,9 +103,28 @@ export const OrderSchema = z.object({
     status: OrderStatusEnum,
     user: UserSchema,
     price: z.number(),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
+    receiverName: z.string(),
+    receiverPhoneNumber: z.string(),
+    receiverEmail: z.string(),
+    stateRegion: z.string(),
+    postcode: z.string(),
+    streetAddress: z.string(),
+    addressUnit: z.string(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
     items: z.array(OrderItemSchema).optional(),
+});
+
+export const UserAddressSchema = z.object({
+    id: z.string(),
+    receiverName: z.string(),
+    receiverPhoneNumber: z.string(),
+    receiverEmail: z.string().optional().nullable(),
+    stateRegion: z.string(),
+    postcode: z.string(),
+    streetAddress: z.string(),
+    addressUnit: z.string().optional().nullable(),
+    isDefault: z.boolean(),
 });
 
 export type Book = z.infer<typeof BookSchema>;
@@ -107,3 +135,4 @@ export type OrderItem = z.infer<typeof OrderItemSchema>;
 export type Admin = z.infer<typeof AdminSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type Author = z.infer<typeof AuthorSchema>;
+export type UserAddress = z.infer<typeof UserAddressSchema>;

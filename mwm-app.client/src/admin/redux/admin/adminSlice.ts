@@ -1,7 +1,7 @@
+import { adminApi } from "@/apiService/adminApi";
 import { createSlice } from "@reduxjs/toolkit";
-import { AdminState } from "./types";
-import { api } from "../../../apiService/apiService";
 import { Admin } from "../../../types/dataType";
+import { AdminState } from "./types";
 
 const adminInitialState: AdminState = {
     admin: null,
@@ -13,7 +13,6 @@ function storeAdminProfile(user: Admin, token: string) {
     localStorage.setItem("adminToken", JSON.stringify(token));
 }
 
-
 export const adminSlice = createSlice({
     name: "admin",
     initialState: adminInitialState,
@@ -23,6 +22,7 @@ export const adminSlice = createSlice({
             state.admin = null;
             state.token = null;
             localStorage.removeItem("admin");
+            localStorage.removeItem("adminToken");
         },
         initAdmin: (state, { payload }) => {
             // Check user from localStorage and let user stay singed in
@@ -44,11 +44,11 @@ export const adminSlice = createSlice({
             //    return;
             //}
             //state.token = token;
-        }
+        },
     },
     extraReducers: (builder) => {
         builder.addMatcher(
-            api.endpoints.adminLogin.matchFulfilled,
+            adminApi.endpoints.adminLogin.matchFulfilled,
             (state, { payload }) => {
                 state.admin = payload.admin;
                 state.token = payload.token;
@@ -56,17 +56,9 @@ export const adminSlice = createSlice({
                 storeAdminProfile(payload.admin, payload.token);
             }
         );
-        builder.addMatcher(
-            api.endpoints.adminRegister.matchFulfilled,
-            (state, { payload }) => {
-                state.token = payload.token;
-                state.admin = payload.admin;
-                state.isLoggedIn = true;
-            }
-        )
     },
 });
 
-export const { adminLogout, initAdmin  } = adminSlice.actions;
+export const { adminLogout, initAdmin } = adminSlice.actions;
 const adminReducer = adminSlice.reducer;
 export default adminReducer;

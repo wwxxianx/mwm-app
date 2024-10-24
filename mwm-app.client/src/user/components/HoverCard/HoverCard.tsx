@@ -2,6 +2,7 @@ import { Book } from "@/types/dataType";
 import BookCover from "@/components/ui/BookCover";
 import { cn } from "@/lib/utils";
 import "./HoverCard.scss";
+import { Link } from "react-router-dom";
 
 type HoverCardProps = {
     title: string;
@@ -26,13 +27,15 @@ export default function HoverCard(props: HoverCardProps) {
                 <h2 className="title">{title}</h2>
                 <p className="copy">{subTitle}</p>
                 <p>Recommended:</p>
-                <div className="flex items-center gap-2 overflow-visible">
+                <div className="flex items-center gap-4 overflow-visible">
                     {books?.map((book) => {
                         return (
-                            <BookCover
-                                imageUrl={book.imageUrl}
-                                className="max-w-[70px] cursor-pointer hover:scale-105 transition-all"
-                            />
+                            <Link to={`/book/${book.id}`} target="_top">
+                                <BookCover
+                                    imageUrl={book.imageUrl}
+                                    className="max-w-[90px] cursor-pointer hover:scale-105 transition-all"
+                                />
+                            </Link>
                         );
                     })}
                 </div>

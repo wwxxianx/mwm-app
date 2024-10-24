@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using mwm_app.Server.Data;
 using mwm_app.Server.Data.DTO;
+using mwm_app.Server.Data.ResponseDTO;
 using mwm_app.Server.Models;
+using mwm_app.Server.Utils;
 
 namespace mwm_app.Server.Controllers
 {
@@ -22,39 +25,241 @@ namespace mwm_app.Server.Controllers
             _context = context;
         }
 
-        // GET: api/Books
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
-        {
-            return await _context.Books.Include(b => b.Category).Include(b => b.Author).ToListAsync();
-            return await _context.Books.ToListAsync();
+
+        public class BookRequest {
+            public int? PageNumber { get; set; }
+
+            public ICollection<string>? CategoryID { get; set; }
+
+            public string? AuthorID { get; set; }
+
+            public string? SearchQuery { get; set; }
         }
 
-        // GET: api/Books/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetBook(string id)
+        public class RelevantBookRequest
         {
-            var book = await _context.Books.FindAsync(id);
+            public int? Limit { get; set; }
+
+            public string? CategoryID { get; set; }
+        }
+
+        [HttpGet("testing")]
+        public async Task<ActionResult> GetBookTesting()
+        {
+            var books = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .ToListAsync();
+
+            return Ok(books);
+        }
+
+        // GET: api/Books
+        [HttpGet]
+        public async Task<ActionResult> GetBooks([FromQuery] BookRequest bookRequest)
+        {
+            var books = _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .OrderByDescending(b => b.CreatedAt)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(bookRequest.SearchQuery))
+            {
+                // Split the search query into individual words
+                var searchWords = bookRequest.SearchQuery.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                // Filter books that contain any of the search words in the title
+                books = books.Where(b => searchWords.Any(word => b.Title.Contains(word)));
+                return Ok(await books.Select(b => BookResponseDTO.CreateFromBook(b)).ToListAsync());
+            }
+
+            if (bookRequest.PageNumber == null) {
+                // Admin side
+                // Fetch all the books to the admin table
+                return Ok(await books.Select(b => BookResponseDTO.CreateFromBook(b)).ToListAsync());
+            }
+
+
+            if (bookRequest.CategoryID != null) {
+                books = books.Where(b => bookRequest.CategoryID.Contains(b.Category.ID));
+            }
+
+
+            int pageSize = 20;
+            var paginatedBooks =  await PaginatedList<Book>.CreateAsync(books.AsNoTracking(), bookRequest.PageNumber ?? 1, pageSize);
+            return Ok(new PaginatedListResponse<BookResponseDTO>
+            {
+                Data = paginatedBooks.Select(b => BookResponseDTO.CreateFromBook(b)).ToList(),
+                HasNextPage = paginatedBooks.HasNextPage,
+                HasPreviousPage = paginatedBooks.HasPreviousPage,
+                TotalPages = paginatedBooks.TotalPages,
+            });
+        }
+
+        [HttpGet("relevant")]
+        public async Task<ActionResult> GetRelevantBook([FromQuery] RelevantBookRequest bookRequest)
+        {
+            var books = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Where(b => b.Category.ID == bookRequest.CategoryID)
+                .Take(bookRequest.Limit ?? 10)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+            
+            if (books.Count < bookRequest.Limit)
+            {
+                var otherBooks = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Take((bookRequest.Limit ?? 10) - books.Count)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+                books.AddRange(otherBooks);
+            }
+
+            return Ok(books);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BookResponseDTO>> GetBook(string id)
+        {
+            var book = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .FirstOrDefaultAsync(b => b.ID == id);
 
             if (book == null)
             {
                 return NotFound();
             }
 
-            return book;
+            return BookResponseDTO.CreateFromBook(book);
+        }
+
+        [HttpGet("trendingCategoryBook")]
+        public async Task<ActionResult<ICollection<BookResponseDTO>>> GetTrendingCategoryBook()
+        {
+            try
+            {
+                // List of hardcoded trending categories
+                List<string> trendingCategories = new List<string> { "Fiction", "Horror", "Novel", "Technology", "History", "Economics" };
+
+                // Collection to store the result
+                List<BookResponseDTO> trendingBooks = new List<BookResponseDTO>();
+
+                foreach (var category in trendingCategories)
+                {
+                    // Retrieve the top 3 books for each category (you need to customize this logic)
+                    var topBooksForCategory = await _context.Books
+                        .Include(b => b.Category)
+                        .Include(b => b.Author)
+                        .Where(b => b.Category.Category.Equals(category))
+                        .Take(3)
+                        .ToListAsync();
+
+                    // Convert the retrieved books to BookResponseDTO and add to the result collection
+                    trendingBooks.AddRange(topBooksForCategory.Select(BookResponseDTO.CreateFromBook));
+                }
+
+                return trendingBooks;
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions and return an error response
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("featuredBooks")]
+        public async Task<ActionResult<ICollection<BookResponseDTO>>> GetFeaturedBooks()
+        {
+            try
+            {
+                // List of hardcoded trending categories
+                List<string> trendingCategories = new List<string> { "Fiction", "Technology", "History" };
+
+                // Collection to store the result
+                List<BookResponseDTO> trendingBooks = new List<BookResponseDTO>();
+
+                foreach (var category in trendingCategories)
+                {
+                    // Retrieve the top 3 books for each category (you need to customize this logic)
+                    var topBooksForCategory = await _context.Books
+                        .Include(b => b.Category)
+                        .Include(b => b.Author)
+                        .Where(b => b.Category.Category.Equals(category))
+                        .Take(3)
+                        .ToListAsync();
+
+                    // Convert the retrieved books to BookResponseDTO and add to the result collection
+                    trendingBooks.AddRange(topBooksForCategory.Select(BookResponseDTO.CreateFromBook));
+                }
+
+                return trendingBooks;
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions and return an error response
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        public class AuthorBookRequest {
+            public string AuthorID { get; set; }
+        }
+
+        [HttpGet("Author")]
+        public async Task<ActionResult<ICollection<BookResponseDTO>>> GetAuthorBooks([FromQuery] AuthorBookRequest authorBookRequest)
+        {
+                List<BookResponseDTO> authorBooks = new List<BookResponseDTO>();
+                var books = await _context.Books
+                    .Include(b => b.Category)
+                    .Include(b => b.Author)
+                    .Where(b => b.Author.ID == authorBookRequest.AuthorID).ToListAsync();
+                    
+                authorBooks.AddRange(books.Select(BookResponseDTO.CreateFromBook));
+                return authorBooks;
         }
 
         // PUT: api/Books/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBook(string id, Book book)
+        public async Task<ActionResult<BookResponseDTO>> PutBook(string id, BookDTO bookDTO)
         {
-            if (id != book.ID)
+            var transformedSlug = bookDTO.Slug.ToLower();
+            var slugExist = await _context.Books.FirstOrDefaultAsync(b => b.ID != id && b.Slug.Equals(transformedSlug));
+            if (slugExist != null)
+            {
+                return StatusCode(409, new ErrorResponse { errorMessage = "Slug already exist, pls use another slug" });
+            }
+            if (id != bookDTO.ID)
+            {
+                return BadRequest();
+            }
+            var bookToUpdate = await _context.Books.FirstAsync(b => b.ID == id);
+
+            var category = await _context.BookCategories.FirstAsync(category => category.ID == bookDTO.CategoryId);
+            if (category == null)
             {
                 return BadRequest();
             }
 
-            _context.Entry(book).State = EntityState.Modified;
+            var author = await _context.Authors.FirstAsync(author => author.ID == bookDTO.AuthorId);
+            if (author == null)
+            {
+                return BadRequest();
+            }
+
+            bookToUpdate.SKU = bookDTO.SKU;
+            bookToUpdate.Category = category;
+            bookToUpdate.Author = author;
+            bookToUpdate.UpdatedAt = DateTime.Now;
+            bookToUpdate.Description = bookDTO.Description;
+            bookToUpdate.ImageUrl = bookDTO.ImageUrl;
+            bookToUpdate.PreviewUrl = bookDTO.PreviewUrl;
+            bookToUpdate.Slug = bookDTO.Slug;
+            bookToUpdate.Price = bookDTO.Price;
 
             try
             {
@@ -72,7 +277,7 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return NoContent();
+            return BookResponseDTO.CreateFromBook(bookToUpdate);
         }
 
         // POST: api/Books
@@ -80,6 +285,12 @@ namespace mwm_app.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> PostBook(BookDTO bookDTO)
         {
+            var transformedSlug = bookDTO.Slug.ToLower();
+            var slugExist = await _context.Books.FirstOrDefaultAsync(b => b.Slug.Equals(transformedSlug));
+            if (slugExist != null)
+            {
+                return StatusCode(409, new ErrorResponse { errorMessage = "Slug already exist, pls use another slug" });
+            }
             var category = await _context.BookCategories.FirstAsync(category => category.ID == bookDTO.CategoryId);
             if (category == null)
             {
@@ -124,15 +335,17 @@ namespace mwm_app.Server.Controllers
                     throw;
                 }
             }
+            
+            var newBook = BookResponseDTO.CreateFromBook(book);
 
-            return CreatedAtAction("GetBook", new { id = book.ID }, book);
+            return CreatedAtAction("GetBook", new { id = book.ID }, newBook);
         }
 
         // DELETE: api/Books/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(string id)
+        [HttpDelete("{bookID}")]
+        public async Task<IActionResult> DeleteBook(string bookID)
         {
-            var book = await _context.Books.FindAsync(id);
+            var book = await _context.Books.FindAsync(bookID);
             if (book == null)
             {
                 return NotFound();

@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
-export function useRevalidate(stack = 0) {
+export function useRevalidate() {
     const navigate = useNavigate();
 
-    function revalidate() {
+    function revalidate(stack = 0) {
         navigate(stack, { state: { revalidate: true } });
     }
 

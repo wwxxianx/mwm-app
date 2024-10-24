@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,19 @@ namespace mwm_app.Server.Controllers
             return await _context.BookCategories.ToListAsync();
         }
 
+        [HttpGet("trending")]
+        public async Task<ActionResult<IEnumerable<BookCategory>>> GetTrendingBookCategory()
+        {
+            try
+            {
+                return await _context.BookCategories.Where(c => c.IsTrending).ToListAsync();
+            }
+            catch (DbException)
+            {
+                return BadRequest();
+            }
+        }
+
         // GET: api/BookCategories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BookCategory>> GetBookCategory(string id)
@@ -46,13 +60,17 @@ namespace mwm_app.Server.Controllers
         // PUT: api/BookCategories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBookCategory(string id, BookCategoryDTO bookCategoryDTO)
+        public async Task<ActionResult<ICollection<BookCategory>>> PutBookCategory(string id, BookCategoryDTO bookCategoryDTO)
         {
             if (id != bookCategoryDTO.ID)
             {
                 return BadRequest();
             }
             var bookCategoryToUpdate = await _context.BookCategories.FirstOrDefaultAsync(c => c.ID == id);
+            if (bookCategoryToUpdate == null)
+            {
+                return NotFound();
+            }
             bookCategoryToUpdate.Category = bookCategoryDTO.Category;
             bookCategoryToUpdate.IsTrending = bookCategoryDTO.IsTrending;
 
@@ -72,13 +90,13 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return NoContent();
+            return await _context.BookCategories.ToListAsync();
         }
 
         // POST: api/BookCategories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BookCategory>> PostBookCategory(BookCategoryDTO bookCategoryDTO)
+        public async Task<ActionResult<ICollection<BookCategory>>> PostBookCategory(BookCategoryDTO bookCategoryDTO)
         {
             var bookCategory = new BookCategory
             {
@@ -102,12 +120,13 @@ namespace mwm_app.Server.Controllers
                 }
             }
 
-            return CreatedAtAction("GetBookCategory", new { id = bookCategory.ID }, bookCategory);
+            var bookCategories = await _context.BookCategories.ToListAsync();
+            return CreatedAtAction("GetBookCategory", new { id = bookCategory.ID }, bookCategories);
         }
 
         // DELETE: api/BookCategories/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBookCategory(string id)
+        public async Task<ActionResult> DeleteBookCategory(string id)
         {
             var bookCategory = await _context.BookCategories.FindAsync(id);
             if (bookCategory == null)
@@ -116,9 +135,15 @@ namespace mwm_app.Server.Controllers
             }
 
             _context.BookCategories.Remove(bookCategory);
-            await _context.SaveChangesAsync();
-            return StatusCode(200);
-            return Ok();
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest();
+            }
         }
 
         private bool BookCategoryExists(string id)

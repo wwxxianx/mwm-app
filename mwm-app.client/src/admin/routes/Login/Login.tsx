@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppDispatch } from "@/lib/hooks";
 import { AdminAuthPayload, AdminAuthValidator } from "./validator";
 import { useNavigate } from "react-router-dom";
-import { useAdminLoginMutation } from "../../../apiService/apiService";
+import { useAdminLoginMutation } from "@/apiService/adminApi";
 
 export default function AdminLogin() {
     const [login] = useAdminLoginMutation();

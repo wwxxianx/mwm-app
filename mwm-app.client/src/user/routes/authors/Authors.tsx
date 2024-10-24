@@ -1,16 +1,18 @@
+import { useGetAuthorsWithBooksQuery } from "@/apiService/bookApi";
 import FountainPenImageUrl from "@/assets/fountain-pen.png";
 import BestLiteraryImageUrl from "@/assets/malmo-arab-film-award.png";
 import PenAmericaImageUrl from "@/assets/pen-america-award.png";
 import BookCover from "@/components/ui/BookCover";
 import { buttonVariants } from "@/components/ui/button";
-import { authors, books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import SearchDialog from "../books/components/SearchDialog";
+import SearchAuthorDialog from "./components/search-author-dialog";
 
 export default function Authors() {
+    const { data: authors } = useGetAuthorsWithBooksQuery();
+
     return (
-        <div className="font-playfair bg-turquoise-50">
+        <div className="font-playfair bg-turquoise-50 pb-[300px]">
             <div className="bg-[#F1EFE9] mt-6">
                 <div className="flex py-6 lg:py-16 justify-between px-4 max-w-[500px] lg:max-w-none lg:container lg:justify-center lg:gap-32 mx-auto">
                     <div className="flex gap-2 lg:items-center lg:gap-12 mr-6">
@@ -51,6 +53,7 @@ export default function Authors() {
                                     }),
                                     "text-xs lg:text-xl lg:py-6 lg:font-normal lg:px-10 lg:mt-8"
                                 )}
+                                target="_top"
                             >
                                 SHOP NOW
                             </Link>
@@ -70,30 +73,35 @@ export default function Authors() {
                 </h4>
             </div>
 
-            <div className="px-4 mt-6 container">
-                <SearchDialog
-                    searchFieldPlaceholder="Type an author's name"
-                    className="w-[250px]"
-                ></SearchDialog>
-                <div className="grid grid-cols-2 tablet:grid-cols-3 tablet-lg:grid-cols-4 lg:grid-cols-5 gap-5 mt-4">
-                    {authors.map((author) => {
+            <div className="px-4 lg:px-8 mt-6 container">
+                <SearchAuthorDialog />
+                <div className="grid grid-cols-2 tablet:grid-cols-3 tablet-lg:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8 lg:gap-12 mt-4">
+                    {authors?.map((author) => {
                         return (
                             <div>
-                                <img
-                                    src={author.imageUrl}
-                                    alt={`${author.fullName} image`}
-                                    className="w-full aspect-square object-cover"
-                                />
-                                <h2 className="font-medium">
+                                <Link to={`/author/${author.id}`} target="_top">
+                                    <img
+                                        src={author.imageUrl}
+                                        alt={`${author.fullName} image`}
+                                        className="w-full aspect-square object-cover transition-all grayscale-[40%] hover:grayscale-0 hover:-translate-y-1 hover:shadow-xl"
+                                    />
+                                </Link>
+                                <h2 className="font-medium mt-4">
                                     {author.fullName}
                                 </h2>
-                                <p className="text-xs text-slate-500 relative pb-[2px] mt-1 before:absolute before:left-0 before:bottom-0 before:content-[' '] before:border-b-[1px] before:border-slate-500 before:w-[40%]">
+                                {/* <p className="text-xs text-slate-500 relative pb-[2px] mt-1 before:absolute before:left-0 before:bottom-0 before:content-[' '] before:border-b-[1px] before:border-slate-500 before:w-[40%]">
+                                    Recommended
+                                </p> */}
+                                <p className="text-xs text-slate-500 pb-1 mt-2">
                                     Recommended
                                 </p>
                                 <div className="grid grid-cols-3 items-center gap-2 lg:gap-4 mt-1">
-                                    {books.slice(0, 3).map((book) => {
+                                    {author?.books?.slice(0, 3).map((book) => {
                                         return (
-                                            <Link to={"/books"}>
+                                            <Link
+                                                to={`/book/${book.id}`}
+                                                target="_top"
+                                            >
                                                 <BookCover
                                                     imageUrl={book.imageUrl}
                                                     className="hover:scale-105 transition-all"

@@ -1,38 +1,90 @@
-import BookCover from "@/components/ui/BookCover";
+import { useGetBooksQuery, useGetCategoriesQuery } from "@/apiService/bookApi";
+import { PaginatedResponse } from "@/apiService/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { books, categories } from "@/lib/fakeData";
-import {
-    ArrowTopRightOnSquareIcon,
-    BookmarkIcon,
-    HeartIcon,
-} from "@heroicons/react/24/outline";
-import { ChevronDownIcon, FireIcon } from "@heroicons/react/24/solid";
-import SearchDialog from "./components/SearchDialog";
 import {
     Pagination,
     PaginationContent,
-    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Book, Category } from "@/types/dataType";
+import BookDrawer from "@/user/components/BookDrawer";
+import { ChevronDownIcon, FireIcon } from "@heroicons/react/24/solid";
+import { useSearchParams } from "react-router-dom";
+import BooksSkeleton from "./components/books-skeleton";
+import SearchBookDialog from "./components/search-book-dialog";
 
 export default function Books() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    var selectedCategories = searchParams.getAll("category");
+    var currentPage = parseInt(searchParams.get("page") ?? "1", 10) || 1;
+    // const [currentPage, setCurrentPage] = useState(1);
+    const { data: books, isLoading: isLoadingBooks } = useGetBooksQuery({
+        pageNumber: currentPage,
+        categoryIDs: selectedCategories,
+    });
+    const { data: categories } = useGetCategoriesQuery();
+
+    function onCategoryCheck(category: Category) {
+        const categoryExisted = selectedCategories.includes(category.id);
+        if (categoryExisted) {
+            setSearchParams({
+                category: selectedCategories.filter(
+                    (categoryID) => categoryID !== category.id
+                ),
+            });
+        } else {
+            setSearchParams({
+                category: [...selectedCategories, category.id],
+            });
+        }
+    }
+
+    function onPageItemClick(page: number) {
+        setSearchParams({
+            category: selectedCategories,
+            page: page.toString(),
+        });
+    }
+
+    function goToPreviousPage() {
+        const newPage = currentPage > 1 ? currentPage - 1 : currentPage;
+        setSearchParams({
+            category: selectedCategories,
+            page: newPage.toString(),
+        });
+    }
+
+    function goToNextPage() {
+        const newPage =
+            currentPage >= (books as PaginatedResponse<Book>).totalPages
+                ? currentPage
+                : currentPage + 1;
+        setSearchParams({
+            category: selectedCategories,
+            page: newPage.toString(),
+        });
+    }
+
     return (
-        <div className="px-4 pt-6 md:flex gap-4 lg:gap-8 bg-turquoise-50 md:container">
+        <div className="px-4 pt-6 pb-20 md:flex gap-4 lg:gap-8 bg-turquoise-50 md:container">
             <div className="hidden md:block h-screen border-r-[1px] border-black/60 max-w-[210px] font-inter pr-2 md:max-w-none lg:min-w-[220px]">
                 <p>Filter by Category</p>
-                {categories.map((category) => {
+                {categories?.map((category) => {
+                    let isCategoryChecked = selectedCategories.includes(
+                        category.id
+                    );
+
                     return (
                         <div
                             className="flex items-center mt-4"
@@ -41,6 +93,8 @@ export default function Books() {
                             <Checkbox
                                 id={category.category}
                                 className="rounded-none"
+                                checked={isCategoryChecked}
+                                onClick={() => onCategoryCheck(category)}
                             />
                             <label
                                 htmlFor={category.category}
@@ -48,7 +102,7 @@ export default function Books() {
                             >
                                 {category.category}
                             </label>
-                            {true && (
+                            {category.isTrending && (
                                 <FireIcon className="w-4 ml-1 text-black/70" />
                             )}
                         </div>
@@ -56,162 +110,109 @@ export default function Books() {
                 })}
             </div>
             <div>
-                <SearchDialog searchFieldPlaceholder="Type a book's title, author...">
-                    {books.map((book) => {
-                        return (
-                            <Link
-                                to={"/books"}
-                                className="flex items-center gap-2 my-4 cursor-pointer hover:bg-slate-50"
-                            >
-                                <BookCover
-                                    imageUrl={book.imageUrl}
-                                    className="max-w-[40px] md:max-w-[60px] lg:max-w-[70px]"
-                                />
-                                <div className="font-playfair">
-                                    <h3 className="text-sm font-normal">
-                                        {book.title}
-                                    </h3>
-                                    <p className="text-xs text-black/60">
-                                        {book.author.fullName}
-                                    </p>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </SearchDialog>
+                <SearchBookDialog />
                 {/* Categories Filter */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center md:hidden">
                             <p>Category:</p>
-                            <Button
-                                variant="ghostClient"
-                                className="flex text-base font-normal gap-1 items-center"
-                            >
-                                <span>Fiction</span>
-                                <ChevronDownIcon className="w-4" />
-                            </Button>
+                            {selectedCategories?.length > 0 ? (
+                                <Button
+                                    variant="ghostClient"
+                                    className="flex text-base font-normal gap-1 items-center"
+                                >
+                                    <span>
+                                        {
+                                            categories?.find(
+                                                (c) =>
+                                                    c.id ===
+                                                    selectedCategories[0]
+                                            )?.category
+                                        }
+                                    </span>
+                                    <ChevronDownIcon className="w-4" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="ghostClient"
+                                    className="flex text-base font-normal gap-1 items-center"
+                                >
+                                    <span>Select categories</span>
+                                    <ChevronDownIcon className="w-4" />
+                                </Button>
+                            )}
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
                         className="w-56 bg-turquoise-50"
                     >
-                        <DropdownMenuCheckboxItem
-                            checked={true}
-                            onCheckedChange={() => {}}
-                        >
-                            Status Bar
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            checked={true}
-                            onCheckedChange={() => {}}
-                        >
-                            Activity Bar
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            checked={true}
-                            onCheckedChange={() => {}}
-                        >
-                            Panel
-                        </DropdownMenuCheckboxItem>
+                        {categories?.map((category) => {
+                            let isCategoryChecked = selectedCategories.includes(
+                                category.id
+                            );
+                            return (
+                                <DropdownMenuCheckboxItem
+                                    key={category.id}
+                                    checked={isCategoryChecked}
+                                    onCheckedChange={() =>
+                                        onCategoryCheck(category)
+                                    }
+                                >
+                                    {category.category}
+                                </DropdownMenuCheckboxItem>
+                            );
+                        })}
                     </DropdownMenuContent>
                 </DropdownMenu>
 
                 {/* Books */}
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-8 mt-3 md:mt-5">
-                    {books.map((book) => {
-                        return (
-                            <Drawer>
-                                <DrawerTrigger asChild>
-                                    <div tabIndex={0}>
-                                        <BookCover
-                                            imageUrl={book.imageUrl}
-                                            className="shadow-sm mx-auto cursor-pointer"
-                                        />
-                                        <h2 className="font-medium text-sm mt-2 text-center">
-                                            {book.title}
-                                        </h2>
-                                        <h3 className="font-medium text-sm text-black/60 text-center">
-                                            {book.author.fullName}
-                                        </h3>
-                                    </div>
-                                </DrawerTrigger>
-                                <DrawerContent className="focus:outline-none">
-                                    <div className="w-full font-playfair">
-                                        <div className="pt-4 pb-6 px-2 flex flex-col md:flex-row justify-start md:gap-3 md:px-4 lg:px-9">
-                                            <Button
-                                                size={"sm"}
-                                                variant={"outlineClient"}
-                                                className="rounded-full w-8 h-8 p-1 ml-auto"
-                                            >
-                                                <HeartIcon className="w-5" />
-                                            </Button>
-                                            <BookCover
-                                                imageUrl={book.imageUrl}
-                                                className="max-w-[110px] md:max-w-[160px] lg:max-w-[260px] mx-auto shadow-lg mb-2 cursor-pointer"
-                                            />
-                                            <div className="flex-1 flex flex-col md:ml-3">
-                                                <h2 className="font-medium md:text-lg lg:text-xl">
-                                                    {book.title}
-                                                </h2>
-                                                <h4 className="text-black/60 md:text-lg lg:text-xl">
-                                                    {book.author.fullName}
-                                                </h4>
-                                                <p className="text-sm md:text-base my-4 leading-6 lg:max-w-[950px]">
-                                                    {book.description}
-                                                </p>
-                                                <p className="text-xl font-medium lg:mt-auto">
-                                                    <span>RM </span>
-                                                    {book.price}
-                                                </p>
-                                                <div className="flex gap-2 mt-3 lg:max-w-[494px] md:mb-2">
-                                                    <Button
-                                                        variant="clientDefault"
-                                                        className="flex-1 text-lg h-fit py-3"
-                                                    >
-                                                        Add to cart
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlineClient"
-                                                        className="rounded-none flex-1 gap-2 items-center text-lg h-fit py-3"
-                                                    >
-                                                        <span>
-                                                            See in details
-                                                        </span>
-                                                        <ArrowTopRightOnSquareIcon className="w-5" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </DrawerContent>
-                            </Drawer>
-                        );
-                    })}
+                    {isLoadingBooks ? (
+                        <BooksSkeleton />
+                    ) : (books as PaginatedResponse<Book>)?.data?.length ? (
+                        (books as PaginatedResponse<Book>)?.data.map((book) => {
+                            return <BookDrawer book={book} />;
+                        })
+                    ) : (
+                        <p>Empty</p>
+                    )}
                 </div>
 
-                <Pagination>
+                <Pagination className="mt-20">
                     <PaginationContent>
                         <PaginationItem>
-                            <PaginationPrevious href="#" />
+                            <PaginationPrevious
+                                href="#"
+                                onClick={goToPreviousPage}
+                            />
                         </PaginationItem>
+                        {new Array(books?.totalPages)
+                            .fill(1)
+                            .map((value, index) => {
+                                return (
+                                    <PaginationItem className="cursor-pointer">
+                                        <PaginationLink
+                                            isActive={currentPage === index + 1}
+                                            onClick={() =>
+                                                onPageItemClick(index + 1)
+                                            }
+                                            className={cn(
+                                                "text-lg text-black/40",
+                                                {
+                                                    "text-black":
+                                                        currentPage ===
+                                                        index + 1,
+                                                }
+                                            )}
+                                        >
+                                            {index + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                );
+                            })}
                         <PaginationItem>
-                            <PaginationLink href="#">1</PaginationLink>
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationLink href="#" isActive>
-                                2
-                            </PaginationLink>
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationLink href="#">3</PaginationLink>
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationEllipsis />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext href="#" />
+                            <PaginationNext href="#" onClick={goToNextPage} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
