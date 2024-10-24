@@ -83,7 +83,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     {error && (
                         <ExclamationTriangleIcon className="w-4 text-rose-500" />
                     )}
-                    <p className="text-xs">{errorMessage}</p>
+                    <p className="text-xs md:text-sm">{errorMessage}</p>
                 </div>
             </div>
         );

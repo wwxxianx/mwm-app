@@ -124,7 +124,7 @@ namespace mwm_app.Server.Controllers
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
-                return Unauthorized();
+                return Unauthorized(new ErrorResponse { errorTitle = "Login to your account", errorMessage = "Please login to your account first." });
             }
 
             var book = await _context.Books
@@ -169,14 +169,14 @@ namespace mwm_app.Server.Controllers
         }
 
         // DELETE: api/Books/5
-        [HttpDelete]
-        public async Task<IActionResult> DeleteBook(UserFavouriteBookDTO favouriteDTO)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBook(string id)
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
-                return Unauthorized();
+                return Unauthorized(new ErrorResponse { errorTitle = "Login to your account", errorMessage = "Please login to your account first." });
             }
-            var favourites = await _context.UserFavouriteBooks.Where(f => f.Book.ID == favouriteDTO.BookID && f.User.UserToken == token).ToListAsync();
+            var favourites = await _context.UserFavouriteBooks.Where(f => f.Book.ID == id && f.User.UserToken == token).ToListAsync();
             _context.UserFavouriteBooks.RemoveRange(favourites);
 
             try {

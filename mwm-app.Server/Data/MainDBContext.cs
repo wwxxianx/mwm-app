@@ -20,6 +20,7 @@ namespace mwm_app.Server.Data
         public DbSet<UserOrder> UserOrders { get; set; }
         public DbSet<BookReview> BookReviews { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
+        public DbSet<ReturnedUserOrder> ReturnedUserOrders { get; set; }
         // Change default table name
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,7 @@ namespace mwm_app.Server.Data
             modelBuilder.Entity<UserOrder>().ToTable("UserOrder");
             modelBuilder.Entity<BookReview>().ToTable("BookReview");
             modelBuilder.Entity<UserAddress>().ToTable("UserAddress");
+            modelBuilder.Entity<ReturnedUserOrder>().ToTable("ReturnedUserOrder");
         }
     }
 }

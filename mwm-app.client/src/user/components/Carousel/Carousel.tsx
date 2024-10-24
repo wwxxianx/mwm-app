@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import "./Carousel.css";
 import BookCover from "@/components/ui/BookCover";
-import { TopBook } from "@/admin/routes/TopThreeBooks/types";
+import { TopBook } from "@/admin/routes/top-three-books/types";
 
 const MAX_VISIBILITY = 3;
 

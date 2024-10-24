@@ -1,27 +1,44 @@
-import { useGetUserAddressesQuery, useUpdateDefaulUserAddressMutation } from "@/apiService/userProfileApi";
+import {
+    useDeleteUserAddressMutation,
+    useGetUserAddressesQuery,
+    useUpdateDefaulUserAddressMutation,
+} from "@/apiService/userProfileApi";
 import { Button } from "@/components/ui/button";
 import { MapIcon, TrashIcon } from "@heroicons/react/24/outline";
-import EditAddressDialog from "./components/EditAddressDialog";
-import NewAddressDialog from "./components/NewAddressDialog";
+import EditAddressDialog from "./components/edit-address-dialog";
+import NewAddressDialog from "./components/new-address-dialog";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AddressPage() {
     const { toast } = useToast();
     const { data: userAddresses } = useGetUserAddressesQuery();
-    const [updateDefaultUserAddress, { isLoading: isUpdating }] = useUpdateDefaulUserAddressMutation();
+    const [updateDefaultUserAddress, { isLoading: isUpdating }] =
+        useUpdateDefaulUserAddressMutation();
+    const [deleteUserAddress, { isLoading: isDeleting }] =
+        useDeleteUserAddressMutation();
 
     function handleUpdateDefaultUserAddress(addressID: string) {
         updateDefaultUserAddress(addressID)
             .unwrap()
-            .then((_) => {
-
-            })
+            .then((_) => {})
             .catch((err) => {
                 toast({
                     variant: "destructive",
                     title: "Something went wrong, please try again later.",
-                })
-            })
+                });
+            });
+    }
+
+    function handleDeleteUserAddress(addressID: string) {
+        deleteUserAddress(addressID)
+            .unwrap()
+            .then((_) => {})
+            .catch((err) => {
+                toast({
+                    variant: "destructive",
+                    title: "Something went wrong, please try again later.",
+                });
+            });
     }
 
     return (
@@ -57,11 +74,16 @@ export default function AddressPage() {
                                 </div>
                                 {/* Actions */}
                                 <div className="ml-auto mt-auto">
-                                    <EditAddressDialog />
+                                    <EditAddressDialog address={address} />
                                     <Button
                                         size={"sm"}
                                         variant={"ghostAlert"}
                                         className="items-center gap-1"
+                                        onClick={() =>
+                                            handleDeleteUserAddress(address.id)
+                                        }
+                                        isLoading={isDeleting}
+                                        disabled={isDeleting}
                                     >
                                         <TrashIcon className="w-4" />
                                         <span>Delete</span>
@@ -71,7 +93,11 @@ export default function AddressPage() {
                                             size={"sm"}
                                             variant={"ghostClient"}
                                             className="items-center gap-1"
-                                            onClick={() => handleUpdateDefaultUserAddress(address.id)}
+                                            onClick={() =>
+                                                handleUpdateDefaultUserAddress(
+                                                    address.id
+                                                )
+                                            }
                                             disabled={isUpdating}
                                         >
                                             <MapIcon className="w-4" />

@@ -195,7 +195,7 @@ namespace mwm_app.Server.Controllers
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
-                return Unauthorized();
+                return Unauthorized(new ErrorResponse { errorTitle = "Login to your account", errorMessage = "Please login to your account first" });
             }
 
             var user = await _context.Users.FirstAsync(u => u.UserToken == token);
@@ -206,7 +206,7 @@ namespace mwm_app.Server.Controllers
             // Cart Item Existed
             var cartItemExisted = await _context.ShoppingCarts.FirstOrDefaultAsync(i => i.User.ID == user.ID && i.Book.ID == cartDTO.BookID);
             if (cartItemExisted != null) {
-                return Conflict(new { Message = "Item already in your cart" });
+                return Conflict(new ErrorResponse { errorMessage = "Item already in your shopping cart" });
             }
             
             var book = await _context.Books.FirstAsync(b => b.ID == cartDTO.BookID);
@@ -280,7 +280,7 @@ namespace mwm_app.Server.Controllers
         {
             var token = AuthorizationHeaderReader.GetBearerToken(HttpContext);
             if (token == null) {
-                return Unauthorized();
+                return Unauthorized(new ErrorResponse { errorTitle = "Login to your account", errorMessage = "Please login to your account first" });
             }
 
             var cartItemToDelete = await _context.ShoppingCarts.FirstAsync(i => i.ID == cartDTO.ShoppingCartID);

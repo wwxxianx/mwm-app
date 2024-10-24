@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
 using mwm_app.Server.Data.DTO;
 using mwm_app.Server.Models;
+using mwm_app.Server.Services;
 using NuGet.Protocol.Plugins;
 
 namespace mwm_app.Server.Controllers
@@ -48,6 +49,43 @@ namespace mwm_app.Server.Controllers
             }
 
             return Ok(new { user = user, token = user.UserToken });
+        }
+
+        public class GoogleAuthPayload
+        {
+            public string UID { get; set; }
+            public string Email { get; set; }
+            public string? ProfileImageUrl { get; set; }
+            public string? FullName { get; set; }
+        }
+        [HttpPost("googleLogin")]
+        public async Task<ActionResult<LoginResponse>> GoogleLogin(GoogleAuthPayload payload)
+        {
+            try
+            {
+                var userExisted = await _context.Users.FirstOrDefaultAsync(u => u.GoogleOAuthUID == payload.UID);
+                if (userExisted != null)
+                {
+                    return Ok(new { user = userExisted, token = userExisted.UserToken });
+                }
+                else
+                {
+                    var newUser = new User {
+                        Email = payload.Email,
+                        FullName = payload.FullName ?? payload.Email.Split("@").First(),
+                        UserToken = System.Guid.NewGuid().ToString(),
+                        GoogleOAuthUID = payload.UID,
+                        ProfileImageUrl = payload.ProfileImageUrl,
+                    };
+                    _context.Users.Add(newUser);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { user = newUser, token = newUser.UserToken });
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         private string GenerateJWT(User user)
@@ -169,11 +207,6 @@ namespace mwm_app.Server.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return _context.Users.Any(e => e.ID == id);
         }
     }
 }

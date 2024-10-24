@@ -26,6 +26,7 @@ namespace mwm_app.Server.Migrations
             modelBuilder.Entity("mwm_app.Server.Models.Admin", b =>
                 {
                     b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
@@ -202,6 +203,58 @@ namespace mwm_app.Server.Migrations
                     b.ToTable("OrderItem", "AdminSchema");
                 });
 
+            modelBuilder.Entity("mwm_app.Server.Models.ReturnedItem", b =>
+                {
+                    b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BookID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReturnedUserOrderID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BookID");
+
+                    b.HasIndex("ReturnedUserOrderID");
+
+                    b.ToTable("ReturnedItem", "AdminSchema");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.ReturnedUserOrder", b =>
+                {
+                    b.Property<string>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("OrderID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("ReturnedUserOrder", "AdminSchema");
+                });
+
             modelBuilder.Entity("mwm_app.Server.Models.ShoppingCart", b =>
                 {
                     b.Property<string>("ID")
@@ -275,8 +328,10 @@ namespace mwm_app.Server.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("GoogleOAuthUID")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
@@ -474,6 +529,38 @@ namespace mwm_app.Server.Migrations
                     b.Navigation("UserOrder");
                 });
 
+            modelBuilder.Entity("mwm_app.Server.Models.ReturnedItem", b =>
+                {
+                    b.HasOne("mwm_app.Server.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("mwm_app.Server.Models.ReturnedUserOrder", null)
+                        .WithMany("ReturnedItems")
+                        .HasForeignKey("ReturnedUserOrderID");
+
+                    b.Navigation("Book");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.ReturnedUserOrder", b =>
+                {
+                    b.HasOne("mwm_app.Server.Models.UserOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderID");
+
+                    b.HasOne("mwm_app.Server.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("mwm_app.Server.Models.ShoppingCart", b =>
                 {
                     b.HasOne("mwm_app.Server.Models.Book", "Book")
@@ -558,6 +645,11 @@ namespace mwm_app.Server.Migrations
             modelBuilder.Entity("mwm_app.Server.Models.BookCategory", b =>
                 {
                     b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("mwm_app.Server.Models.ReturnedUserOrder", b =>
+                {
+                    b.Navigation("ReturnedItems");
                 });
 
             modelBuilder.Entity("mwm_app.Server.Models.User", b =>

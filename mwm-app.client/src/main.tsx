@@ -7,49 +7,56 @@ import {
     RouterProvider,
     createBrowserRouter,
 } from "react-router-dom";
-import AdminNavBar from "./admin/navigation/Navigation";
-import AdminRoot from "./admin/routes/AdminRoot";
-import CreateBook from "./admin/routes/CreateBook/CreateBook";
-import EditBook from "./admin/routes/EditBook/EditBook";
-import EditOrder, { orderLoader } from "./admin/routes/EditOrder/EditOrder";
-import EditorChoice from "./admin/routes/EditorChoice/EditorChoice";
-import AdminLogin from "./admin/routes/Login/Login";
-import ManageAdmins from "./admin/routes/ManageAdmins/ManageAdmins";
-import ManageBooksNavRoot from "./admin/routes/ManageBooks/ManageBooksNavRoot";
-import ManageAuthors from "./admin/routes/ManageBooks/routes/ManageAuthors";
-import ManageBooks from "./admin/routes/ManageBooks/routes/ManageBooks";
-import ManageCategories from "./admin/routes/ManageBooks/routes/ManageCategories";
-import ManageOrders from "./admin/routes/ManageOrders/ManageOrders";
+import AdminNavBar from "./admin/navigation/navigation";
+import AdminRoot from "./admin/routes/admin-root";
+import CreateBook from "./admin/routes/create-book/create-book";
+import EditBook from "./admin/routes/edit-book/edit-book";
+import EditOrder, { orderLoader } from "./admin/routes/edit-order/edit-order";
+import EditorChoice from "./admin/routes/editor-choice/editor-choice";
+import AdminLogin from "./admin/routes/login/login";
+import ManageAdmins from "./admin/routes/manage-admins/manage-admins";
+import ManageBooksNavRoot from "./admin/routes/manage-books/manage-books-nav-root";
+import ManageAuthors from "./admin/routes/manage-books/routes/manage-authors";
+import ManageBooks from "./admin/routes/manage-books/routes/manage-books";
+import ManageCategories from "./admin/routes/manage-books/routes/manage-categories";
+import ManageOrders from "./admin/routes/manage-orders/manage-orders";
 import ManageUsers, {
     usersLoader,
-} from "./admin/routes/ManageUsers/ManageUsers";
-import TopThreeBooks from "./admin/routes/TopThreeBooks/TopThreeBooks";
+} from "./admin/routes/manage-users/manage-users";
+import TopThreeBooks from "./admin/routes/top-three-books/top-three-books";
 import { Toaster } from "./components/ui/toaster";
+import { Toaster as SoonerToaster } from "./components/ui/sonner";
 import "./index.css";
 import { store } from "./lib/reduxStore";
-import AboutUs from "./user/routes/aboutUs/AboutUs";
-import UserAccountNav from "./user/routes/account/UserAccountNav";
-import AddressPage from "./user/routes/account/routes/address/Address";
-import ChangePasswordPage from "./user/routes/account/routes/changePassword/ChangePassword";
-import UserFavourites from "./user/routes/account/routes/favourites/UserFavourites";
-import UserProfile from "./user/routes/account/routes/profile/UserProfile";
-import UserPurchases from "./user/routes/account/routes/purchases/UserPurchases";
-import PurchaseDetails from "./user/routes/account/routes/purchases/components/PurchaseDetails";
-import AuthorDetails from "./user/routes/author/AuthorDetails";
-import Authors from "./user/routes/authors/Authors";
-import BookDetails, { clientBookLoader } from "./user/routes/book/BookDetails";
-import Books from "./user/routes/books/Books";
-import Cart from "./user/routes/cart/Cart";
-import Homepage from "./user/routes/homepage/Homepage";
-import Login from "./user/routes/login/Login";
-import UserNavigation from "./user/routes/navigation/UserNavigation";
-import PrivacyPolicy from "./user/routes/privacyPolicy/PrivacyPolicy";
-import SignUp from "./user/routes/signUp/SignUp";
-import TermsAndConditions from "./user/routes/termsAndConditions/TermsAndConditions";
+import AboutUs from "./user/routes/about-us/about-us";
+import UserAccountNav from "./user/routes/account/user-account-nav";
+import AddressPage from "./user/routes/account/routes/address/address";
+import ChangePasswordPage from "./user/routes/account/routes/change-password/change-password";
+import UserFavourites from "./user/routes/account/routes/favourites/user-favourites";
+import UserProfile from "./user/routes/account/routes/profile/user-profile";
+import UserPurchases from "./user/routes/account/routes/purchases/user-purchases";
+import PurchaseDetails from "./user/routes/account/routes/purchases/components/purchase-details";
+import AuthorDetails from "./user/routes/author/author-details";
+import Authors from "./user/routes/authors/authors";
+import BookDetails, { clientBookLoader } from "./user/routes/book/book-details";
+import Books from "./user/routes/books/books";
+import Cart from "./user/routes/cart/cart";
+import Homepage from "./user/routes/homepage/homepage";
+import Login from "./user/routes/login/login";
+import UserNavigation from "./user/routes/navigation/user-navigation";
+import PrivacyPolicy from "./user/routes/privacy-policy/privacy-policy";
+import SignUp from "./user/routes/sign-up/sign-up";
+import TermsAndConditions from "./user/routes/terms-and-conditions/terms-and-conditions";
 import { useAppSelector } from "./lib/hooks";
-import Checkout from "./user/routes/checkout/Checkout";
-import CheckoutSuccess from "./user/routes/checkoutSuccess/CheckouttSuccess";
+import Checkout from "./user/routes/checkout/checkout";
+import CheckoutSuccess from "./user/routes/checkout-success/checkoutt-success";
 import { useToast } from "./components/ui/use-toast";
+import {
+    AuthenticateWithRedirectCallback,
+    ClerkProvider,
+    useUser,
+} from "@clerk/clerk-react";
+
 const PrivateRouteComponent = () => {
     const { toast } = useToast();
     useEffect(() => {
@@ -64,7 +71,6 @@ const PrivateRouteComponent = () => {
 
 const PrivateRoute = (Component) => {
     const PrivateRouteWrapper = (props) => {
-        const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
         const token = localStorage.getItem("userToken");
 
         return token != null ? (
@@ -76,6 +82,45 @@ const PrivateRoute = (Component) => {
 
     return <PrivateRouteWrapper />;
 };
+
+const PrivateAdminRoute = (Component) => {
+    const PrivateRouteWrapper = (props) => {
+        const token = localStorage.getItem("adminToken");
+
+        return token != null ? (
+            <Component {...props} />
+        ) : (
+            <PrivateAdminRouteComponent />
+        );
+    };
+
+    return <PrivateRouteWrapper />;
+};
+
+const PrivateAdminRouteComponent = () => {
+    const { toast } = useToast();
+    useEffect(() => {
+        toast({
+            title: "Please login to your account first",
+            variant: "destructive",
+        });
+    }, []);
+
+    return <Navigate to="/admin/login" replace />;
+};
+
+function SSOCallback() {
+    const { user } = useUser();
+
+    useEffect(() => {
+        if (user) {
+            console.log("Authenticated user:", user);
+        } else {
+            console.log("Nothing");
+        }
+    }, [user]);
+    return <AuthenticateWithRedirectCallback />;
+}
 
 const router = createBrowserRouter([
     {
@@ -157,8 +202,12 @@ const router = createBrowserRouter([
         ],
     },
     {
+        path: "sso-callback",
+        element: <SSOCallback />,
+    },
+    {
         path: "checkout",
-        element: <Checkout />,
+        element: PrivateRoute(Checkout),
     },
     {
         path: "checkout-success",
@@ -178,7 +227,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "dashboard",
-                element: <AdminNavBar />,
+                element: PrivateAdminRoute(AdminNavBar),
                 children: [
                     {
                         path: "manage-users",
@@ -207,12 +256,10 @@ const router = createBrowserRouter([
                             {
                                 path: "authors",
                                 element: <ManageAuthors />,
-                                // loader: authorsLoader,
                             },
                             {
                                 path: "categories",
                                 element: <ManageCategories />,
-                                // loader: categoriesLoader,
                             },
                         ],
                     },
@@ -247,32 +294,35 @@ const router = createBrowserRouter([
         ],
     },
 ]);
-
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // Your web app's Firebase configuration
 const firebaseConfig = {
     // US region
-    // apiKey: "AIzaSyD1-7Hit1bOsRAAYCzLfyEQ_96V4K0WcIY",
-    // authDomain: "linkedin-clone-225b2.firebaseapp.com",
-    // projectId: "linkedin-clone-225b2",
-    // storageBucket: "linkedin-clone-225b2.appspot.com",
-    // messagingSenderId: "72975579786",
-    // appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
+    apiKey: "AIzaSyD1-7Hit1bOsRAAYCzLfyEQ_96V4K0WcIY",
+    authDomain: "linkedin-clone-225b2.firebaseapp.com",
+    projectId: "linkedin-clone-225b2",
+    storageBucket: "linkedin-clone-225b2.appspot.com",
+    messagingSenderId: "72975579786",
+    appId: "1:72975579786:web:2c2f211b91280bb29fcb73",
     // Asia region
-    apiKey: "AIzaSyDDIdeOH80IjjT8PcPcT2U5HO58dwop05k",
-    authDomain: "bolt-sport.firebaseapp.com",
-    projectId: "bolt-sport",
-    storageBucket: "bolt-sport.appspot.com",
-    messagingSenderId: "689176755278",
-    appId: "1:689176755278:web:4bed012cd3a2cd9c2c171f",
+    // apiKey: "AIzaSyDDIdeOH80IjjT8PcPcT2U5HO58dwop05k",
+    // authDomain: "bolt-sport.firebaseapp.com",
+    // projectId: "bolt-sport",
+    // storageBucket: "bolt-sport.appspot.com",
+    // messagingSenderId: "689176755278",
+    // appId: "1:689176755278:web:4bed012cd3a2cd9c2c171f",
 };
 
 const app = initializeApp(firebaseConfig);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <Provider store={store}>
-            <Toaster />
-            <RouterProvider router={router} />
-        </Provider>
+        <ClerkProvider publishableKey={CLERK_KEY}>
+            <Provider store={store}>
+                <Toaster />
+                <SoonerToaster />
+                <RouterProvider router={router} />
+            </Provider>
+        </ClerkProvider>
     </React.StrictMode>
 );

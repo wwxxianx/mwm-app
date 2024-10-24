@@ -73,6 +73,15 @@ export const userSlice = createSlice({
                 storeUserProfile(payload);
             }
         );
+        builder.addMatcher(
+            userAuthApi.endpoints.googleLogin.matchFulfilled,
+            (state, { payload }) => {
+                state.user = payload.user;
+                state.token = payload.token;
+                state.isLoggedIn = true;
+                storeUserProfile(payload.user, payload.token);
+            }
+        );
     },
 });
 

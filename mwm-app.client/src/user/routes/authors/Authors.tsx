@@ -4,11 +4,9 @@ import BestLiteraryImageUrl from "@/assets/malmo-arab-film-award.png";
 import PenAmericaImageUrl from "@/assets/pen-america-award.png";
 import BookCover from "@/components/ui/BookCover";
 import { buttonVariants } from "@/components/ui/button";
-import { books } from "@/lib/fakeData";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import SearchDialog from "../books/components/SearchDialog";
-import SearchAuthorDialog from "./components/SearchAuthorDialog";
+import SearchAuthorDialog from "./components/search-author-dialog";
 
 export default function Authors() {
     const { data: authors } = useGetAuthorsWithBooksQuery();
@@ -55,6 +53,7 @@ export default function Authors() {
                                     }),
                                     "text-xs lg:text-xl lg:py-6 lg:font-normal lg:px-10 lg:mt-8"
                                 )}
+                                target="_top"
                             >
                                 SHOP NOW
                             </Link>
@@ -99,7 +98,10 @@ export default function Authors() {
                                 <div className="grid grid-cols-3 items-center gap-2 lg:gap-4 mt-1">
                                     {author?.books?.slice(0, 3).map((book) => {
                                         return (
-                                            <Link to={`/book/${book.id}`}>
+                                            <Link
+                                                to={`/book/${book.id}`}
+                                                target="_top"
+                                            >
                                                 <BookCover
                                                     imageUrl={book.imageUrl}
                                                     className="hover:scale-105 transition-all"

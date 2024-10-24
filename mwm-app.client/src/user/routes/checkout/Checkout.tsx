@@ -14,13 +14,15 @@ import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import CheckoutAddressForm from "./components/AddressForm";
+import CheckoutAddressForm from "./components/address-form";
+import PaymentForm from "./components/payment-form";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     OrderAddressPayload,
     OrderAddressValidator,
-} from "./validation/validator";
-import PaymentForm from "./components/PaymentForm";
-import { Card, CardContent } from "@/components/ui/card";
+    PaymentPayload,
+    PaymentValidator,
+} from "./validator";
 
 export default function Checkout() {
     const dispatch = useAppDispatch();
@@ -29,12 +31,28 @@ export default function Checkout() {
     const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
     const addressForm = useForm<OrderAddressPayload>({
         resolver: zodResolver(OrderAddressValidator),
+        mode: "onChange",
     });
+    const addressFormState = addressForm.formState;
+    const addressFormIsValid = addressFormState.isValid;
+    const paymentForm = useForm<PaymentPayload>({
+        resolver: zodResolver(PaymentValidator),
+        mode: "onChange",
+    });
+    const paymentFormState = paymentForm.formState;
+    const paymentFormIsValid = paymentFormState.isValid;
     const selectedCheckoutItems = useAppSelector(
         (state) => state.shoppingCart.selectedCartItems
     );
     const [createOrder, { isLoading: isCreatingOrder }] =
         useCreateUserOrderMutation();
+    const [isOrderFormValid, setIsOrderFormValid] = useState(false);
+
+    // useEffect(() => {
+    //     setIsOrderFormValid(
+    //         addressForm.formState.isValid && paymentForm.formState.isValid
+    //     );
+    // }, [addressFormState, paymentFormState, setIsOrderFormValid]);
 
     useEffect(() => {
         const token = localStorage.getItem("userToken");
@@ -180,6 +198,7 @@ export default function Checkout() {
                 />
             ) : currentStep === 2 ? (
                 <PaymentForm
+                    paymentForm={paymentForm}
                     onFormSubmit={handleNextStepButtonClick}
                     onBackButtonClick={handleBackButtonClick}
                 />
@@ -235,7 +254,7 @@ export default function Checkout() {
                             >
                                 Billing Address
                             </p>
-                            <div className="flex flex-col items-start mt-4">
+                            <div className="flex flex-col items-start mt-4 gap-3">
                                 <div className="flex justify-start items-center gap-2">
                                     <UserIcon className="w-6" />
                                     <p>
@@ -261,9 +280,14 @@ export default function Checkout() {
                                 <div className="flex justify-start items-center gap-2">
                                     <HomeModernIcon className="w-6" />
                                     <p>
-                                        {addressForm.getValues("stateRegion")}
-                                        {addressForm.getValues("postcode")}
-                                        {addressForm.getValues("streetAddress")}
+                                        {addressForm.getValues("stateRegion")}{" "}
+                                        <br />
+                                        {addressForm.getValues("postcode")}{" "}
+                                        <br />
+                                        {addressForm.getValues(
+                                            "streetAddress"
+                                        )}{" "}
+                                        <br />
                                         {addressForm.getValues("addressUnit")}
                                     </p>
                                 </div>
@@ -272,7 +296,12 @@ export default function Checkout() {
                                 variant={"clientDefault"}
                                 onClick={handleSubmitOrder}
                                 isLoading={isCreatingOrder}
-                                disabled={isCreatingOrder}
+                                disabled={
+                                    isCreatingOrder ||
+                                    !paymentFormIsValid ||
+                                    !addressFormIsValid
+                                }
+                                className="mt-4"
                             >
                                 Confirm
                             </Button>

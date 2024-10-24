@@ -22,6 +22,7 @@ export const adminSlice = createSlice({
             state.admin = null;
             state.token = null;
             localStorage.removeItem("admin");
+            localStorage.removeItem("adminToken");
         },
         initAdmin: (state, { payload }) => {
             // Check user from localStorage and let user stay singed in

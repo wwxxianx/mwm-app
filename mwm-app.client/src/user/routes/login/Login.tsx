@@ -4,9 +4,58 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/user/components/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { UserAuthPayload, UserAuthValidator } from "./types";
+import { OAuthPayload, UserAuthPayload, UserAuthValidator } from "./validator";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "@/apiService/userAuthApi";
+import {
+    useGoogleLoginMutation,
+    useLoginMutation,
+} from "@/apiService/userAuthApi";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import GoogleLogoImage from "@/assets/google.png";
+
+export function GoogleLoginButton() {
+    const provider = new GoogleAuthProvider();
+    const [googleLogin] = useGoogleLoginMutation();
+    const navigate = useNavigate();
+
+    function onGoogleSignIn() {
+        const auth = getAuth();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                // This gives you a Google Access Token. You can use it to access the Google API.
+                const credential =
+                    GoogleAuthProvider.credentialFromResult(result);
+                if (credential == null) {
+                    return;
+                }
+                // The signed-in user info.
+                const user = result.user;
+                const userAuthPayload: OAuthPayload = {
+                    email: user.email ?? "",
+                    uid: user.uid,
+                    fullName: user.displayName,
+                    profileImageUrl: user.photoURL,
+                };
+                googleLogin(userAuthPayload)
+                    .unwrap()
+                    .then((_) => {
+                        navigate("/");
+                    });
+            })
+            .catch((error) => {});
+    }
+
+    return (
+        <Button
+            variant={"outlineClient"}
+            className="w-full h-fit gap-2 py-3"
+            onClick={onGoogleSignIn}
+        >
+            <img src={GoogleLogoImage} className="w-6" />
+            <span>Google</span>
+        </Button>
+    );
+}
 
 export default function Login() {
     const navigate = useNavigate();
@@ -26,7 +75,6 @@ export default function Login() {
         } catch (err) {
             console.log(err);
         }
-        console.log("formData", data);
     }
 
     function onNavigateSignUp() {
@@ -82,6 +130,12 @@ export default function Login() {
                         </Button>
                     </form>
                 </Form>
+                <div className="flex items-center gap-4 my-4">
+                    <hr className="w-full bg-black/30 h-[1.5px]" />
+                    <span>or</span>
+                    <hr className="w-full bg-black/30 h-[1.5px]" />
+                </div>
+                <GoogleLoginButton />
                 <div className="text-sm flex items-center">
                     <p>Don't have an account?</p>
                     <Button

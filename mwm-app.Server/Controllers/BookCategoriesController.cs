@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,14 @@ namespace mwm_app.Server.Controllers
         [HttpGet("trending")]
         public async Task<ActionResult<IEnumerable<BookCategory>>> GetTrendingBookCategory()
         {
-            return await _context.BookCategories.Where(c => c.IsTrending).ToListAsync();
+            try
+            {
+                return await _context.BookCategories.Where(c => c.IsTrending).ToListAsync();
+            }
+            catch (DbException)
+            {
+                return BadRequest();
+            }
         }
 
         // GET: api/BookCategories/5
@@ -59,6 +67,10 @@ namespace mwm_app.Server.Controllers
                 return BadRequest();
             }
             var bookCategoryToUpdate = await _context.BookCategories.FirstOrDefaultAsync(c => c.ID == id);
+            if (bookCategoryToUpdate == null)
+            {
+                return NotFound();
+            }
             bookCategoryToUpdate.Category = bookCategoryDTO.Category;
             bookCategoryToUpdate.IsTrending = bookCategoryDTO.IsTrending;
 
@@ -114,7 +126,7 @@ namespace mwm_app.Server.Controllers
 
         // DELETE: api/BookCategories/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ICollection<BookCategory>>> DeleteBookCategory(string id)
+        public async Task<ActionResult> DeleteBookCategory(string id)
         {
             var bookCategory = await _context.BookCategories.FindAsync(id);
             if (bookCategory == null)
@@ -123,8 +135,15 @@ namespace mwm_app.Server.Controllers
             }
 
             _context.BookCategories.Remove(bookCategory);
-            await _context.SaveChangesAsync();
-            return await _context.BookCategories.ToListAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest();
+            }
         }
 
         private bool BookCategoryExists(string id)

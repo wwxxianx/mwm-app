@@ -5,7 +5,7 @@ export const userFavouriteBookApi = api.injectEndpoints({
     endpoints: (builder) => ({
         // User Favourite
         createUserFavourite: builder.mutation<
-            UserFavouriteBook[],
+            UserFavouriteBook,
             UserFavouriteRequest
         >({
             query: (bookId) => ({
@@ -13,7 +13,7 @@ export const userFavouriteBookApi = api.injectEndpoints({
                 method: "POST",
                 body: bookId,
             }),
-            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
                 try {
                     const { data: newFavourite } = await queryFulfilled;
                     dispatch(
@@ -36,26 +36,21 @@ export const userFavouriteBookApi = api.injectEndpoints({
                 method: "GET",
             }),
         }),
-        deleteUserFavourite: builder.mutation<
-            UserFavouriteBook[],
-            UserFavouriteRequest
-        >({
+        deleteUserFavourite: builder.mutation<void, string>({
             query: (bookId) => ({
-                url: "UserFavouriteBooks",
+                url: `UserFavouriteBooks/${bookId}`,
                 method: "DELETE",
-                body: bookId,
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedFavourites } = await queryFulfilled;
-                    console.log("delete response from BE", updatedFavourites);
+                    await queryFulfilled;
                     dispatch(
                         userFavouriteBookApi.util.updateQueryData(
                             "getUserFavourites",
                             undefined,
                             (draft) => {
                                 return draft.filter(
-                                    (b) => b.book.id !== requestBody.bookID
+                                    (b) => b.book.id !== requestBody
                                 );
                             }
                         )

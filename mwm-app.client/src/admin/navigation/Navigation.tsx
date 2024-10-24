@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { UserIcon, BookOpenIcon, TruckIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "../components/shared/IconButton";
-import { NavBarButton } from "../components/NavBarButton";
+import { NavBarButton } from "../components/navbar-button";
 import {
     DropdownMenu,
     DropdownMenuContent,

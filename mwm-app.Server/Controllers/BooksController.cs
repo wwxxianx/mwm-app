@@ -85,7 +85,7 @@ namespace mwm_app.Server.Controllers
             }
 
 
-            int pageSize = 10;
+            int pageSize = 20;
             var paginatedBooks =  await PaginatedList<Book>.CreateAsync(books.AsNoTracking(), bookRequest.PageNumber ?? 1, pageSize);
             return Ok(new PaginatedListResponse<BookResponseDTO>
             {

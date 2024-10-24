@@ -41,6 +41,7 @@ namespace mwm_app.Server.Controllers
                     .Include(order => order.Items)
                         .ThenInclude(item => item.Book)
                     .Where(order => order.User.ID == user.ID)
+                    .OrderByDescending(order => order.CreatedAt)
                     .ToListAsync();
                 return Ok(userOrders);
         }

@@ -1,6 +1,6 @@
-import { AdminPayload } from "@/admin/routes/ManageAdmins/types";
+import { AdminPayload } from "@/admin/routes/manage-admins/types";
 import { Admin } from "@/types/dataType";
-import { UserAuthPayload } from "@/user/routes/login/types";
+import { UserAuthPayload } from "@/user/routes/login/validator";
 import { api } from "./bookApi";
 import { AdminResponse } from "./types";
 

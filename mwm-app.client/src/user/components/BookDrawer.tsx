@@ -8,8 +8,10 @@ import BookCover from "@/components/ui/BookCover";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/components/ui/use-toast";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { Book } from "@/types/dataType";
+import displayErrorToast from "@/utils/errorToast";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
@@ -30,6 +32,7 @@ export default function BookDrawer(props: BookDrawerProps) {
         useDeleteUserFavouriteMutation();
     const [addToCart, { isLoading: isAddingToCart }] =
         useCreateUserCartItemMutation();
+    // let isMobile = useMediaQuery("(max-width: 768px)");
 
     let isCurrentBookInFavourite = favourites?.filter(
         (f) => f.book.id === book.id
@@ -37,42 +40,32 @@ export default function BookDrawer(props: BookDrawerProps) {
 
     async function onTriggerFavourite(bookID: string) {
         const data = { bookID: bookID };
-        const isCurrentBookInFavourite = favourites?.filter(
-            (f) => f.book.id === bookID
-        ).length;
         if (isCurrentBookInFavourite) {
-            await deleteFavourite(data).unwrap();
+            deleteFavourite(bookID)
+                .unwrap()
+                .then((_) => {})
+                .catch((err) => displayErrorToast(err));
         } else {
-            await addToFavourite(data).unwrap();
+            addToFavourite(data)
+                .unwrap()
+                .then((_) => {})
+                .catch((err) => displayErrorToast(err));
         }
     }
 
     async function onAddToCart(bookID: string) {
-        try {
-            addToCart({ bookID: bookID })
-                .unwrap()
-                .then((_) => {
-                    toast({
-                        variant: "default",
-                        title: "Book added to your cart!",
-                        description: "You can view book in your cart now.",
-                    });
-                })
-                .catch((err) => {
-                    if (err.status === 409) {
-                        toast({
-                            variant: "destructive",
-                            title: "Item already in your cart",
-                        });
-                    }
+        addToCart({ bookID: bookID })
+            .unwrap()
+            .then((_) => {
+                toast({
+                    variant: "default",
+                    title: "Book added to your cart!",
+                    description: "You can view book in your cart now.",
                 });
-        } catch (err) {
-            toast({
-                variant: "default",
-                title: "Something went wrong",
-                description: "You can update your cart item.",
+            })
+            .catch((err) => {
+                displayErrorToast(err);
             });
-        }
     }
 
     return (
@@ -132,7 +125,7 @@ export default function BookDrawer(props: BookDrawerProps) {
                             <h4 className="text-black/60 md:text-lg lg:text-xl">
                                 {book.author.fullName}
                             </h4>
-                            <p className="text-sm md:text-base my-4 leading-6 lg:max-w-[950px]">
+                            <p className="line-clamp-4 md:line-clamp-6 text-sm md:text-base my-4 leading-6 lg:max-w-[950px]">
                                 {book.description}
                             </p>
                             <p className="text-xl font-medium lg:mt-auto">
@@ -142,7 +135,7 @@ export default function BookDrawer(props: BookDrawerProps) {
                             <div className="flex gap-2 mt-3 lg:max-w-[494px] md:mb-2">
                                 <Button
                                     variant="clientDefault"
-                                    className="flex-1 text-lg h-fit py-3"
+                                    className="flex-1 text-sm md:text-lg h-fit py-3"
                                     onClick={() => onAddToCart(book.id)}
                                     isLoading={isAddingToCart}
                                     disabled={isAddingToCart}
@@ -155,9 +148,9 @@ export default function BookDrawer(props: BookDrawerProps) {
                                         buttonVariants({
                                             variant: "outlineClient",
                                         }),
-                                        "rounded-none flex-1 gap-2 items-center text-lg h-fit py-3"
+                                        "text-sm md:text-lg rounded-none flex-1 gap-2 items-center h-fit py-3"
                                     )}
-                                    target="_top"
+                                    target="_blank"
                                 >
                                     <span>See in details</span>
                                     <ArrowTopRightOnSquareIcon className="w-5" />

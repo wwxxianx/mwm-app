@@ -1,24 +1,10 @@
 import { User, UserAddress } from "@/types/dataType";
-import { UserProfilePayload } from "@/user/routes/account/routes/profile/UserProfile";
 import { api } from "./bookApi";
-import { UserAddressPayload } from "@/user/routes/account/routes/address/components/NewAddressDialog";
+import { UserProfilePayload } from "@/user/routes/account/routes/profile/validator";
+import { UserAddressPayload } from "@/user/routes/account/routes/address/validator";
 
 export const userProfileApi = api.injectEndpoints({
     endpoints: (builder) => ({
-        // login: builder.mutation<UserResponse, UserAuthPayload>({
-        //     query: (credentials) => ({
-        //         url: "Users/login",
-        //         method: "POST",
-        //         body: credentials,
-        //     }),
-        // }),
-        // register: builder.mutation<UserResponse, UserAuthPayload>({
-        //     query: (credentials) => ({
-        //         url: "Users/register",
-        //         method: "POST",
-        //         body: credentials,
-        //     }),
-        // }),
         getUserProfile: builder.query<User, number>({
             query: (userID) => `Users/${userID}`,
         }),
@@ -91,6 +77,70 @@ export const userProfileApi = api.injectEndpoints({
                 );
             },
         }),
+        updateUserAddress: builder.mutation<UserAddress, UserAddressPayload>({
+            query: (body) => ({
+                url: `UserAddresses/${body.id}`,
+                method: "PUT",
+                body: body,
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                const { data: updatedAddress } = await queryFulfilled;
+                dispatch(
+                    userProfileApi.util.updateQueryData(
+                        "getUserAddresses",
+                        undefined,
+                        (draft) => {
+                            return draft.map((address) => {
+                                if (address.id === updatedAddress.id) {
+                                    return updatedAddress;
+                                }
+                                return address;
+                            });
+                        }
+                    )
+                );
+            },
+        }),
+        deleteUserAddress: builder.mutation<void, string>({
+            query: (addressID) => ({
+                url: `UserAddresses/${addressID}`,
+                method: "DELETE",
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                await queryFulfilled;
+                dispatch(
+                    userProfileApi.util.updateQueryData(
+                        "getUserAddresses",
+                        undefined,
+                        (draft) => {
+                            return draft.filter(
+                                (address) => address.id !== requestBody
+                            );
+                        }
+                    )
+                );
+            },
+        }),
+        deleteUserAccount: builder.mutation<void, number>({
+            query: (userID) => ({
+                url: `Users/${userID}`,
+                method: "DELETE",
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                const { data } = await queryFulfilled;
+                dispatch(
+                    api.util.updateQueryData(
+                        "getAllUsers",
+                        undefined,
+                        (draft) => {
+                            return draft.filter(
+                                (user) => user.id !== requestBody
+                            );
+                        }
+                    )
+                );
+            },
+        }),
     }),
     overrideExisting: false,
 });
@@ -101,4 +151,7 @@ export const {
     useUpdateUserProfileMutation,
     useCreateUserAdressMutation,
     useUpdateDefaulUserAddressMutation,
+    useUpdateUserAddressMutation,
+    useDeleteUserAccountMutation,
+    useDeleteUserAddressMutation,
 } = userProfileApi;

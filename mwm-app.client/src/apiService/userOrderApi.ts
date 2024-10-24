@@ -1,6 +1,11 @@
 import { Order } from "@/types/dataType";
 import { api } from "./bookApi";
-import { CreateOrderPayload, UpdateOrderPayload } from "./types";
+import {
+    CreateOrderPayload,
+    ReturnedUserOrder,
+    ReturnedUserOrderPayload,
+    UpdateOrderPayload,
+} from "./types";
 import { userShoppingCartApi } from "./userShoppingCartApi";
 
 export const userOrderApi = api.injectEndpoints({
@@ -157,6 +162,38 @@ export const userOrderApi = api.injectEndpoints({
                 }
             },
         }),
+        getReturnedUserOrders: builder.query<ReturnedUserOrder[], void>({
+            query: () => "ReturnedUserOrders",
+        }),
+        createReturnedOrder: builder.mutation<
+            ReturnedUserOrder,
+            ReturnedUserOrderPayload
+        >({
+            query: (body) => ({
+                url: "ReturnedUserOrders",
+                method: "POST",
+                body: body,
+            }),
+            async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    dispatch(
+                        userOrderApi.util.updateQueryData(
+                            "getReturnedUserOrders",
+                            undefined,
+                            (draft) => {
+                                return [data, ...draft];
+                            }
+                        )
+                    );
+                } catch (err) {
+                    console.log(
+                        "Update cached returned user order failed",
+                        err
+                    );
+                }
+            },
+        }),
     }),
 });
 
@@ -167,4 +204,6 @@ export const {
     useGetAllUsersOrdersQuery,
     useGetUserOrderByIDQuery,
     useDeleteUserOrderMutation,
+    useGetReturnedUserOrdersQuery,
+    useCreateReturnedOrderMutation,
 } = userOrderApi;

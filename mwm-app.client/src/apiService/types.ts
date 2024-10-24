@@ -1,5 +1,12 @@
-import { Admin, Author, Book, OrderStatus, User } from "@/types/dataType";
-import { BookPayload } from "../admin/routes/CreateBook/types";
+import {
+    Admin,
+    Author,
+    Book,
+    Order,
+    OrderStatus,
+    User,
+} from "@/types/dataType";
+import { BookPayload } from "../admin/routes/create-book/types";
 import { OrderAddressPayload } from "@/user/routes/checkout/validator";
 
 export type UserResponse = {
@@ -88,4 +95,21 @@ export type CreateBookReviewPayload = {
     reviewDescription: string;
     rating: number;
     bookID: string;
+};
+
+export type ReturnedOrderItem = {
+    bookID: string;
+    quantity: number;
+};
+
+export type ReturnedUserOrderPayload = {
+    orderID: string;
+    items: ReturnedOrderItem[];
+};
+
+export type ReturnedUserOrder = {
+    id: string;
+    order: Order;
+    returnedItems: { book: Book; quantity: number }[];
+    createdAt: string;
 };

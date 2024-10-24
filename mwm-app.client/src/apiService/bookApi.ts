@@ -1,9 +1,9 @@
-import { TopBook, TopBookRequest } from "@/admin/routes/TopThreeBooks/types";
+import { TopBook, TopBookRequest } from "@/admin/routes/top-three-books/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
     AuthorPayload,
     CategoryPayload,
-} from "../admin/routes/ManageBooks/types";
+} from "../admin/routes/manage-books/validator";
 import { Author, Book, Category, User } from "../types/dataType";
 import {
     AuthorWithBooks,
@@ -12,7 +12,7 @@ import {
     BookReview,
     CreateBookReviewPayload,
     PaginatedResponse,
-    UpdateBookAPIPayload
+    UpdateBookAPIPayload,
 } from "./types";
 
 export const api = createApi({
@@ -214,13 +214,15 @@ export const api = createApi({
             }),
             async onQueryStarted(requestBody, { dispatch, queryFulfilled }) {
                 try {
-                    const { data: updatedCategories } = await queryFulfilled;
+                    await queryFulfilled;
                     dispatch(
                         api.util.updateQueryData(
                             "getCategories",
-                            void 0,
+                            undefined,
                             (draft) => {
-                                Object.assign(draft, updatedCategories);
+                                return draft?.filter(
+                                    (category) => category.id !== requestBody
+                                );
                             }
                         )
                     );

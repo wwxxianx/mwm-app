@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using mwm_app.Server.Data;
@@ -18,6 +19,7 @@ namespace mwm_app.Server.Controllers
     public class AuthorsController : ControllerBase
     {
         private readonly MainDBContext _context;
+        private readonly string dbConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=mwmV2;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
 
         public AuthorsController(MainDBContext context)
         {
@@ -83,47 +85,79 @@ namespace mwm_app.Server.Controllers
         [HttpGet("trending")]
         public async Task<ActionResult<ICollection<Author>>> GetTrendingAuthor()
         {
-            var authors = await _context.Authors.OrderBy(a => a.FullName).Take(8).ToListAsync();
-
-            if (authors == null)
+            List<Author> authors = new List<Author>();
+            using (SqlConnection connection = new SqlConnection(dbConnectionString))
             {
-                return NotFound();
-            }
+                string sqlQuery = @"
+                SELECT TOP 8 [a].[ID], [a].[FullName], [a].[ImageUrl]
+                FROM [AdminSchema].[Author] AS [a]
+                ORDER BY [a].[FullName]
+                ";
 
-            return authors;
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    connection.Open();
+                    
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Author author = new Author
+                            {
+                                ID = reader["ID"].ToString(),
+                                FullName = reader["FullName"].ToString(),
+                                ImageUrl = reader["ImageUrl"] is DBNull ? null : reader["ImageUrl"].ToString(),
+                            };
+
+                            authors.Add(author);
+                        }
+                    }
+                }
+            }
+            return Ok(authors);
         }
 
         // PUT: api/Authors/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<ActionResult<Author>> PutAuthor(string id, AuthorDTO authorDTO)
         {
-            if (id != authorDTO.ID)
+            using (SqlConnection connection = new SqlConnection(dbConnectionString))
             {
-                return BadRequest();
-            }
+                // SQL to update and get the updated author
+                string sqlQuery = @"
+                UPDATE [AdminSchema].[Author]
+                SET [FullName] = @FullName, [ImageUrl] = @ImageUrl
+                WHERE [ID] = @AuthorID
+                SELECT [ID], [FullName], [ImageUrl] FROM [AdminSchema].[Author] WHERE [ID] = @AuthorID
+                ";
 
-            var authorToUpdate = await _context.Authors.FirstOrDefaultAsync(a => a.ID == id);
-            authorToUpdate.FullName = authorDTO.FullName;
-            authorToUpdate.ImageUrl = authorToUpdate.ImageUrl;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AuthorExists(id))
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
+                    command.Parameters.AddWithValue("@Fullname", authorDTO.FullName);
+                    command.Parameters.AddWithValue("@ImageUrl", authorDTO.ImageUrl);
+                    command.Parameters.AddWithValue("@AuthorID", id);
+                    
+                    connection.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            Author updatedAuthor = new Author
+                            {
+                                ID = reader["ID"].ToString(),
+                                FullName = reader["FullName"].ToString(),
+                                ImageUrl = reader["ImageUrl"] is DBNull ? null : reader["ImageUrl"].ToString()
+                            };
+
+                            return Ok(updatedAuthor);
+                        }
+                        else
+                        {
+                            return NotFound(); // Author not found after update
+                        }
+                    }
                 }
             }
-
-            return authorToUpdate;
         }
 
         // POST: api/Authors
@@ -131,35 +165,80 @@ namespace mwm_app.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Author>> PostAuthor(AuthorDTO authorDTO)
         {
-            var author = new Author
+            // Create UUID for author
+            string authorID = Guid.NewGuid().ToString();
+
+            Author author = new Author
             {
+                ID = authorID,
                 FullName = authorDTO.FullName,
                 ImageUrl = authorDTO.ImageUrl,
             };
-            _context.Authors.Add(author);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAuthor", new { id = author.ID }, author);
+            using (SqlConnection connection = new SqlConnection(dbConnectionString))
+            {
+                string sqlQuery = @"
+                    INSERT INTO [AdminSchema].[Author] ([ID], [FullName], [ImageUrl])
+                    VALUES (@ID, @FullName, @ImageUrl);
+                ";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@FullName", author.FullName);
+                    command.Parameters.AddWithValue("@ImageUrl", author.ImageUrl);
+                    command.Parameters.AddWithValue("@ID", authorID);
+
+                    connection.Open();
+                    // Determine wheter statement successful
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                    if (rowsAffected > 0)
+                    {
+                        return Ok(author);
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to create author.");
+                    }
+                }
+            }
         }
 
         // DELETE: api/Authors/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAuthor(string id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            if (author == null)
+            using (SqlConnection connection = new SqlConnection(dbConnectionString))
             {
-                return NotFound();
-            }
+                string sqlQuery = @"
+                    DELETE FROM [AdminSchema].[Author]
+                    WHERE [ID] = @AuthorID
+                ";
 
-            _context.Authors.Remove(author);
-            try {
-                await _context.SaveChangesAsync();
-            } catch (DbUpdateException) {
-                return BadRequest();
-            }
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@AuthorID", id);
 
-            return StatusCode(204);
+                    connection.Open();
+                    try
+                    {
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        if (rowsAffected > 0)
+                        {
+                            return StatusCode(204);
+                        }
+                        else
+                        {
+                            // Author with the specified ID not found
+                            return NotFound();
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return BadRequest();
+                    }
+                }
+            }
         }
 
         private bool AuthorExists(string id)

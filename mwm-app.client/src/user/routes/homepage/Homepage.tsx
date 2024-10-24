@@ -1,6 +1,6 @@
-import BookCarousel from "./components/BookCarousel";
-import TopBooks from "./components/TopBooks";
-import TopCategories from "./components/TopCategories";
+import BookCarousel from "./components/book-carousel";
+import TopBooks from "./components/top-books";
+import TopCategories from "./components/top-categories";
 
 export default function Homepage() {
     return (

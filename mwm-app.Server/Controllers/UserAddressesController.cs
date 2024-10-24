@@ -93,5 +93,47 @@ namespace mwm_app.Server.Controllers
             await _context.SaveChangesAsync();
             return Ok(addressToSetAsDefault);
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateUserAddress(string id, UserAddressDTO userAddressDTO)
+        {
+            var addressToUpdate = await _context.UserAddresses.FirstOrDefaultAsync(a => a.ID == id);
+            if (addressToUpdate == null)
+            {
+                return BadRequest();
+            }
+            addressToUpdate.AddressUnit = userAddressDTO.AddressUnit;
+            addressToUpdate.StateRegion = userAddressDTO.StateRegion;
+            addressToUpdate.Postcode = userAddressDTO.Postcode;
+            addressToUpdate.ReceiverEmail = userAddressDTO.ReceiverEmail;
+            addressToUpdate.ReceiverName = userAddressDTO.ReceiverName;
+            addressToUpdate.ReceiverPhoneNumber = userAddressDTO.ReceiverPhoneNumber;
+            addressToUpdate.StreetAddress = userAddressDTO.StreetAddress;
+
+            try 
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // TODO: Handle error
+            }
+            return Ok(addressToUpdate);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserAddress(string id)
+        {
+            var userAddress = await _context.UserAddresses.FindAsync(id);
+            if (userAddress == null)
+            {
+                return NotFound();
+            }
+
+            _context.UserAddresses.Remove(userAddress);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
